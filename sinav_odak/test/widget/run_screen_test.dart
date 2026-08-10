@@ -156,7 +156,7 @@ void main() {
 
   testWidgets('Bitir tek tıkla kapatmıyor: önce onay soruyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
-    await pumpRun(tester);
+    final c = await pumpRun(tester);
 
     // `OutlinedButton.icon` alt sınıf üretir; byType tam tip eşlediği
     // için doğrudan metne tıklanıyor.
@@ -173,12 +173,24 @@ void main() {
 
     final s = await db.sessionDao.findById('s1');
     expect(s!.status, SessionStatus.running);
+    expect(
+      c.read(pendingFinishProvider),
+      isNull,
+      reason: 'vazgeçilen onay bitiş bağlamı yazmamalı',
+    );
   });
 
-  testWidgets('onay verilince oturum erken bitiyor ve özete gidiyor',
+  // KARAR D1 ile DAVRANIŞ DEĞİŞTİ (koordinatör onaylı):
+  // Onay artık `finishSession` ÇAĞIRMAZ. Oturum `running` kalır ve yalnızca
+  // bitiş bağlamı `pendingFinishProvider`'a yazılır; kayıt tek yoldan,
+  // oturum sonu formunun KAYDET butonundan geçer.
+  //
+  // Eski davranışta oturum, kullanıcı soru sayılarını girmeden kapanıyordu;
+  // form KAYDET'e bastığında ikinci bir finish turu gerekiyordu.
+  testWidgets('onay oturumu KAPATMIYOR: bitiş bağlamı yazılıp özete gidiliyor',
       (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
-    await pumpRun(tester);
+    final c = await pumpRun(tester);
 
     // Bloğun 10. dakikası.
     fakeNow = t0 + 600000;
@@ -192,9 +204,43 @@ void main() {
     await tester.pumpAndSettle();
 
     final s = await db.sessionDao.findById('s1');
-    expect(s!.status, SessionStatus.earlyFinished);
-    expect(s.actualDurationS, 600, reason: 'gerçekleşen süre yazılmalı');
+    expect(
+      s!.status,
+      SessionStatus.running,
+      reason: 'kayıt YALNIZCA formun KAYDET butonundan geçer',
+    );
+    expect(s.endedAt, isNull);
     expect(find.text('SUMMARY EKRANI'), findsOneWidget);
+
+    final pending = c.read(pendingFinishProvider);
+    expect(pending, isNotNull);
+    expect(pending!.early, isTrue);
+    expect(
+      pending.endMs,
+      t0 + 600000,
+      reason: 'süre onayın verildiği ana kadar hesaplanmalı',
+    );
+  });
+
+  testWidgets('çizelge normal bitince bitiş bağlamı erken DEĞİL',
+      (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    final c = await pumpRun(tester);
+
+    fakeNow = lastEnd + 1000;
+    await tick(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('SUMMARY EKRANI'), findsOneWidget);
+
+    final pending = c.read(pendingFinishProvider);
+    expect(pending, isNotNull);
+    expect(pending!.early, isFalse);
+    expect(
+      pending.endMs,
+      lastEnd,
+      reason: 'planlanan bitiş yazılmalı, formun açıldığı an değil',
+    );
   });
 
   testWidgets('ticker yeniden boyuyor ama state\'i İLERLETMİYOR',

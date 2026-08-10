@@ -122,3 +122,28 @@ goals · achievements · ad_events · app_state
 ### Hâlâ açık olan P1'ler (Adım 3–6)
 
 `schedule_json` tipli modeli · `BlockType.breakTime` ↔ `"break"` JSON eşlemesi · onboarding redirect · run route'ları · bildirim/lifecycle katmanı · reklam katmanı · net katsayısı değişince geçmiş netlerin yeniden hesaplanması
+
+---
+
+## ⚠️ AG5-2 — GELİŞTİRME CİHAZINDAN UYGULAMAYI SİL
+
+`study_sessions` üzerine **kısmi unique index** eklendi (KARAR D3):
+
+```sql
+CREATE UNIQUE INDEX idx_one_running
+  ON study_sessions(status) WHERE status = 'running';
+```
+
+Aynı anda birden fazla `running` oturum artık **veritabanı seviyesinde**
+imkânsız. Daha önce koruma yalnızca `StartSessionUseCase` içindeydi ve
+"önce oku sonra yaz" yapısı yarış durumunda ikinci bir `running` satıra
+izin veriyordu; bu durumda ilk oturumun çalışması `daily_stats`'a hiç
+yansımıyor ve hata **sessiz** kalıyordu.
+
+Index `onCreate` içinde oluşturuluyor ve **`schemaVersion` 1'de KALDI**
+(clean schema change — v1 henüz yayında değil). Bu yüzden:
+
+> **Geliştirme cihazında uygulama kuruluysa SİL ve yeniden kur.**
+> Mevcut veritabanı dosyası `onCreate`'i tekrar çalıştırmaz; index
+> oluşmaz ve kısıt sessizce devre dışı kalır. Ayrıca eski veritabanında
+> birden fazla `running` satır varsa index zaten oluşturulamazdı.

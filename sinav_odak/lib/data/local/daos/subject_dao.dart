@@ -64,6 +64,14 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
 
   // --- Konular ---
 
+  /// Tek konu — **arşivlenmiş olsa da** döner.
+  ///
+  /// [watchTopics] arşivlenmişleri gizler; geçmiş bir oturumun konu adını
+  /// göstermek için bu ayrım şart: ders arşivlendi diye eski oturumun
+  /// başlığı boşalmamalı.
+  Future<Topic?> findTopic(String id) =>
+      (select(topics)..where((t) => t.id.equals(id))).getSingleOrNull();
+
   Stream<List<Topic>> watchTopics(String subjectId) {
     return (select(topics)
           ..where((t) =>

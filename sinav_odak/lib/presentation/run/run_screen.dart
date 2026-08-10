@@ -7,7 +7,6 @@ import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../domain/entities/session_state.dart';
-import 'run_controller.dart';
 
 /// Aktif çalışma ekranı (S08).
 ///
@@ -39,6 +38,12 @@ class _RunScreenState extends ConsumerState<RunScreen> {
       if (next is SessionInBreak) {
         context.go(Routes.runBreak);
       } else if (next is SessionSummarizing) {
+        // Çizelge normal bitti: bitiş anı planlanan bitiştir. Kullanıcı formu
+        // ne kadar geç doldurursa doldursun kayıtlı süre değişmez (KARAR D1).
+        ref.read(pendingFinishProvider.notifier).set(
+              early: false,
+              endMs: next.schedule.plannedEndAtMs,
+            );
         context.go(Routes.runSummary);
       }
     });
@@ -76,7 +81,16 @@ class _RunningBody extends ConsumerWidget {
   final SessionInBlock state;
 
   /// Erken bitirme onayı. Ürün kuralı: tek tıkla oturum kapanmaz.
-  Future<void> _confirmAndFinish(BuildContext context, WidgetRef ref) async {
+  ///
+  /// **Onay oturumu KAPATMAZ (KARAR D1).** Burada `finishSession`
+  /// çağrılsaydı oturum, kullanıcı henüz soru sayılarını girmeden kapanır ve
+  /// form ikinci bir yazım turu gerektirirdi. Onay yalnızca bitiş bağlamını
+  /// [pendingFinishProvider]'a yazar; kayıt tek yoldan, formun KAYDET
+  /// butonundan geçer.
+  Future<void> _confirmAndStartSummary(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final elapsedS =
         state.schedule.totalStudyS - state.remainingMs ~/ 1000;
 
@@ -105,9 +119,10 @@ class _RunningBody extends ConsumerWidget {
 
     if (confirmed != true) return;
 
-    await ref.read(runControllerProvider).finish(
-          sessionId: state.sessionId,
+    // Erken bitirmede süre, onayın verildiği ana kadar hesaplanır.
+    ref.read(pendingFinishProvider.notifier).set(
           early: true,
+          endMs: ref.read(clockProvider)(),
         );
 
     if (context.mounted) context.go(Routes.runSummary);
@@ -142,7 +157,7 @@ class _RunningBody extends ConsumerWidget {
         // `isInStudyBlock` ile zorlanacak.
         const SizedBox(height: 16),
 
-        _ControlBar(onFinish: () => _confirmAndFinish(context, ref)),
+        _ControlBar(onFinish: () => _confirmAndStartSummary(context, ref)),
       ],
     );
   }

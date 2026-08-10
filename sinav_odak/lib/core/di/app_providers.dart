@@ -52,6 +52,35 @@ final pendingRecoveryProvider = Provider<RecoveryResult>(
   (ref) => RecoveryResult.empty,
 );
 
+/// Kurtarma diyaloğunun tüketilip tüketilmediği (S18 / KARAR D2).
+///
+/// [pendingRecoveryProvider] açılışta hesaplanan **tek seferlik** bir
+/// sonuçtur. Diyalog ana panel seviyesinde gösterilir; ana panel sekme
+/// değişiminde yeniden kurulabildiği için "gösterildi" bilgisi widget
+/// state'inde değil, provider seviyesinde tutulur — aksi halde kullanıcı
+/// her sekme dönüşünde aynı diyalogla karşılaşırdı.
+class RecoveryConsumedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void consume() => state = true;
+}
+
+final recoveryConsumedProvider =
+    NotifierProvider<RecoveryConsumedNotifier, bool>(
+  RecoveryConsumedNotifier.new,
+);
+
+/// Kurtarma orkestrasyonu. `main()` açılışta [RecoveryService.check] çağırır;
+/// kurtarma diyaloğu ise kullanıcı kararını [RecoveryService.interruptNow] ile
+/// uygular.
+final recoveryServiceProvider = Provider<RecoveryService>(
+  (ref) => RecoveryService(
+    ref.watch(databaseProvider),
+    ref.watch(sessionRepositoryProvider),
+  ),
+);
+
 final settingsDaoProvider =
     Provider<SettingsDao>((ref) => ref.watch(databaseProvider).settingsDao);
 
@@ -218,6 +247,98 @@ final runStateProvider = Provider<SessionState>((ref) {
     schedule: active.schedule,
     nowMs: ref.watch(clockProvider)(),
   );
+});
+
+// ---------------------------------------------------------------------------
+// Oturum sonu akışı (KARAR D1) — TEK KAYIT YOLU
+//
+// `finishSession` YALNIZCA oturum sonu formunun KAYDET butonundan çağrılır.
+// RunScreen'deki "Bitir" onayı oturumu KAPATMAZ; yalnızca bitiş bağlamını
+// (erken mi, hangi ana kadar) buraya yazıp formu açar.
+//
+// Neden: eskiden "Bitir" hem finish çağırıyor hem forma yönlendiriyordu.
+// Kullanıcı formu doldurmadan önce oturum kapanıyordu; form KAYDET'e
+// bastığında ikinci bir finish çağrısı gerekiyordu ve soru sayıları ilk
+// kayıttan sonra yazıldığı için `daily_stats` iki kez hesaplanıyordu.
+// ---------------------------------------------------------------------------
+
+/// Oturum sonu formunun ihtiyaç duyduğu bitiş bağlamı.
+///
+/// [early] `true` ise kullanıcı çizelge bitmeden "Bitir" dedi.
+/// [endMs] süre hesabının dayanacağı **an**: erken bitirmede onayın verildiği
+/// an, normal tamamlanmada çizelgenin planlanan bitişi. Form ekranda ne kadar
+/// beklerse beklesin kayıtlı süre değişmez — bu alan olmasaydı kullanıcının
+/// formu doldurma süresi çalışma süresine eklenirdi.
+typedef PendingFinish = ({bool early, int endMs});
+
+class PendingFinishNotifier extends Notifier<PendingFinish?> {
+  @override
+  PendingFinish? build() => null;
+
+  void set({required bool early, required int endMs}) =>
+      state = (early: early, endMs: endMs);
+
+  void clear() => state = null;
+}
+
+/// **autoDispose DEĞİL:** /run -> /run/summary geçişinde RunScreen yıkılır.
+/// autoDispose olsaydı bitiş bağlamı tam da forma varıldığı anda silinirdi.
+final pendingFinishProvider =
+    NotifierProvider<PendingFinishNotifier, PendingFinish?>(
+  PendingFinishNotifier.new,
+);
+
+/// Kaydı TAMAMLANMIŞ oturumun sonucu — tebrik ekranının (S11) girdisi.
+typedef SavedSession = ({String sessionId, int? focusScore, String dateKey});
+
+class SavedSessionNotifier extends Notifier<SavedSession?> {
+  @override
+  SavedSession? build() => null;
+
+  void set({
+    required String sessionId,
+    required int? focusScore,
+    required String dateKey,
+  }) =>
+      state = (
+        sessionId: sessionId,
+        focusScore: focusScore,
+        dateKey: dateKey,
+      );
+
+  void clear() => state = null;
+}
+
+/// Kayıt tamamlandığında `running` oturum kalmaz; router'ın aktif oturum
+/// koruması bu yüzden /run/done'ı ana panele geri yollardı. Tebrik ekranının
+/// var olma hakkı bu provider'dan gelir (bkz. `app_router.dart` redirect).
+final savedSessionProvider =
+    NotifierProvider<SavedSessionNotifier, SavedSession?>(
+  SavedSessionNotifier.new,
+);
+
+/// Bir günün özeti (tebrik ekranındaki günlük ilerleme).
+final dayStatsProvider = StreamProvider.family<DailyStat?, String>(
+  (ref, dayKey) => ref.watch(statsDaoProvider).watchDay(dayKey),
+);
+
+/// Aktif oturumun ders ve konu adı.
+///
+/// Oturum sonu formu başlığında gösterilir. Presentation katmanı Drift
+/// tiplerini isimlendirmeden tükettiği için ad çözümlemesi burada yapılır.
+typedef ActiveLabels = ({String subjectName, String? topicName});
+
+final activeSessionLabelsProvider =
+    FutureProvider<ActiveLabels?>((ref) async {
+  final session = ref.watch(activeSessionProvider).valueOrNull;
+  if (session == null) return null;
+
+  final dao = ref.watch(subjectDaoProvider);
+  final subject = await dao.findSubject(session.subjectId);
+  final topicId = session.topicId;
+  final topic = topicId == null ? null : await dao.findTopic(topicId);
+
+  return (subjectName: subject?.name ?? '', topicName: topic?.name);
 });
 
 // ---------------------------------------------------------------------------

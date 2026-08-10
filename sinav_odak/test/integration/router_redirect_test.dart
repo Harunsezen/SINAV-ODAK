@@ -8,6 +8,8 @@ import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
+import 'package:sinav_odak/presentation/shell/db_health_page.dart';
+import 'package:sinav_odak/presentation/shell/placeholder_page.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -27,10 +29,14 @@ void main() {
   }
 
   /// Gerçek `appRouterProvider` ile uygulamayı kurar ve nihai yolu döner.
+  ///
+  /// [prepare] router kurulmadan ÖNCE çalışır: yönlendirme kararına giren
+  /// provider'lar (örn. `savedSessionProvider`) burada doldurulur.
   Future<String> locationAfter(
     WidgetTester tester, {
     String? goTo,
     int nowMs = t0,
+    void Function(ProviderContainer container)? prepare,
   }) async {
     final container = ProviderContainer(
       overrides: [
@@ -44,6 +50,8 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+
+    prepare?.call(container);
 
     final router = container.read(appRouterProvider);
 
@@ -156,6 +164,59 @@ void main() {
       expect(
         await locationAfter(tester, goTo: Routes.runDone),
         Routes.runDone,
+      );
+    });
+
+    // Tebrik ekranı (S11) aktif oturum OLMADAN gösterilir: kayıt tamamlandığı
+    // anda `running` satır kalmaz. Muafiyet `savedSessionProvider`'a bağlı,
+    // yolun kendisine değil — aksi halde /run/done herkese açık kalırdı.
+    testWidgets('kayıt tamamlandıysa /run/done aktif oturumsuz açılıyor',
+        (tester) async {
+      await setOnboarding(done: true);
+
+      expect(
+        await locationAfter(
+          tester,
+          goTo: Routes.runDone,
+          prepare: (c) => c.read(savedSessionProvider.notifier).set(
+                sessionId: 's1',
+                focusScore: 62,
+                dateKey: '2025-08-06',
+              ),
+        ),
+        Routes.runDone,
+      );
+    });
+
+    testWidgets('kaydedilmiş sonuç yoksa /run/done -> /home', (tester) async {
+      await setOnboarding(done: true);
+
+      expect(await locationAfter(tester, goTo: Routes.runDone), Routes.home);
+    });
+  });
+
+  group('KARAR D4 — db_health yalnızca debug', () {
+    // `DbHealthPage` BİLİNÇLİ olarak render EDİLMİYOR: açtığı Drift akışları
+    // widget ağacı yıkıldıktan sonra da askıda timer bırakıyor ve test
+    // çerçevesi bunu hata sayıyor. Karar zaten hangi ekranın SEÇİLDİĞİdir;
+    // doğrulanması gereken de bu.
+    test('debug geliştirme aracını, release yer tutucuyu seçiyor', () {
+      expect(settingsPageFor(debug: true), isA<DbHealthPage>());
+      expect(settingsPageFor(debug: false), isA<PlaceholderPage>());
+    });
+
+    testWidgets('release dalı Ayarlar yer tutucusunu gösteriyor',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(home: settingsPageFor(debug: false)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ayarlar'), findsOneWidget);
+      expect(
+        find.text('Veritabanı Durumu'),
+        findsNothing,
+        reason: 'geliştirme aracı production\'a sızmamalı',
       );
     });
   });

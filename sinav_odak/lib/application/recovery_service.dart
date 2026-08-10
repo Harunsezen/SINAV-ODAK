@@ -1,6 +1,7 @@
 import '../data/local/database.dart';
 import '../data/repositories/session_repository.dart';
 import '../domain/entities/enums.dart';
+import '../domain/entities/session_schedule.dart';
 import '../domain/entities/session_state.dart';
 import '../domain/services/focus_score_calculator.dart';
 import '../domain/services/schedule_resolver.dart';
@@ -79,6 +80,65 @@ class RecoveryService {
       // scheduleJson parse edilemedi: session_blocks üzerinden hesapla.
       return _fallbackFromBlocks(active, nowMs);
     }
+  }
+
+  /// Kullanıcı isteğiyle, açık bir oturumu **şu an** kesinti olarak kapatır.
+  ///
+  /// KARAR D2'nin `clockMovedBack` dalı: cihaz saati geriye alındığında
+  /// çizelge güvenilmez hale gelir. Kullanıcı "Oturumu kes" derse oturum
+  /// burada kapatılır. [check] ile farkı, çizelgenin bitmiş olmasını
+  /// beklememesi ve bitiş anına çizelgenin sonunu değil [nowMs]'i yazmasıdır.
+  ///
+  /// Saat geriye alındığı için `elapsedOf` sıfıra yakın süre üretir; bu
+  /// **kasıtlıdır**. Ölçülemeyen süreyi tahmin etmek sahte veri olurdu
+  /// (KARAR 7: kurtarılan oturum düşük ama dürüst skor alır).
+  ///
+  /// Oturum yoksa veya çizelgesi bozuksa sessizce döner: kullanıcı zaten
+  /// oturumu bitirmek istiyor, hata diyaloğu göstermek işine yaramaz.
+  Future<void> interruptNow({
+    required String sessionId,
+    required int nowMs,
+  }) async {
+    final session = await _db.sessionDao.findById(sessionId);
+    if (session == null) return;
+
+    final SessionSchedule schedule;
+    try {
+      schedule = ScheduleWriter.parse(session);
+    } on Object {
+      // Çizelge okunamıyor: süre hesaplanamaz ama oturum açık kalmamalı.
+      await _repo.markInterrupted(
+        sessionId: sessionId,
+        actualDurationS: 0,
+        totalBreakS: 0,
+        endedAt: nowMs,
+      );
+      return;
+    }
+
+    final elapsed = ScheduleWriter.elapsedOf(schedule, nowMs);
+    final breaks = ScheduleWriter.breakTotalsOf(schedule);
+    final foregroundS =
+        (elapsed.studyS - session.awayS).clamp(0, elapsed.studyS);
+
+    final focusScore = FocusScoreCalculator.calculate(
+      status: SessionStatus.interrupted,
+      plannedDurationS: session.plannedDurationS,
+      actualDurationS: elapsed.studyS,
+      foregroundS: foregroundS,
+      exitCount: session.exitCount,
+      extendedBreakS: breaks.extendedS,
+      totalPlannedBreakS: breaks.plannedS,
+    );
+
+    await _repo.markInterrupted(
+      sessionId: sessionId,
+      actualDurationS: elapsed.studyS,
+      totalBreakS: elapsed.breakS,
+      endedAt: nowMs,
+      focusScore: focusScore,
+      foregroundS: foregroundS,
+    );
   }
 
   /// Çizelge bitmiş oturumu `interrupted` olarak kapatır ve skoru yazar.

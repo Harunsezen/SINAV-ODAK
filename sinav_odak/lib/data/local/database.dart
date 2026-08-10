@@ -65,6 +65,25 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+
+          // KARAR D3 — TEK `running` OTURUM ŞEMA KISITI.
+          //
+          // Kod seviyesindeki koruma (`StartSessionUseCase`) "önce oku sonra
+          // yaz" yapısındadır ve yarış durumunda iki `running` satıra izin
+          // verir. İkinci satır oluştuğunda ilkinin çalışması `daily_stats`'a
+          // hiç yansımaz ve hata SESSİZ kalır. Kısmi unique index bunu
+          // veritabanı seviyesinde imkânsız kılar.
+          //
+          // `status` kolonu enum ADINI saklar (textEnum), bu yüzden karşılaştırma
+          // 'running' string'i ile yapılır.
+          //
+          // schemaVersion 1'de KALIYOR (temiz şema değişikliği): geliştirme
+          // cihazında eski veritabanı varsa uygulama SİLİNMELİDİR.
+          await customStatement(
+            "CREATE UNIQUE INDEX idx_one_running "
+            "ON study_sessions(status) WHERE status = 'running'",
+          );
+
           await SeedData.populate(this);
         },
         onUpgrade: (m, from, to) async {

@@ -33,9 +33,15 @@ class RunController {
   /// Oturumu kapatır ve odak skorunu döner.
   ///
   /// [early] `true` ise kullanıcı "Oturumu Bitir" dedi; onay UI'da alınır.
+  ///
+  /// [nowMs] verilmezse saat okunur. Oturum sonu formu bunu **açıkça**
+  /// geçirir (KARAR D1): süre hesabı formun açıldığı ana dayanmalı, kaydete
+  /// basıldığı ana değil — yoksa formu doldurma süresi çalışma süresine
+  /// eklenirdi.
   Future<int?> finish({
     required String sessionId,
     required bool early,
+    int? nowMs,
     int questionCount = 0,
     int correctCount = 0,
     int wrongCount = 0,
@@ -45,7 +51,7 @@ class RunController {
   }) {
     return _ref.read(finishSessionProvider)(
       sessionId: sessionId,
-      nowMs: _ref.read(clockProvider)(),
+      nowMs: nowMs ?? _ref.read(clockProvider)(),
       early: early,
       questionCount: questionCount,
       correctCount: correctCount,
