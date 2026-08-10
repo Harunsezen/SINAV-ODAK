@@ -14,8 +14,10 @@ import '../../core/errors/failures.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../domain/entities/ad_placement.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/services/schedule_modifier.dart';
+import '../ads/native_ad_slot.dart';
 import 'run_controller.dart';
 
 /// Mola ekranı İSKELETİ.
@@ -80,15 +82,13 @@ class BreakScreen extends ConsumerWidget {
               const Text('kalan mola'),
               const Spacer(),
 
-              // Reklam alanı (Adım 6'da doldurulacak).
-              //
               // Mola, reklam için doğal andır: öğrenci zaten dinleniyor.
-              // Kurallar: ses KAPALI başlar, kart 1200 ms gecikmeyle görünür,
-              // "Sponsorlu" etiketi zorunlu, butonlardan en az 48dp uzak,
-              // mola 3 dakikadan kısaysa hiç gösterilmez.
-              const SizedBox(
+              // Kurallar NativeAdSlot ve AdPolicyEngine içinde zorlanıyor:
+              // ses KAPALI, 1200 ms gecikme, "Sponsorlu" etiketi,
+              // butonlardan >= 48dp, mola 3 dakikadan kısaysa GÖSTERİLMEZ.
+              const NativeAdSlot(
                 key: Key('break-ad-slot'),
-                height: 48,
+                placement: AdPlacement.breakNative,
               ),
 
               Padding(

@@ -6,7 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/data/local/database.dart';
+import 'package:sinav_odak/domain/entities/ad_placement.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
+import 'package:sinav_odak/domain/entities/session_state.dart';
+import 'package:sinav_odak/domain/services/ad_policy_engine.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
@@ -276,6 +279,46 @@ void main() {
     );
     // Uyarı ekranında sayaç ve kontrol çubuğu gösterilmez.
     expect(find.text('Bitir'), findsNothing);
+  });
+
+  // FAZ 4 REGRESYONU: çalışma bloğunda TAM EKRAN reklam ASLA (G7).
+  // Kural AdPolicyEngine ve AdGateway içinde zorlanıyor; bu test ekran
+  // seviyesinde de kilitliyor.
+  testWidgets('çalışma bloğunda TAM EKRAN reklam gösterilmiyor',
+      (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    await pumpRun(tester);
+
+    final state = SessionState.inBlock(
+      sessionId: 's1',
+      blockIndex: 0,
+      blockEndsAtMs: breakStart,
+      remainingMs: 600000,
+      schedule: schedule(),
+    );
+
+    for (final p in AdPlacement.values.where((p) => p.isFullScreen)) {
+      expect(
+        AdPolicyEngine.allows(
+          placement: p,
+          state: state,
+          consent: true,
+          nowMs: t0,
+        ),
+        isFalse,
+        reason: '$p çalışma bloğunda ASLA',
+      );
+    }
+  });
+
+  testWidgets('çalışma ekranında rıza yoksa banner yuvası boş',
+      (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    await pumpRun(tester);
+
+    // Varsayılan ayar: personalizedAdsConsent = false.
+    expect(find.text('Sponsorlu'), findsNothing);
+    expect(find.byKey(const Key('banner-slot-runBanner')), findsNothing);
   });
 
   testWidgets('mola başlayınca otomatik mola ekranına geçiyor',

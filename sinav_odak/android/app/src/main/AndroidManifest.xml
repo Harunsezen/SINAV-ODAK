@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- FAZ 4 — Reklam kimliği.
+         Play, google_mobile_ads kullanan uygulamalarda bu izni ve Data
+         Safety beyanını ZORUNLU kılıyor. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+
     <application
         android:label="sinav_odak"
         android:name="${applicationName}"
@@ -30,6 +36,20 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- FAZ 4 — AdMob uygulama kimliği.
+             ZORUNLU: google_mobile_ads bağımlılığı aktifken bu meta-data
+             yoksa uygulama AÇILIŞTA ÇÖKER (SDK ContentProvider'da kontrol
+             ediyor, çalışma zamanına kadar beklemiyor).
+
+             Bu bir GOOGLE TEST kimliğidir. Production kimliği koda ASLA
+             girmez; --dart-define ile geçilip burada manifestPlaceholders
+             üzerinden doldurulacak (FAZ 6).
+
+             Kendi reklamına ASLA tıklama — hesap kapanır. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

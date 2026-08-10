@@ -6,6 +6,8 @@ import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../domain/entities/ad_placement.dart';
+import '../ads/interstitial_controller.dart';
 import '../session_setup/setup_controller.dart';
 import 'pending_finish_controller.dart';
 
@@ -20,6 +22,16 @@ import 'pending_finish_controller.dart';
 /// gösterilebilir (Adım 6). Oturum sonu formunda asla.
 class DoneScreen extends ConsumerWidget {
   const DoneScreen({super.key});
+
+  /// Ana panele döner; izin varsa önce ara reklamı gösterir.
+  Future<void> _goHome(WidgetRef ref, BuildContext context) async {
+    await ref
+        .read(interstitialControllerProvider)
+        .maybeShow(AdPlacement.doneInterstitial);
+
+    ref.read(savedResultProvider.notifier).clear();
+    if (context.mounted) context.go(Routes.home);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,10 +113,6 @@ class DoneScreen extends ConsumerWidget {
 
             const SizedBox(height: 24),
 
-            // FAZ 4 (reklam): BU EKRANDA reklam YOKTUR (G7). Interstitial
-            // yalnızca [Ana panel] ile gerçekleşen Done→Home GEÇİŞİNDE,
-            // frekans kapısı ve rıza kontrolünden sonra gösterilebilir (K6).
-
             FilledButton(
               key: const Key('done-new-session'),
               onPressed: () {
@@ -118,10 +126,11 @@ class DoneScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             OutlinedButton(
               key: const Key('done-home'),
-              onPressed: () {
-                ref.read(savedResultProvider.notifier).clear();
-                context.go(Routes.home);
-              },
+              // BU EKRANDA reklam YOKTUR (G7). Ara reklam yalnızca ana panele
+              // GEÇİŞ anında, rıza + 90 sn frekans kapısından sonra
+              // gösterilebilir. Reklam gösterilse de gösterilmese de
+              // yönlendirme AYNI şekilde yapılır — akış beklemez.
+              onPressed: () => _goHome(ref, context),
               child: const Text('Ana panel'),
             ),
           ],

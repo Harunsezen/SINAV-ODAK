@@ -20,7 +20,9 @@ Future<void> main() async {
   final db = AppDatabase();
   // Ayar satırını ve seed'i garanti et, eski reklam loglarını temizle.
   await db.settingsDao.ensure();
-  await db.pruneAdEvents();
+  // Eski reklam logları: saat DIŞARIDAN veriliyor (nowMs), böylece davranış
+  // test edilebilir kalıyor.
+  await db.adEventDao.pruneOlderThan(nowMs());
 
   // Yarıda kalmış oturumu AÇILIŞTA değerlendir. Bu adım olmadan `running`
   // satır kalıcı olarak takılı kalıyor ve kullanıcının çalışması

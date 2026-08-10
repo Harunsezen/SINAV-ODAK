@@ -38,11 +38,13 @@ dependencies:
   flutter_foreground_task: ^8.10.4
   wakelock_plus: ^1.2.8
 
-  # --- Reklam (Adım 6'da açılacak) ---
+  # --- Reklam (FAZ 4'te açıldı) ---
   # DİKKAT: Bu bağımlılık aktifken AndroidManifest.xml içinde
   # com.google.android.gms.ads.APPLICATION_ID meta-data'sı ZORUNLUDUR.
   # Yoksa uygulama AÇILIŞTA ÇÖKER (SDK ContentProvider kontrolü yapıyor).
-  # google_mobile_ads: ^5.2.0
+  # Meta-data FAZ 4'te TEST ID ile eklendi; production ID --dart-define ile
+  # geçilecek, koda GİRMEYECEK.
+  google_mobile_ads: ^5.2.0
 
   # --- Grafik & dışa aktarma ---
   fl_chart: ^0.69.0

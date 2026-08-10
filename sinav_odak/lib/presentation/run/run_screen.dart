@@ -6,7 +6,9 @@ import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../domain/entities/ad_placement.dart';
 import '../../domain/entities/session_state.dart';
+import '../ads/banner_ad_slot.dart';
 import 'pending_finish_controller.dart';
 
 /// Aktif çalışma ekranı (S08).
@@ -153,9 +155,10 @@ class _RunningBody extends ConsumerWidget {
         ),
         const Spacer(),
 
-        // ADIM 6: buraya YALNIZCA ince banner gelebilir. Tam ekran reklam
-        // bu ekranda ASLA gösterilmez; kontrol AdGateway içinde
-        // `isInStudyBlock` ile zorlanacak.
+        // Bu ekranda YALNIZCA ince banner olabilir. Tam ekran reklam burada
+        // ASLA gösterilmez; kontrol AdPolicyEngine ve AdGateway içinde
+        // `isInStudyBlock` ile zorlanıyor, çağıran katmanda değil.
+        const BannerAdSlot(placement: AdPlacement.runBanner),
         const SizedBox(height: 16),
 
         _ControlBar(onFinish: () => _confirmAndStartSummary(context, ref)),

@@ -9,6 +9,7 @@ import 'package:drift/drift.dart';
 import '../../domain/entities/enums.dart';
 import 'connection/connection.dart';
 import 'converters/block_type_converter.dart';
+import 'daos/ad_event_dao.dart';
 import 'daos/goal_dao.dart';
 import 'daos/session_dao.dart';
 import 'daos/settings_dao.dart';
@@ -44,6 +45,7 @@ part 'database.g.dart';
     AppStateEntries,
   ],
   daos: [
+    AdEventDao,
     SettingsDao,
     SubjectDao,
     SessionDao,
@@ -112,12 +114,7 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
-  /// 30 günden eski reklam olaylarını temizler (açılışta çağrılır).
-  Future<void> pruneAdEvents() async {
-    final cutoff = DateTime.now()
-        .subtract(const Duration(days: 30))
-        .millisecondsSinceEpoch;
-    await (delete(adEvents)..where((t) => t.shownAt.isSmallerThanValue(cutoff)))
-        .go();
-  }
+  // NOT: `pruneAdEvents` buradan `AdEventDao.pruneOlderThan(nowMs)`'e taşındı.
+  // Veritabanı sınıfı tek bir tablonun bakım işini üstlenmemeli; ayrıca
+  // burada `DateTime.now()` çağrıldığı için davranış test EDİLEMİYORDU.
 }

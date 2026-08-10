@@ -14,7 +14,9 @@ import '../../core/utils/formatters.dart';
 ///
 /// Dallar:
 /// - `needsDecision` → oturum zaten `interrupted` olarak KAYITLIDIR.
-///   [Kaydet] yalnızca diyaloğu kapatır; [Sil] kaydı tamamen siler.
+///   [Koru] yalnızca diyaloğu kapatır; [Sil] kaydı tamamen siler.
+///   (S4: etiket "Kaydet" idi; kayıt zaten yazılı olduğu için
+///   "şimdi kaydedilecek" izlenimi veriyordu.)
 /// - `clockMovedBack` → oturum hâlâ açıktır. [Devam et] kapatır;
 ///   [Oturumu kes] [RecoveryService.interruptNow] ile kapatır.
 /// - `resume` → çizelge sürüyor; router zaten /run'a yönlendirir, diyalog yok.
@@ -80,13 +82,13 @@ class _RecoveryGateState extends ConsumerState<RecoveryGate> {
           FilledButton(
             key: const Key('recovery-keep'),
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Kaydet'),
+            child: const Text('Koru'),
           ),
         ],
       ),
     );
 
-    // Kayıt zaten `interrupted` olarak yazılı; "Kaydet" ek işlem gerektirmez.
+    // Kayıt zaten `interrupted` olarak yazılı; "Koru" ek işlem gerektirmez.
     if (delete != true) return;
     await ref.read(sessionRepositoryProvider).delete(sessionId);
   }
