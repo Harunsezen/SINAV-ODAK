@@ -249,6 +249,15 @@ final runStateProvider = Provider<SessionState>((ref) {
   );
 });
 
+/// Yanlış defteri listesi — sekme başına bir akış.
+///
+/// `WrongItemView` bir data katmanı tipidir; ekranlar onu **tip çıkarımıyla**
+/// tüketir, dolayısıyla `presentation` katmanı `data`'yı import etmez.
+final wrongItemsProvider =
+    StreamProvider.family<List<WrongItemView>, WrongItemStatus>(
+  (ref, status) => ref.watch(wrongItemDaoProvider).watchByStatus(status),
+);
+
 /// Bir günün özeti (tebrik ekranındaki günlük ilerleme).
 final dayStatsProvider = StreamProvider.family<DailyStat?, String>(
   (ref, dayKey) => ref.watch(statsDaoProvider).watchDay(dayKey),

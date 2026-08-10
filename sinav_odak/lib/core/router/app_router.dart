@@ -17,6 +17,8 @@ import '../../presentation/session_setup/topic_picker.dart';
 import '../../presentation/shell/app_shell.dart';
 import '../../presentation/shell/db_health_page.dart';
 import '../../presentation/shell/placeholder_page.dart';
+import '../../presentation/wrongs/add_wrong_screen.dart';
+import '../../presentation/wrongs/wrong_list_screen.dart';
 import '../di/app_providers.dart';
 import 'routes.dart';
 
@@ -182,10 +184,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.wrongs,
-                builder: (_, __) => const PlaceholderPage(
-                  title: 'Yanlışlar',
-                  note: 'Adım 5: yanlış defteri + "Bu konuyu çalış".',
-                ),
+                builder: (_, __) => const WrongListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    // Shell DIŞINDA: form ekranında alt navigasyon
+                    // kullanıcıyı yarım kalmış kayıtla başka sekmeye
+                    // götürmesin.
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (_, __) => const AddWrongScreen(),
+                  ),
+                ],
               ),
             ],
           ),

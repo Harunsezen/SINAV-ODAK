@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
+import '../../core/utils/color_hex.dart';
 import 'setup_controller.dart';
 
 /// S04 — Ders Seç.
@@ -70,17 +71,14 @@ class _SubjectCard extends StatelessWidget {
   final String colorHex;
   final VoidCallback onTap;
 
-  /// '#4F5BD5' -> Color. Bozuk değerde temanın rengine düşer.
-  Color _parse(BuildContext context) {
-    final hex = colorHex.replaceFirst('#', '');
-    final value = int.tryParse(hex, radix: 16);
-    if (value == null) return Theme.of(context).colorScheme.primary;
-    return Color(0xFF000000 | value);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _parse(context);
+    // Çözümleme `core/utils/color_hex.dart` içinde tek yerde: yanlış defteri
+    // kartı da aynı dönüşümü kullanıyor, bozuk değer davranışı ayrışmasın.
+    final color = colorFromHex(
+      colorHex,
+      fallback: Theme.of(context).colorScheme.primary,
+    );
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(

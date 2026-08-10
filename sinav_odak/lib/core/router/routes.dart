@@ -3,6 +3,9 @@ abstract final class Routes {
   static const home = '/home';
   static const stats = '/stats';
   static const wrongs = '/wrongs';
+
+  /// Elle yanlış ekleme. Shell DIŞINDA açılır (form odaklı ekran).
+  static const wrongsAdd = '/wrongs/add';
   static const calendar = '/calendar';
   static const settings = '/settings';
 
