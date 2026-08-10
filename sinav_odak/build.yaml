@@ -1,0 +1,12 @@
+# Drift kod üretimi ayarları.
+# Not: Zaman damgalarını Drift'in DateTime dönüştürücüsüne bırakmıyoruz;
+# tüm zamanlar epoch MİLİSANİYE olarak IntColumn'da tutulur (ms hassasiyeti korunsun diye).
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          named_parameters: true
+          # MVP boyunca false: drift'in her uyarısı codegen'i durdurup
+          # asıl hata mesajını gizliyor. CI'da true yapılacak.
+          fatal_warnings: false

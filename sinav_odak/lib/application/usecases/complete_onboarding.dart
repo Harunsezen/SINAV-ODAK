@@ -1,0 +1,35 @@
+import 'package:drift/drift.dart';
+
+import '../../data/local/database.dart';
+import '../../domain/entities/enums.dart';
+
+/// Onboarding'i tamamlar ve kullanıcının ilk tercihlerini yazar.
+///
+/// **Neden use-case?** Onboarding ekranı doğrudan `UserSettingsCompanion`
+/// kullansaydı presentation katmanı Drift'e bağımlı olurdu. Bu sınıf o
+/// bağımlılığı application katmanında tutuyor.
+class CompleteOnboardingUseCase {
+  const CompleteOnboardingUseCase(this._db);
+
+  final AppDatabase _db;
+
+  Future<void> call({
+    ExamType? examType,
+    int? dailyGoalMinutes,
+    int? dailyGoalQuestions,
+  }) async {
+    await _db.settingsDao.ensure();
+    await _db.settingsDao.patchSettings(
+      UserSettingsCompanion(
+        onboardingCompleted: const Value(true),
+        examType: examType == null ? const Value.absent() : Value(examType),
+        dailyGoalMinutes: dailyGoalMinutes == null
+            ? const Value.absent()
+            : Value(dailyGoalMinutes),
+        dailyGoalQuestions: dailyGoalQuestions == null
+            ? const Value.absent()
+            : Value(dailyGoalQuestions),
+      ),
+    );
+  }
+}
