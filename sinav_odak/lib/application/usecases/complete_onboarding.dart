@@ -13,10 +13,16 @@ class CompleteOnboardingUseCase {
 
   final AppDatabase _db;
 
+  /// [personalizedAdsConsent] KVKK/GDPR açık rızası.
+  ///
+  /// Varsayılanı `false` ve **öyle kalmalı**: rıza alınmadan kişiselleştirilmiş
+  /// reklam gösterilemez. Onboarding'in rıza adımı bunu açıkça `true`
+  /// yaptığında buradan geçer; parametre verilmezse mevcut değere DOKUNULMAZ.
   Future<void> call({
     ExamType? examType,
     int? dailyGoalMinutes,
     int? dailyGoalQuestions,
+    bool? personalizedAdsConsent,
   }) async {
     await _db.settingsDao.ensure();
     await _db.settingsDao.patchSettings(
@@ -29,6 +35,9 @@ class CompleteOnboardingUseCase {
         dailyGoalQuestions: dailyGoalQuestions == null
             ? const Value.absent()
             : Value(dailyGoalQuestions),
+        personalizedAdsConsent: personalizedAdsConsent == null
+            ? const Value.absent()
+            : Value(personalizedAdsConsent),
       ),
     );
   }
