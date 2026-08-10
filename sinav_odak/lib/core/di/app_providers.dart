@@ -30,9 +30,11 @@ import '../../domain/entities/session_state.dart';
 import '../../domain/ports/session_activity_tracker.dart';
 import '../../domain/ports/session_notifier.dart';
 import '../../domain/services/schedule_resolver.dart';
+import '../../domain/services/streak_calculator.dart';
 import '../../services/background/lifecycle_tracker.dart';
 import '../../services/notifications/local_session_notifier.dart';
 import '../../services/notifications/notification_service.dart';
+import '../utils/date_key.dart';
 import '../utils/time.dart';
 import '../utils/time.dart' as clock;
 
@@ -256,6 +258,40 @@ final runStateProvider = Provider<SessionState>((ref) {
 final wrongItemsProvider =
     StreamProvider.family<List<WrongItemView>, WrongItemStatus>(
   (ref, status) => ref.watch(wrongItemDaoProvider).watchByStatus(status),
+);
+
+/// Bugünün gün anahtarı.
+///
+/// `todayKey()` doğrudan çağrılsaydı `DateTime.now()`'a bağlı kalırdık ve
+/// ana panel testleri gerçek takvim gününü okurdu. [clockProvider] üzerinden
+/// türetiliyor; testlerde sabit epoch ile deterministik.
+final todayKeyProvider = Provider<String>(
+  (ref) => dateKeyOfMs(ref.watch(clockProvider)()),
+);
+
+/// Ana panelde GÖSTERİLECEK streak.
+///
+/// DB'deki ham `currentStreak` değil: zincir koptuysa kullanıcıya 0 görünür.
+/// DB'ye dokunulmaz — streak yalnızca kayıt anında yazılır, okuma anında
+/// değil (aksi halde uygulamayı açmak veriyi değiştirirdi).
+final displayStreakProvider = Provider<int>((ref) {
+  final s = ref.watch(settingsStreamProvider).valueOrNull;
+  if (s == null) return 0;
+  return StreakCalculator.displayStreak(
+    lastStudyDate: s.lastStudyDate,
+    currentStreak: s.currentStreak,
+    today: ref.watch(todayKeyProvider),
+  );
+});
+
+/// Son kapanmış oturumlar (ana panel listesi).
+final recentSessionsProvider = StreamProvider<List<StudySession>>(
+  (ref) => ref.watch(sessionDaoProvider).watchRecent(),
+);
+
+/// Aktif hedefler.
+final activeGoalsProvider = StreamProvider<List<Goal>>(
+  (ref) => ref.watch(goalDaoProvider).watchActive(),
 );
 
 /// Bir günün özeti (tebrik ekranındaki günlük ilerleme).

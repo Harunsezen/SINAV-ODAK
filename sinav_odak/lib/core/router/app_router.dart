@@ -16,9 +16,12 @@ import '../../presentation/session_setup/subject_picker.dart';
 import '../../presentation/session_setup/topic_picker.dart';
 import '../../presentation/shell/app_shell.dart';
 import '../../presentation/shell/db_health_page.dart';
+import '../../presentation/ads/banner_ad_slot.dart';
+import '../../presentation/settings/settings_screen.dart';
 import '../../presentation/shell/placeholder_page.dart';
 import '../../presentation/wrongs/add_wrong_screen.dart';
 import '../../presentation/wrongs/wrong_list_screen.dart';
+import '../../domain/entities/ad_placement.dart';
 import '../di/app_providers.dart';
 import 'routes.dart';
 
@@ -37,10 +40,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 @visibleForTesting
 Widget settingsPageFor({required bool debug}) => debug
     ? const DbHealthPage()
-    : const PlaceholderPage(
-        title: 'Ayarlar',
-        note: 'Adım 7: tema, hedefler, rıza tercihi.',
-      );
+    : const SettingsScreen();
 
 /// Router artık provider'a bağlı: onboarding ve aktif oturum yönlendirmesi
 /// için DB durumunu okuması gerekiyor.
@@ -173,9 +173,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.stats,
-                builder: (_, __) => const PlaceholderPage(
+                builder: (_, __) => const _BannerPlaceholder(
                   title: 'İstatistik',
-                  note: 'Adım 7: günlük/haftalık/aylık grafikler.',
+                  note: 'Sonraki tur: günlük/haftalık/aylık grafikler.',
+                  placement: AdPlacement.statsBanner,
                 ),
               ),
             ],
@@ -202,9 +203,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.calendar,
-                builder: (_, __) => const PlaceholderPage(
+                builder: (_, __) => const _BannerPlaceholder(
                   title: 'Takvim',
-                  note: 'Adım 7: ay görünümü + gün detayı.',
+                  note: 'Sonraki tur: ay görünümü + gün detayı.',
+                  placement: AdPlacement.calendarBanner,
                 ),
               ),
             ],
@@ -222,3 +224,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Henüz yazılmamış sekmeler için yer tutucu + banner yuvası.
+///
+/// Banner burada da politika kapılı: rıza yoksa hiç yer ayrılmaz. Ekranların
+/// kendisi sonraki turda gelecek, ama reklam yerleşimi şimdiden test
+/// edilebilir durumda.
+class _BannerPlaceholder extends StatelessWidget {
+  const _BannerPlaceholder({
+    required this.title,
+    required this.note,
+    required this.placement,
+  });
+
+  final String title;
+  final String note;
+  final AdPlacement placement;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Column(
+        children: [
+          Expanded(child: PlaceholderPage(title: title, note: note)),
+          BannerAdSlot(placement: placement),
+        ],
+      ),
+    );
+  }
+}

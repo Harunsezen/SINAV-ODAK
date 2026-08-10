@@ -1,3 +1,9 @@
+import 'package:drift/drift.dart';
+
+import '../../core/utils/date_key.dart';
+import '../../domain/entities/enums.dart';
+import '../../domain/services/goal_progress_calculator.dart';
+import '../../domain/services/streak_calculator.dart';
 import '../local/database.dart';
 
 /// Oturum yazma işlemlerinin TEK giriş noktası.
@@ -46,7 +52,84 @@ class SessionRepository {
       if (previousDateKey != null && previousDateKey != dateKey) {
         await _db.statsDao.recomputeDay(previousDateKey);
       }
+
+      // FAZ 5: streak ve hedef ilerlemesi de KAYDET yolundan geçiyor.
+      // Ayrı bir servise bırakılsaydı, oturumu yazan ikinci bir kod yolu
+      // açıldığında sessizce atlanırdı — `daily_stats`'ın başına gelen buydu.
+      await recomputeStreak(dateKey);
+      await recomputeGoals(dateKey);
     });
+  }
+
+  /// Ardışık çalışma günü sayacını günceller.
+  ///
+  /// Şemadaki `currentStreak` / `longestStreak` / `lastStudyDate` kolonları
+  /// Adım 1'den beri duruyordu ama **yazan kod yoktu**; üçü de hep 0/null
+  /// kalıyordu. Hesap saf (`StreakCalculator`), burada yalnızca okuma-yazma
+  /// var.
+  Future<void> recomputeStreak(String dateKey) async {
+    final s = await _db.settingsDao.ensure();
+    final next = StreakCalculator.onStudyDay(
+      studyDate: dateKey,
+      lastStudyDate: s.lastStudyDate,
+      currentStreak: s.currentStreak,
+      longestStreak: s.longestStreak,
+    );
+    await _db.settingsDao.patchSettings(
+      UserSettingsCompanion(
+        currentStreak: Value(next.currentStreak),
+        longestStreak: Value(next.longestStreak),
+        lastStudyDate: Value(next.lastStudyDate),
+      ),
+    );
+  }
+
+  /// Aktif hedeflerin `currentValue` alanını günceller.
+  ///
+  /// Kolon şemada vardı ama hiçbir kod yazmıyordu: kullanıcı hedef
+  /// oluşturuyor, ilerleme sonsuza kadar 0 kalıyordu. Hedefe ulaşıldıysa
+  /// durum `completed`'a çekilir.
+  Future<void> recomputeGoals(String dateKey) async {
+    final active = await (_db.select(_db.goals)
+          ..where((t) => t.status.equalsValue(GoalStatus.active)))
+        .get();
+    if (active.isEmpty) return;
+
+    final day = dateKeyToLocal(dateKey);
+    final weekStart = startOfWeek(day);
+    final settings = await _db.settingsDao.ensure();
+
+    final dayStats = await _db.statsDao.summaryFor(day, day);
+    final weekStats = await _db.statsDao.summaryFor(weekStart, day);
+    final breakdown = await _db.statsDao.subjectBreakdown(day, day);
+
+    for (final g in active) {
+      // Ders bazlı hedefte yalnızca o dersin süresi sayılır.
+      var subjectStudyS = 0;
+      if (g.subjectId != null) {
+        for (final row in breakdown) {
+          if (row.subjectId == g.subjectId) subjectStudyS = row.studyS;
+        }
+      }
+
+      final value = GoalProgressCalculator.valueFor(
+        g.type,
+        GoalMetrics(
+          dayStudyS: dayStats.totalStudyS,
+          dayQuestions: dayStats.questionCount,
+          dayNet: dayStats.net,
+          weekStudyS: weekStats.totalStudyS,
+          weekQuestions: weekStats.questionCount,
+          subjectStudyS: subjectStudyS,
+          currentStreak: settings.currentStreak,
+        ),
+      );
+
+      await _db.goalDao.setProgress(g.id, value);
+      if (GoalProgressCalculator.isReached(value, g.targetValue)) {
+        await _db.goalDao.setStatus(g.id, GoalStatus.completed);
+      }
+    }
   }
 
   Future<void> delete(String sessionId) async {

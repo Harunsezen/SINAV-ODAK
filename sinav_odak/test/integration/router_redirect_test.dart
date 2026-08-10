@@ -10,7 +10,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/shell/db_health_page.dart';
-import 'package:sinav_odak/presentation/shell/placeholder_page.dart';
+import 'package:sinav_odak/presentation/settings/settings_screen.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -196,24 +196,46 @@ void main() {
     });
   });
 
-  group('KARAR D4 — db_health yalnızca debug', () {
+  group('KARAR D4/K3 — db_health yalnızca debug', () {
     // `DbHealthPage` BİLİNÇLİ olarak render EDİLMİYOR: açtığı Drift akışları
     // widget ağacı yıkıldıktan sonra da askıda timer bırakıyor ve test
     // çerçevesi bunu hata sayıyor. Karar zaten hangi ekranın SEÇİLDİĞİdir;
     // doğrulanması gereken de bu.
-    test('debug geliştirme aracını, release yer tutucuyu seçiyor', () {
+    //
+    // FAZ 5'te DEĞİŞTİ: release dalı artık `PlaceholderPage` değil, gerçek
+    // `SettingsScreen`. K3'ün "SettingsScreen gelince placeholder kalkar"
+    // maddesi bu turda uygulandı.
+    test('debug geliştirme aracını, release GERÇEK ayarları seçiyor', () {
       expect(settingsPageFor(debug: true), isA<DbHealthPage>());
-      expect(settingsPageFor(debug: false), isA<PlaceholderPage>());
+      expect(settingsPageFor(debug: false), isA<SettingsScreen>());
     });
 
-    testWidgets('release dalı Ayarlar yer tutucusunu gösteriyor',
+    testWidgets('release dalı Ayarlar ekranını gösteriyor, db_health\'i DEĞİL',
         (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          clockProvider.overrideWithValue(() => t0),
+          sessionNotifierProvider
+              .overrideWithValue(FakeNotifier() as SessionNotifier),
+          activityTrackerProvider
+              .overrideWithValue(FakeTracker() as SessionActivityTracker),
+          uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(settingsStreamProvider.future);
+
       await tester.pumpWidget(
-        MaterialApp(home: settingsPageFor(debug: false)),
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(home: settingsPageFor(debug: false)),
+        ),
       );
       await tester.pumpAndSettle();
 
       expect(find.text('Ayarlar'), findsOneWidget);
+      expect(find.byKey(const Key('settings-support')), findsOneWidget);
       expect(
         find.text('Veritabanı Durumu'),
         findsNothing,
