@@ -100,7 +100,10 @@ void main() {
 
     test('atlanmış mola uzatılamaz', () {
       final skipped = ScheduleModifier.skipBreak(
-          schedule(), breakIndex, breakStart + 60000);
+        schedule(),
+        breakIndex,
+        breakStart + 60000,
+      );
       expect(
         () => ScheduleModifier.extendBreak(skipped, breakIndex, 300),
         throwsValidation,
@@ -188,7 +191,10 @@ void main() {
     test('mola henüz başlamadı (now < start)', () {
       expect(
         () => ScheduleModifier.skipBreak(
-            schedule(), breakIndex, breakStart - 1000),
+          schedule(),
+          breakIndex,
+          breakStart - 1000,
+        ),
         throwsValidation,
       );
     });
@@ -224,10 +230,16 @@ void main() {
 
     test('atlanmış mola tekrar atlanamaz', () {
       final skipped = ScheduleModifier.skipBreak(
-          schedule(), breakIndex, breakStart + 60000);
+        schedule(),
+        breakIndex,
+        breakStart + 60000,
+      );
       expect(
         () => ScheduleModifier.skipBreak(
-            skipped, breakIndex, breakStart + 120000),
+          skipped,
+          breakIndex,
+          breakStart + 120000,
+        ),
         throwsValidation,
       );
     });

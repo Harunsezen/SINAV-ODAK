@@ -117,4 +117,44 @@ class AppDatabase extends _$AppDatabase {
   // NOT: `pruneAdEvents` buradan `AdEventDao.pruneOlderThan(nowMs)`'e taşındı.
   // Veritabanı sınıfı tek bir tablonun bakım işini üstlenmemeli; ayrıca
   // burada `DateTime.now()` çağrıldığı için davranış test EDİLEMİYORDU.
+
+  /// **TÜM kullanıcı verisini siler** ve fabrika ayarlarına döner.
+  ///
+  /// Ayarlar → "Verileri sıfırla" akışının veri katmanı ucu. Arayüz bunu
+  /// **çift onay** almadan çağırmaz (bkz. `settings_screen.dart`).
+  ///
+  /// Silme sırası foreign key zincirini izler: çocuk tablolar önce. `PRAGMA
+  /// foreign_keys = ON` açık olduğu için ters sırada silmek
+  /// `SQLITE_CONSTRAINT_FOREIGNKEY` fırlatırdı.
+  ///
+  /// Katalog (ders/konu/tür) SİLİNİP yeniden seed'leniyor: kullanıcının
+  /// eklediği dersler de gitmeli, aksi halde "sıfırla" yarım bir işlem
+  /// olurdu. Ayar satırı da yeniden kuruluyor — `onboardingCompleted`
+  /// sıfırlandığı için uygulama onboarding'den başlar.
+  ///
+  /// Tek transaction: yarıda kalırsa veritabanı tutarsız kalır (örn.
+  /// oturumlar silinmiş ama günlük özetler duruyor).
+  Future<void> resetAllData() async {
+    await transaction(() async {
+      await delete(sessionBlocks).go();
+      await delete(wrongItems).go();
+      await delete(studySessions).go();
+      await delete(dailyStats).go();
+      await delete(goals).go();
+      await delete(achievements).go();
+      await delete(adEvents).go();
+      await delete(appStateEntries).go();
+
+      await delete(topics).go();
+      await delete(subjects).go();
+      await delete(activityTypes).go();
+
+      await delete(userSettings).go();
+    });
+
+    // Seed ve ayar satırı transaction DIŞINDA: ikisi de kendi içinde
+    // idempotent ve silme işleminin başarısını beklemeleri gerekiyor.
+    await SeedData.populate(this);
+    await settingsDao.ensure();
+  }
 }

@@ -75,8 +75,11 @@ void main() {
     await db.delete(db.userSettings).go();
 
     final first = await db.settingsDao.watch().first;
-    expect(first, isNull,
-        reason: 'watchSingleOrNull null dönmeli, fırlatmamalı');
+    expect(
+      first,
+      isNull,
+      reason: 'watchSingleOrNull null dönmeli, fırlatmamalı',
+    );
 
     final restored = await db.settingsDao.ensure();
     expect(restored.id, 'me');

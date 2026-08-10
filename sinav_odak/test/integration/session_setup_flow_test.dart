@@ -163,8 +163,11 @@ void main() {
 
   testWidgets('kurulum ekranlarında alt navigasyon GİZLİ', (tester) async {
     await pumpApp(tester);
-    expect(find.byType(NavigationBar), findsOneWidget,
-        reason: 'ana panelde var');
+    expect(
+      find.byType(NavigationBar),
+      findsOneWidget,
+      reason: 'ana panelde var',
+    );
 
     await tester.tap(find.byKey(const Key('home-start')));
     await tester.pumpAndSettle();

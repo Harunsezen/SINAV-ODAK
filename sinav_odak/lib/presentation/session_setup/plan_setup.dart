@@ -280,7 +280,9 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
               items: [
                 for (var h = 0; h < 24; h++)
                   DropdownMenuItem(
-                      value: h, child: Text(h.toString().padLeft(2, '0'))),
+                    value: h,
+                    child: Text(h.toString().padLeft(2, '0')),
+                  ),
               ],
               onChanged: (v) => setState(() => _endHour = v),
             ),

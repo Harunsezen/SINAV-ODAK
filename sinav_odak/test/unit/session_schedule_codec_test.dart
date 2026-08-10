@@ -52,7 +52,9 @@ void main() {
         skipped: true,
       );
       expect(
-          b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
+        b.validate,
+        codecReason(ScheduleCodecReason.invalidStudyBlockFlags),
+      );
     });
 
     test('çalışma bloğunda extendedS kabul edilmiyor', () {
@@ -65,7 +67,9 @@ void main() {
         extendedS: 300,
       );
       expect(
-          b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
+        b.validate,
+        codecReason(ScheduleCodecReason.invalidStudyBlockFlags),
+      );
     });
 
     test('mola bloğunda skipped ve extendedS serbest', () {

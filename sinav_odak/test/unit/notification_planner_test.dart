@@ -102,7 +102,9 @@ void main() {
   group('bildirim kimlikleri', () {
     test('aynı oturum için deterministik', () {
       expect(
-          NotificationPlanner.baseIdOf(sid), NotificationPlanner.baseIdOf(sid));
+        NotificationPlanner.baseIdOf(sid),
+        NotificationPlanner.baseIdOf(sid),
+      );
     });
 
     test('farklı oturumlar farklı taban alıyor', () {

@@ -165,8 +165,10 @@ void main() {
           actualDurationS: actualDurationS,
         );
 
-    test('katsayı 0',
-        () => expect(() => call(coefficient: 0), throwsValidation));
+    test(
+      'katsayı 0',
+      () => expect(() => call(coefficient: 0), throwsValidation),
+    );
     test(
       'katsayı negatif',
       () => expect(() => call(coefficient: -4), throwsValidation),
@@ -203,10 +205,11 @@ void main() {
     test('doğru+yanlış+boş soru sayısını aşamaz', () {
       expect(
         () => call(
-            questionCount: 50,
-            correctCount: 40,
-            wrongCount: 10,
-            emptyCount: 10),
+          questionCount: 50,
+          correctCount: 40,
+          wrongCount: 10,
+          emptyCount: 10,
+        ),
         throwsValidation,
       );
     });

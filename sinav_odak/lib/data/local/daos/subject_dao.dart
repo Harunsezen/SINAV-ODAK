@@ -12,10 +12,21 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
 
   // --- Dersler ---
 
-  Stream<List<Subject>> watchSubjects(ExamType exam) {
+  /// Bir sınav türünün dersleri.
+  ///
+  /// [includeArchived] yalnızca KATALOG YÖNETİMİ ekranı için `true`:
+  /// oturum kurulumunda arşivlenmiş ders görünmemeli, ama yönetim
+  /// ekranında arşivden çıkarabilmek için listelenmesi gerekiyor.
+  Stream<List<Subject>> watchSubjects(
+    ExamType exam, {
+    bool includeArchived = false,
+  }) {
     return (select(subjects)
           ..where(
-              (t) => t.examType.equalsValue(exam) & t.isArchived.equals(false))
+            (t) => includeArchived
+                ? t.examType.equalsValue(exam)
+                : t.examType.equalsValue(exam) & t.isArchived.equals(false),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
         .watch();
   }
@@ -72,10 +83,15 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
   Future<Topic?> findTopic(String id) =>
       (select(topics)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Stream<List<Topic>> watchTopics(String subjectId) {
+  Stream<List<Topic>> watchTopics(
+    String subjectId, {
+    bool includeArchived = false,
+  }) {
     return (select(topics)
           ..where(
-            (t) => t.subjectId.equals(subjectId) & t.isArchived.equals(false),
+            (t) => includeArchived
+                ? t.subjectId.equals(subjectId)
+                : t.subjectId.equals(subjectId) & t.isArchived.equals(false),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
         .watch();
@@ -124,9 +140,15 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
 
   // --- Çalışma türleri ---
 
-  Stream<List<ActivityType>> watchActivityTypes() {
+  Stream<List<ActivityType>> watchActivityTypes({
+    bool includeArchived = false,
+  }) {
     return (select(activityTypes)
-          ..where((t) => t.isArchived.equals(false))
+          ..where(
+            (t) => includeArchived
+                ? const Constant(true)
+                : t.isArchived.equals(false),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
         .watch();
   }
@@ -149,5 +171,23 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
         sortOrder: Value(order),
       ),
     );
+  }
+
+  /// Konu adı ve hedef soru sayısı düzenleme (KATALOG YÖNETİMİ).
+  Future<void> renameTopic(String id, String name) {
+    return (update(topics)..where((t) => t.id.equals(id)))
+        .write(TopicsCompanion(name: Value(name)));
+  }
+
+  Future<void> renameActivityType(String id, String name) {
+    return (update(activityTypes)..where((t) => t.id.equals(id)))
+        .write(ActivityTypesCompanion(name: Value(name)));
+  }
+
+  /// Çalışma türü de SİLİNMEZ, arşivlenir (G8 politikasının aynısı):
+  /// türe bağlı geçmiş oturumlar var ve `onDelete: restrict` tanımlı.
+  Future<void> setActivityTypeArchived(String id, {required bool archived}) {
+    return (update(activityTypes)..where((t) => t.id.equals(id)))
+        .write(ActivityTypesCompanion(isArchived: Value(archived)));
   }
 }

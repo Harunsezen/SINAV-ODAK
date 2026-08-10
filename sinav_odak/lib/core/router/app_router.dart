@@ -17,7 +17,9 @@ import '../../presentation/session_setup/topic_picker.dart';
 import '../../presentation/shell/app_shell.dart';
 import '../../presentation/shell/db_health_page.dart';
 import '../../presentation/ads/banner_ad_slot.dart';
+import '../../presentation/settings/catalog_screen.dart';
 import '../../presentation/settings/settings_screen.dart';
+import '../../presentation/stats/stats_screen.dart';
 import '../../presentation/shell/placeholder_page.dart';
 import '../../presentation/wrongs/add_wrong_screen.dart';
 import '../../presentation/wrongs/wrong_list_screen.dart';
@@ -151,6 +153,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
+      // --- Katalog yönetimi (Ayarlar > Ders ve konular) ---
+      //
+      // Shell DIŞINDA: düzenleme sırasında alt navigasyon çubuğu
+      // kullanıcıyı yarım kalmış bir diyalogla başka sekmeye götürmesin.
+      GoRoute(
+        path: Routes.manage,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const CatalogScreen(),
+      ),
+
       // --- 5 sekmeli shell ---
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: _rootNavigatorKey,
@@ -172,11 +184,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.stats,
-                builder: (_, __) => const _BannerPlaceholder(
-                  title: 'İstatistik',
-                  note: 'Sonraki tur: günlük/haftalık/aylık grafikler.',
-                  placement: AdPlacement.statsBanner,
-                ),
+                builder: (_, __) => const StatsScreen(),
               ),
             ],
           ),

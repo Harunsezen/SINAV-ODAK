@@ -39,6 +39,11 @@ import '../../services/notifications/notification_service.dart';
 import '../utils/date_key.dart';
 import '../utils/time.dart';
 import '../utils/time.dart' as clock;
+import '../../application/settings_controller.dart';
+import '../../application/usecases/export_sessions.dart';
+import '../../application/usecases/recompute_nets.dart';
+import '../../domain/ports/share_gateway.dart';
+import '../../services/export/file_share_gateway.dart';
 
 /// Uygulama boyunca TEK veritabanı örneği.
 /// `main()` içinde `overrideWithValue` ile açılmış örnek verilir; testlerde
@@ -49,7 +54,8 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 /// Oturum yazma orkestrasyonu (oturum + yanlış defteri + daily_stats).
 final sessionRepositoryProvider = Provider<SessionRepository>(
-    (ref) => SessionRepository(ref.watch(databaseProvider)));
+  (ref) => SessionRepository(ref.watch(databaseProvider)),
+);
 
 /// Açılışta hesaplanan kurtarma sonucu. main() içinde override edilir.
 final pendingRecoveryProvider = Provider<RecoveryResult>(
@@ -348,4 +354,109 @@ final topicsProvider = StreamProvider.family<List<Topic>, String>(
 /// Çalışma türleri (Konu Anlatımı, Soru Çözümü, ...).
 final activityTypesProvider = StreamProvider<List<ActivityType>>(
   (ref) => ref.watch(subjectDaoProvider).watchActivityTypes(),
+);
+
+// ---------------------------------------------------------------------------
+// FAZ 7A — Ayarlar ve istatistik
+// ---------------------------------------------------------------------------
+
+/// Net katsayısı değiştiğinde geçmiş netleri yeniden hesaplar.
+final recomputeNetsProvider = Provider<RecomputeNetsUseCase>(
+  (ref) => RecomputeNetsUseCase(ref.watch(databaseProvider)),
+);
+
+/// Ayar yazma işlemlerinin tek kapısı.
+///
+/// Ekranlar `UserSettingsCompanion` kurmak yerine bunu çağırıyor; Drift'in
+/// üretilmiş tipleri `presentation` katmanına sızmıyor (G4).
+final settingsControllerProvider = Provider<SettingsController>(
+  (ref) => SettingsController(ref.watch(databaseProvider)),
+);
+
+/// Oturumları CSV olarak paylaşır.
+final exportSessionsProvider = Provider<ExportSessionsUseCase>(
+  (ref) => ExportSessionsUseCase(
+    ref.watch(databaseProvider),
+    ref.watch(shareGatewayProvider),
+  ),
+);
+
+/// Dosya paylaşımı (CSV dışa aktarma).
+///
+/// **Varsayılan Noop**: `share_plus` ve `path_provider` platform kanalı
+/// istiyor, testte çağrılırsa akış hiç tamamlanmıyor. `main()` gerçek
+/// cihazda [FileShareGateway] ile override eder.
+final shareGatewayProvider =
+    Provider<ShareGateway>((ref) => const NoopShareGateway());
+
+/// İstatistik ekranının seçili aralığı.
+enum StatsRange { week, month }
+
+final statsRangeProvider = StateProvider<StatsRange>((_) => StatsRange.week);
+
+/// Seçili aralığın (başlangıç, bitiş) sınırları.
+///
+/// Saat [clockProvider]'dan geliyor: `DateTime.now()` doğrudan çağrılsaydı
+/// istatistik ekranı test edilemezdi.
+final statsBoundsProvider = Provider<({DateTime from, DateTime to})>((ref) {
+  final now = DateTime.fromMillisecondsSinceEpoch(ref.watch(clockProvider)());
+  final today = DateTime(now.year, now.month, now.day);
+  return switch (ref.watch(statsRangeProvider)) {
+    StatsRange.week => (from: startOfWeek(today), to: today),
+    StatsRange.month => (from: startOfMonth(today), to: today),
+  };
+});
+
+/// Seçili aralığın günlük satırları — grafiği besler.
+final statsDailyProvider = StreamProvider<List<DailyStat>>((ref) {
+  final b = ref.watch(statsBoundsProvider);
+  return ref.watch(statsDaoProvider).watchRange(b.from, b.to);
+});
+
+/// Seçili aralığın toplamı.
+///
+/// `statsDailyProvider`'ı izliyor: yeni bir oturum kaydedilince günlük
+/// satırlar değişiyor ve özet de tazelenmeli. Yalnızca sınırları izleseydi
+/// kullanıcı oturum bitirdikten sonra özet kartları eski değerde kalırdı.
+final statsSummaryProvider = FutureProvider<StatsSummary>((ref) async {
+  ref.watch(statsDailyProvider);
+  final b = ref.watch(statsBoundsProvider);
+  return ref.watch(statsDaoProvider).summaryFor(b.from, b.to);
+});
+
+/// Ders kırılımı — dağılım çubuklarını besler.
+final statsBreakdownProvider =
+    FutureProvider<List<SubjectBreakdownRow>>((ref) async {
+  ref.watch(statsDailyProvider);
+  final b = ref.watch(statsBoundsProvider);
+  return ref.watch(statsDaoProvider).subjectBreakdown(b.from, b.to);
+});
+
+/// En çok yanlış yapılan konular.
+final statsWeakestProvider = FutureProvider<
+        List<({String topicName, String subjectName, int wrongCount})>>(
+    (ref) async {
+  ref.watch(statsDailyProvider);
+  final b = ref.watch(statsBoundsProvider);
+  return ref.watch(statsDaoProvider).weakestTopics(b.from, b.to);
+});
+
+/// Bir dersin konuları — arşivlenmişler DAHİL (katalog yönetimi için).
+final allTopicsProvider = StreamProvider.family<List<Topic>, String>(
+  (ref, subjectId) => ref
+      .watch(subjectDaoProvider)
+      .watchTopics(subjectId, includeArchived: true),
+);
+
+/// Dersler — arşivlenmişler DAHİL (katalog yönetimi için).
+final allSubjectsProvider = StreamProvider<List<Subject>>(
+  (ref) => ref
+      .watch(subjectDaoProvider)
+      .watchSubjects(ref.watch(examTypeProvider), includeArchived: true),
+);
+
+/// Çalışma türleri — arşivlenmişler DAHİL.
+final allActivityTypesProvider = StreamProvider<List<ActivityType>>(
+  (ref) =>
+      ref.watch(subjectDaoProvider).watchActivityTypes(includeArchived: true),
 );

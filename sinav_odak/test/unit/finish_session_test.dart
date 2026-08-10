@@ -69,7 +69,11 @@ void main() {
     final db2 = newDb();
     await seedRunningSession(db2, id: 's2', sch: schedule());
     await FinishSessionUseCase(
-        db2, newRepo(db2), FakeNotifier(), FakeTracker())(
+      db2,
+      newRepo(db2),
+      FakeNotifier(),
+      FakeTracker(),
+    )(
       sessionId: 's2',
       nowMs: lastEnd,
       early: false,
@@ -159,7 +163,11 @@ void main() {
     final db2 = newDb();
     await seedRunningSession(db2, id: 's2', sch: schedule());
     await FinishSessionUseCase(
-        db2, newRepo(db2), FakeNotifier(), FakeTracker())(
+      db2,
+      newRepo(db2),
+      FakeNotifier(),
+      FakeTracker(),
+    )(
       sessionId: 's2',
       nowMs: lastEnd,
       early: false,

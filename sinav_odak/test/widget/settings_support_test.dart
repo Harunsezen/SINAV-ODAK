@@ -171,6 +171,8 @@ void main() {
     await tapSupport(tester);
 
     expect(
-        find.textContaining('Şu an gösterilecek reklam yok'), findsOneWidget);
+      find.textContaining('Şu an gösterilecek reklam yok'),
+      findsOneWidget,
+    );
   });
 }

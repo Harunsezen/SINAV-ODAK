@@ -125,10 +125,14 @@ class WrongItemDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<WrongItemView>> watchByStatus(WrongItemStatus status) {
     final q = select(wrongItems).join([
-      innerJoin(attachedDatabase.subjects,
-          attachedDatabase.subjects.id.equalsExp(wrongItems.subjectId)),
-      leftOuterJoin(attachedDatabase.topics,
-          attachedDatabase.topics.id.equalsExp(wrongItems.topicId)),
+      innerJoin(
+        attachedDatabase.subjects,
+        attachedDatabase.subjects.id.equalsExp(wrongItems.subjectId),
+      ),
+      leftOuterJoin(
+        attachedDatabase.topics,
+        attachedDatabase.topics.id.equalsExp(wrongItems.topicId),
+      ),
     ])
       ..where(wrongItems.status.equalsValue(status))
       ..orderBy([OrderingTerm.desc(wrongItems.createdAt)]);

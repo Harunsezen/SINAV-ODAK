@@ -36,7 +36,9 @@ void main() {
         initialLocation: '/run/summary',
         routes: [
           GoRoute(
-              path: '/run/summary', builder: (_, __) => const SummaryForm()),
+            path: '/run/summary',
+            builder: (_, __) => const SummaryForm(),
+          ),
           GoRoute(
             path: '/run/done',
             builder: (_, __) => const Scaffold(body: Text('DONE EKRANI')),

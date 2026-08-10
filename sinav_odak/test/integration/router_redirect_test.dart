@@ -230,6 +230,16 @@ void main() {
       addTearDown(container.dispose);
       await container.read(settingsStreamProvider.future);
 
+      // FAZ 7A'da Ayarlar ekranı uzadı (görünüm/çalışma/bildirim/katalog
+      // bölümleri eklendi) ve "Destek ol" kartı varsayılan 800x600 test
+      // yüzeyinin ALTINDA kaldı. ListView tembel kurduğu için kart hiç
+      // oluşturulmuyor ve `find.byKey` boş dönüyordu — iddia değil,
+      // görünürlük koşulu bozuktu.
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,

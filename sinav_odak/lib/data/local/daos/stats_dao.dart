@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/utils/date_key.dart';
 import '../../../domain/entities/enums.dart';
+import '../../../domain/services/csv_builder.dart';
 import '../database.dart';
 
 part 'stats_dao.g.dart';
@@ -277,7 +278,7 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
       readsFrom: {
         studySessions,
         attachedDatabase.topics,
-        attachedDatabase.subjects
+        attachedDatabase.subjects,
       },
     ).get();
 
@@ -287,6 +288,67 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
             topicName: r.read<String>('topic_name'),
             subjectName: r.read<String>('subject_name'),
             wrongCount: r.read<int?>('wrongs') ?? 0,
+          ),
+        )
+        .toList();
+  }
+
+  /// CSV dışa aktarma için oturumları **domain tipine** çevirerek döner.
+  ///
+  /// Ders/konu/tür adları JOIN ile geliyor: dışa aktarılan dosyada kullanıcı
+  /// kimlik (`subject_id`) değil isim görmeli. Arşivlenmiş ders/konu da
+  /// gelmeli — geçmiş oturum arşivleme yüzünden dosyadan düşemez.
+  Future<List<SessionExportRow>> exportRows(DateTime from, DateTime to) async {
+    final rows = await customSelect(
+      '''
+      SELECT ss.date_key, ss.started_at, ss.planned_duration_s,
+             ss.actual_duration_s, ss.total_break_s, ss.question_count,
+             ss.correct_count, ss.wrong_count, ss.empty_count, ss.net,
+             ss.focus_score, ss.mood, ss.note, ss.status,
+             s.name AS subject_name,
+             t.name AS topic_name,
+             a.name AS activity_name
+      FROM study_sessions ss
+      JOIN subjects s       ON s.id = ss.subject_id
+      JOIN activity_types a ON a.id = ss.activity_type_id
+      LEFT JOIN topics t    ON t.id = ss.topic_id
+      WHERE ss.date_key >= ? AND ss.date_key <= ? AND ss.status != ?
+      ORDER BY ss.started_at ASC
+      ''',
+      variables: [
+        Variable<String>(dateKeyOf(from)),
+        Variable<String>(dateKeyOf(to)),
+        Variable<String>(SessionStatus.running.name),
+      ],
+      readsFrom: {
+        studySessions,
+        attachedDatabase.subjects,
+        attachedDatabase.topics,
+        attachedDatabase.activityTypes,
+      },
+    ).get();
+
+    return rows
+        .map(
+          (r) => SessionExportRow(
+            dateKey: r.read<String>('date_key'),
+            startedAt:
+                DateTime.fromMillisecondsSinceEpoch(r.read<int>('started_at')),
+            subjectName: r.read<String>('subject_name'),
+            topicName: r.read<String?>('topic_name'),
+            activityTypeName: r.read<String>('activity_name'),
+            plannedDurationS: r.read<int>('planned_duration_s'),
+            actualDurationS: r.read<int>('actual_duration_s'),
+            totalBreakS: r.read<int>('total_break_s'),
+            questionCount: r.read<int>('question_count'),
+            correctCount: r.read<int>('correct_count'),
+            wrongCount: r.read<int>('wrong_count'),
+            emptyCount: r.read<int>('empty_count'),
+            net: r.read<double>('net'),
+            focusScore: r.read<int?>('focus_score'),
+            mood: r.read<int?>('mood'),
+            note: r.read<String?>('note'),
+            status: r.read<String>('status'),
           ),
         )
         .toList();

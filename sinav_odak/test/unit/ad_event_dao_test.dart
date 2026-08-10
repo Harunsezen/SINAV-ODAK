@@ -50,15 +50,20 @@ void main() {
 
   test('30 GÜNDEN eski kayıtlar siliniyor, yeniler kalıyor', () async {
     await db.adEventDao.logShown(
-        id: 'eski',
-        placement: AdPlacement.homeBanner,
-        shownAtMs: t0 - 31 * day);
+      id: 'eski',
+      placement: AdPlacement.homeBanner,
+      shownAtMs: t0 - 31 * day,
+    );
     await db.adEventDao.logShown(
-        id: 'sinir',
-        placement: AdPlacement.homeBanner,
-        shownAtMs: t0 - 30 * day);
+      id: 'sinir',
+      placement: AdPlacement.homeBanner,
+      shownAtMs: t0 - 30 * day,
+    );
     await db.adEventDao.logShown(
-        id: 'yeni', placement: AdPlacement.homeBanner, shownAtMs: t0 - day);
+      id: 'yeni',
+      placement: AdPlacement.homeBanner,
+      shownAtMs: t0 - day,
+    );
 
     final deleted = await db.adEventDao.pruneOlderThan(t0);
 

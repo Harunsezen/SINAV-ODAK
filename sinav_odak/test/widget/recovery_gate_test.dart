@@ -110,7 +110,9 @@ void main() {
     );
 
     expect(
-        find.byKey(const Key('recovery-interrupted-dialog')), findsOneWidget);
+      find.byKey(const Key('recovery-interrupted-dialog')),
+      findsOneWidget,
+    );
     expect(find.text('Oturum yarıda kesildi'), findsOneWidget);
     expect(find.textContaining('48dk'), findsOneWidget);
   });

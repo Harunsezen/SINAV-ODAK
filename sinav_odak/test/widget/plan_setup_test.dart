@@ -69,8 +69,12 @@ void main() {
     return container;
   }
 
-  Future<void> tapStepper(WidgetTester tester, Key key,
-      {required bool plus, int times = 1}) async {
+  Future<void> tapStepper(
+    WidgetTester tester,
+    Key key, {
+    required bool plus,
+    int times = 1,
+  }) async {
     for (var i = 0; i < times; i++) {
       await tester.tap(
         find.descendant(

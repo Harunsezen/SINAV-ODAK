@@ -203,8 +203,11 @@ void main() {
     expect(visible.any((t) => t.id == topicId), isFalse);
 
     final session = await db.sessionDao.findById('s1');
-    expect(session!.topicId, topicId,
-        reason: 'geçmiş oturum konusunu korumalı');
+    expect(
+      session!.topicId,
+      topicId,
+      reason: 'geçmiş oturum konusunu korumalı',
+    );
   });
 
   // --- P0-03: kurtarma ---
@@ -253,8 +256,11 @@ void main() {
     expect(s.actualDurationS, 3600, reason: 'blok tamamen geçmiş');
 
     final stat = await db.statsDao.watchDay(day).first;
-    expect(stat, isNotNull,
-        reason: 'kurtarma sonrası daily_stats güncellenmeli');
+    expect(
+      stat,
+      isNotNull,
+      reason: 'kurtarma sonrası daily_stats güncellenmeli',
+    );
   });
 
   test('kurtarılan oturumun focusScore\'u yazılıyor (K3)', () async {
@@ -306,7 +312,10 @@ void main() {
 
   test('kurtarmada dışarıda geçen süre skoru düşürüyor (R4)', () async {
     await insertSession(
-        id: 's8', status: SessionStatus.running, plannedS: 3600);
+      id: 's8',
+      status: SessionStatus.running,
+      plannedS: 3600,
+    );
     await db.sessionDao.replaceBlocks('s8', [
       SessionBlocksCompanion.insert(
         id: 'b1',
