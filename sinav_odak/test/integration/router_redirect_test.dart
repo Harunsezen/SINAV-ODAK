@@ -8,6 +8,7 @@ import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
+import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/shell/db_health_page.dart';
 import 'package:sinav_odak/presentation/shell/placeholder_page.dart';
 
@@ -31,7 +32,7 @@ void main() {
   /// Gerçek `appRouterProvider` ile uygulamayı kurar ve nihai yolu döner.
   ///
   /// [prepare] router kurulmadan ÖNCE çalışır: yönlendirme kararına giren
-  /// provider'lar (örn. `savedSessionProvider`) burada doldurulur.
+  /// provider'lar (örn. `savedResultProvider`) burada doldurulur.
   Future<String> locationAfter(
     WidgetTester tester, {
     String? goTo,
@@ -168,7 +169,7 @@ void main() {
     });
 
     // Tebrik ekranı (S11) aktif oturum OLMADAN gösterilir: kayıt tamamlandığı
-    // anda `running` satır kalmaz. Muafiyet `savedSessionProvider`'a bağlı,
+    // anda `running` satır kalmaz. Muafiyet `savedResultProvider`'a bağlı,
     // yolun kendisine değil — aksi halde /run/done herkese açık kalırdı.
     testWidgets('kayıt tamamlandıysa /run/done aktif oturumsuz açılıyor',
         (tester) async {
@@ -178,7 +179,7 @@ void main() {
         await locationAfter(
           tester,
           goTo: Routes.runDone,
-          prepare: (c) => c.read(savedSessionProvider.notifier).set(
+          prepare: (c) => c.read(savedResultProvider.notifier).set(
                 sessionId: 's1',
                 focusScore: 62,
                 dateKey: '2025-08-06',

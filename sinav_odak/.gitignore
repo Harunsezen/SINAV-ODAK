@@ -11,3 +11,6 @@ ios/Runner/GoogleService-Info.plist
 # Flutter tool tarafindan uretilen eklenti listeleri
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# IntelliJ modul dosyasi (flutter create uretir)
+*.iml

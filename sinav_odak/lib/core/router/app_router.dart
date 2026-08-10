@@ -7,7 +7,7 @@ import '../../presentation/home/home_screen.dart';
 import '../../presentation/onboarding/onboarding_screen.dart';
 import '../../presentation/run/break_screen.dart';
 import '../../presentation/run/done_screen.dart';
-import '../../presentation/run/recovery_gate.dart';
+import '../../presentation/run/pending_finish_controller.dart';
 import '../../presentation/run/run_screen.dart';
 import '../../presentation/run/summary_form.dart';
 import '../../presentation/session_setup/activity_picker.dart';
@@ -76,7 +76,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // kayıt tamamlandığı anda `running` satır kalmaz. Bu muafiyet
         // olmasaydı form KAYDET'e basar basmaz kullanıcı ana panele
         // düşer, skorunu hiç göremezdi.
-        if (loc == Routes.runDone && ref.read(savedSessionProvider) != null) {
+        if (loc == Routes.runDone && ref.read(savedResultProvider) != null) {
           return null;
         }
         return Routes.home;
@@ -161,10 +161,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.home,
-                // Kurtarma diyaloğu ana panel seviyesinde TEK kez tüketilir
-                // (KARAR D2).
-                builder: (_, __) =>
-                    const RecoveryGate(child: HomeScreen()),
+                // Kurtarma diyaloğu ana panelin KENDİ içinde monte edilir
+                // (bkz. home_screen.dart), route seviyesinde değil.
+                builder: (_, __) => const HomeScreen(),
               ),
             ],
           ),

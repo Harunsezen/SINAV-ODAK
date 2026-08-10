@@ -7,6 +7,7 @@ import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../domain/entities/session_state.dart';
+import 'pending_finish_controller.dart';
 
 /// Aktif çalışma ekranı (S08).
 ///

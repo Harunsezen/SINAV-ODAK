@@ -12,6 +12,7 @@ import '../../domain/entities/session_schedule.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/services/net_calculator.dart';
 import 'run_controller.dart';
+import 'pending_finish_controller.dart';
 
 /// S10 — Oturum Sonu Formu.
 ///
@@ -106,7 +107,7 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
 
       // Sıra önemli: kayıt sonucu YAZILMADAN yönlendirilirse router'ın aktif
       // oturum koruması /run/done'ı ana panele geri yollar.
-      ref.read(savedSessionProvider.notifier).set(
+      ref.read(savedResultProvider.notifier).set(
             sessionId: sessionId,
             focusScore: focusScore,
             dateKey: dateKey ?? '',
@@ -530,7 +531,7 @@ class _MoodCard extends StatelessWidget {
   final ValueChanged<int> onMood;
   final TextEditingController noteController;
 
-  static const _emojis = ['😖', '😕', '😐', '🙂', '🤩'];
+  static const _emojis = ['😖', '😕', '😐', '🙂', '😄'];
 
   @override
   Widget build(BuildContext context) {

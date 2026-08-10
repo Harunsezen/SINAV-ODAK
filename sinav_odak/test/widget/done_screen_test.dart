@@ -10,6 +10,7 @@ import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/done_screen.dart';
+import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -94,7 +95,7 @@ void main() {
     await seedFinishedDay(db);
     final c = await pumpDone(tester);
 
-    c.read(savedSessionProvider.notifier).set(
+    c.read(savedResultProvider.notifier).set(
           sessionId: 's1',
           focusScore: 88,
           dateKey: '2025-08-06',
@@ -112,7 +113,7 @@ void main() {
     await seedFinishedDay(db);
     final c = await pumpDone(tester);
 
-    c.read(savedSessionProvider.notifier).set(
+    c.read(savedResultProvider.notifier).set(
           sessionId: 's1',
           focusScore: 88,
           dateKey: '2025-08-06',
@@ -138,7 +139,7 @@ void main() {
     await seedFinishedDay(db);
     final c = await pumpDone(tester);
 
-    c.read(savedSessionProvider.notifier).set(
+    c.read(savedResultProvider.notifier).set(
           sessionId: 's1',
           focusScore: null,
           dateKey: '2025-08-06',
@@ -156,7 +157,7 @@ void main() {
     await seedFinishedDay(db);
     final c = await pumpDone(tester);
 
-    c.read(savedSessionProvider.notifier).set(
+    c.read(savedResultProvider.notifier).set(
           sessionId: 's1',
           focusScore: 88,
           dateKey: '2025-08-06',
@@ -168,7 +169,7 @@ void main() {
 
     expect(find.text('DERS SEÇİMİ'), findsOneWidget);
     expect(
-      c.read(savedSessionProvider),
+      c.read(savedResultProvider),
       isNull,
       reason: 'geri dönülürse eski skor tekrar gösterilmemeli',
     );
@@ -178,7 +179,7 @@ void main() {
     await seedFinishedDay(db);
     final c = await pumpDone(tester);
 
-    c.read(savedSessionProvider.notifier).set(
+    c.read(savedResultProvider.notifier).set(
           sessionId: 's1',
           focusScore: 88,
           dateKey: '2025-08-06',
@@ -189,6 +190,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('ANA PANEL'), findsOneWidget);
-    expect(c.read(savedSessionProvider), isNull);
+    expect(c.read(savedResultProvider), isNull);
   });
 }

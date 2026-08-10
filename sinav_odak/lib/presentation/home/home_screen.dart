@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/router/routes.dart';
 import '../session_setup/setup_controller.dart';
+import 'recovery_gate.dart';
 
 /// Ana panelin MİNİMAL hali.
 ///
@@ -16,41 +17,45 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sınav Odak')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Bugün ne çalışıyoruz?',
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Süre tut, soru gir, gelişimini gör.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              FilledButton(
-                key: const Key('home-start'),
-                onPressed: () {
-                  // Yeni akış temiz seçimle başlar (R2: eski seçim sızmasın).
-                  ref.read(setupProvider.notifier).reset();
-                  context.go(Routes.sessionSubject);
-                },
-                child: const Text('Oturumu Başlat'),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Adım 7: bugünkü özet, streak ve grafikler buraya gelecek.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
+    // Yarıda kalan oturum kararı ana panelde, TEK kez sorulur (KARAR D2).
+    // Gate ekranı sarar; kendisi görsel bir şey çizmez.
+    return RecoveryGate(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Sınav Odak')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Bugün ne çalışıyoruz?',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Süre tut, soru gir, gelişimini gör.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                FilledButton(
+                  key: const Key('home-start'),
+                  onPressed: () {
+                    // Yeni akış temiz seçimle başlar (R2: eski seçim sızmasın).
+                    ref.read(setupProvider.notifier).reset();
+                    context.go(Routes.sessionSubject);
+                  },
+                  child: const Text('Oturumu Başlat'),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Adım 7: bugünkü özet, streak ve grafikler buraya gelecek.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -7,10 +7,11 @@ import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../session_setup/setup_controller.dart';
+import 'pending_finish_controller.dart';
 
 /// S11 — Tebrik ekranı.
 ///
-/// Girdisi [savedSessionProvider]'dır: kayıt tamamlandığı anda oturum artık
+/// Girdisi [savedResultProvider]'dır: kayıt tamamlandığı anda oturum artık
 /// `running` değildir, dolayısıyla [runStateProvider] burada `idle` döner.
 /// Ekranın gösterdiği skor, oturum sonu formunun `finishSession`'dan aldığı
 /// değerdir.
@@ -22,7 +23,7 @@ class DoneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saved = ref.watch(savedSessionProvider);
+    final saved = ref.watch(savedResultProvider);
 
     if (saved == null) {
       return const Scaffold(
@@ -100,15 +101,16 @@ class DoneScreen extends ConsumerWidget {
 
             const SizedBox(height: 24),
 
-            // ADIM 6: reklam YALNIZCA buraya gelebilir (kayıt tamamlandı).
-            // Rozet kazanıldıysa interstitial yerine native'e düşülecek.
+            // FAZ 4 (reklam): BU EKRANDA reklam YOKTUR (G7). Interstitial
+            // yalnızca [Ana panel] ile gerçekleşen Done→Home GEÇİŞİNDE,
+            // frekans kapısı ve rıza kontrolünden sonra gösterilebilir (K6).
 
             FilledButton(
               key: const Key('done-new-session'),
               onPressed: () {
                 // Yeni akış temiz seçimle başlar (R2: eski seçim sızmasın).
                 ref.read(setupProvider.notifier).reset();
-                ref.read(savedSessionProvider.notifier).clear();
+                ref.read(savedResultProvider.notifier).clear();
                 context.go(Routes.sessionSubject);
               },
               child: const Text('Yeni oturum'),
@@ -117,7 +119,7 @@ class DoneScreen extends ConsumerWidget {
             OutlinedButton(
               key: const Key('done-home'),
               onPressed: () {
-                ref.read(savedSessionProvider.notifier).clear();
+                ref.read(savedResultProvider.notifier).clear();
                 context.go(Routes.home);
               },
               child: const Text('Ana panel'),

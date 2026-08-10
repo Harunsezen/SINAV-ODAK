@@ -7,7 +7,7 @@ import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
-import 'package:sinav_odak/presentation/run/recovery_gate.dart';
+import 'package:sinav_odak/presentation/home/recovery_gate.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -111,7 +111,7 @@ void main() {
     expect(find.textContaining('48dk'), findsOneWidget);
   });
 
-  testWidgets('needsDecision [Koru]: kayıt KORUNUYOR', (tester) async {
+  testWidgets('needsDecision [Kaydet]: kayıt KORUNUYOR', (tester) async {
     final session = await seedInterrupted();
     await pumpGate(
       tester,
@@ -126,7 +126,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final s = await db.sessionDao.findById('s1');
-    expect(s, isNotNull, reason: 'Koru kaydı silmemeli');
+    expect(s, isNotNull, reason: 'Kaydet kaydı silmemeli');
     expect(s!.status, SessionStatus.interrupted);
     expect(find.byType(AlertDialog), findsNothing);
   });

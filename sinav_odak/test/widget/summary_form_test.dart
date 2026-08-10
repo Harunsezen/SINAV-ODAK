@@ -7,6 +7,7 @@ import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
+import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/run/summary_form.dart';
 
 import '../unit/usecase_helpers.dart';
@@ -156,12 +157,12 @@ void main() {
     fakeNow = lastEnd + 1000;
     await pumpForm(tester);
 
-    // 50 soru: 42 doğru, 4 yanlış, 4 boş. Katsayı 4.0 (varsayılan ayar).
-    // net = 42 - (4 / 4) = 41.0
-    await tester.enterText(find.byKey(const Key('summary-q-field')), '50');
+    // 60 soru: 44 doğru, 12 yanlış, 4 boş. Katsayı 4.0 (varsayılan ayar).
+    // net = 44 - (12 / 4) = 41.0
+    await tester.enterText(find.byKey(const Key('summary-q-field')), '60');
     await tester.pump();
-    await bump(tester, 'correct', 42);
-    await bump(tester, 'wrong', 4);
+    await bump(tester, 'correct', 44);
+    await bump(tester, 'wrong', 12);
     await bump(tester, 'empty', 4);
 
     expect(
@@ -292,7 +293,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(c.read(pendingFinishProvider), isNull);
-    final saved = c.read(savedSessionProvider);
+    final saved = c.read(savedResultProvider);
     expect(saved, isNotNull);
     expect(saved!.sessionId, 's1');
     expect(saved.dateKey, '2025-08-06');
