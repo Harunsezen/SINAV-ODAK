@@ -147,3 +147,51 @@ Index `onCreate` içinde oluşturuluyor ve **`schemaVersion` 1'de KALDI**
 > Mevcut veritabanı dosyası `onCreate`'i tekrar çalıştırmaz; index
 > oluşmaz ve kısıt sessizce devre dışı kalır. Ayrıca eski veritabanında
 > birden fazla `running` satır varsa index zaten oluşturulamazdı.
+
+---
+
+## FAZ 6 — Production derleme
+
+### 1. Reklam kimlikleri
+
+Production AdMob kimlikleri **koda girmez**. İki yerden geçilir ve **ikisi
+de** gerekir: Dart tarafı `--dart-define`, Android manifest tarafı Gradle
+özelliği.
+
+```bash
+flutter build apk --release \
+  --dart-define=ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY \
+  --dart-define=ADMOB_BANNER_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_NATIVE_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_INTERSTITIAL_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  -Padmob_app_id=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+```
+
+- `--dart-define=ADMOB_APP_ID=...` → `AdConfig` (Dart; birim kimlikleri ve
+  `usingTestIds` kontrolü)
+- `-Padmob_app_id=...` → `manifestPlaceholders["admobAppId"]` →
+  `AndroidManifest.xml`'deki `com.google.android.gms.ads.APPLICATION_ID`
+
+**Hiçbiri verilmezse Google'ın resmî TEST kimlikleri kullanılır.**
+Varsayılanın test olması bilinçli: unutulursa gelir kaybedilir, tersi
+(production kimliğiyle geliştirme + kendi reklamına tıklama) AdMob hesabını
+kapattırır.
+
+`-Padmob_app_id` yerine kalıcı olarak `android/gradle.properties` içine
+`admob_app_id=...` yazılabilir — **bu dosya depoya commit'lenmemelidir.**
+
+### 2. Yayına çıkmadan önce
+
+- [ ] `AdConfig.usingTestIds == false` (release derlemede doğrula)
+- [ ] `android/app/build.gradle` içinde imzalama yapılandırması (`signingConfigs.release`) tanımlı; şu an `debug` anahtarı kullanılıyor
+- [ ] `PRIVACY.md` bir URL'de yayımlandı ve Play Console'a girildi
+- [ ] Play Console *Data safety* formu `PRIVACY.md` §10'daki tabloya göre dolduruldu
+- [ ] Hedef kitle yaşı **13+** seçildi
+
+### 3. i18n
+
+Arayüz metinleri `lib/l10n/app_tr.arb` içinde; `L10n` sınıfı
+`flutter gen-l10n` (veya `flutter pub get`) ile üretilir. Uygulama şu an
+**Türkçe'ye sabitlenmiştir** (`lib/app.dart` içinde `locale: Locale('tr')`);
+`app_en.arb` iskelet olarak duruyor, İngilizce çeviri v1.2'ye bırakıldı.

@@ -62,8 +62,7 @@ void main() {
       expect(s, 20);
     });
 
-    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır',
-        () {
+    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır', () {
       // completion 0, presence 0, exit 10, compliance 10 = 20
       // earlyFinished çarpanı 0.80 -> 16
       final s = score(
@@ -76,8 +75,7 @@ void main() {
       expect(s, 16, reason: '20 * 0.80 = 16');
     });
 
-    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır',
-        () {
+    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır', () {
       // completion 0, presence 0, exit 10, compliance 10 = 20
       // earlyFinished çarpanı 0.80 -> 16
       final s = score(
@@ -90,8 +88,7 @@ void main() {
       expect(s, 16, reason: '20 * 0.80 = 16');
     });
 
-    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır',
-        () {
+    test('planlanan süre 0 + earlyFinished -> hata yok, çarpan uygulanır', () {
       // completion 0 + presence 0 + exit 10 + compliance 10 = 20
       // earlyFinished çarpanı 0.80 -> 16
       final s = score(
@@ -163,18 +160,30 @@ void main() {
   });
 
   group('negatif değer doğrulaması', () {
-    test('planlanan süre',
-        () => expect(() => score(plannedDurationS: -1), throwsValidation));
-    test('gerçekleşen süre',
-        () => expect(() => score(actualDurationS: -1), throwsValidation));
-    test('önplan süresi',
-        () => expect(() => score(foregroundS: -1), throwsValidation));
-    test('çıkış sayısı',
-        () => expect(() => score(exitCount: -1), throwsValidation));
-    test('uzatma süresi',
-        () => expect(() => score(extendedBreakS: -1), throwsValidation));
-    test('planlanan mola süresi',
-        () => expect(() => score(totalPlannedBreakS: -1), throwsValidation));
+    test(
+      'planlanan süre',
+      () => expect(() => score(plannedDurationS: -1), throwsValidation),
+    );
+    test(
+      'gerçekleşen süre',
+      () => expect(() => score(actualDurationS: -1), throwsValidation),
+    );
+    test(
+      'önplan süresi',
+      () => expect(() => score(foregroundS: -1), throwsValidation),
+    );
+    test(
+      'çıkış sayısı',
+      () => expect(() => score(exitCount: -1), throwsValidation),
+    );
+    test(
+      'uzatma süresi',
+      () => expect(() => score(extendedBreakS: -1), throwsValidation),
+    );
+    test(
+      'planlanan mola süresi',
+      () => expect(() => score(totalPlannedBreakS: -1), throwsValidation),
+    );
 
     test('running olsa bile negatif değer önce yakalanır', () {
       expect(

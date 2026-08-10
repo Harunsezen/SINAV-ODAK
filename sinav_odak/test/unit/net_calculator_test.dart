@@ -165,27 +165,48 @@ void main() {
           actualDurationS: actualDurationS,
         );
 
-    test('katsayı 0', () => expect(() => call(coefficient: 0), throwsValidation));
-    test('katsayı negatif',
-        () => expect(() => call(coefficient: -4), throwsValidation));
-    test('katsayı NaN',
-        () => expect(() => call(coefficient: double.nan), throwsValidation));
-    test('katsayı sonsuz',
-        () => expect(() => call(coefficient: double.infinity), throwsValidation));
-    test('negatif soru sayısı',
-        () => expect(() => call(questionCount: -1), throwsValidation));
-    test('negatif doğru',
-        () => expect(() => call(correctCount: -1), throwsValidation));
-    test('negatif yanlış',
-        () => expect(() => call(wrongCount: -1), throwsValidation));
-    test('negatif boş',
-        () => expect(() => call(emptyCount: -1), throwsValidation));
-    test('negatif süre',
-        () => expect(() => call(actualDurationS: -1), throwsValidation));
+    test('katsayı 0',
+        () => expect(() => call(coefficient: 0), throwsValidation));
+    test(
+      'katsayı negatif',
+      () => expect(() => call(coefficient: -4), throwsValidation),
+    );
+    test(
+      'katsayı NaN',
+      () => expect(() => call(coefficient: double.nan), throwsValidation),
+    );
+    test(
+      'katsayı sonsuz',
+      () => expect(() => call(coefficient: double.infinity), throwsValidation),
+    );
+    test(
+      'negatif soru sayısı',
+      () => expect(() => call(questionCount: -1), throwsValidation),
+    );
+    test(
+      'negatif doğru',
+      () => expect(() => call(correctCount: -1), throwsValidation),
+    );
+    test(
+      'negatif yanlış',
+      () => expect(() => call(wrongCount: -1), throwsValidation),
+    );
+    test(
+      'negatif boş',
+      () => expect(() => call(emptyCount: -1), throwsValidation),
+    );
+    test(
+      'negatif süre',
+      () => expect(() => call(actualDurationS: -1), throwsValidation),
+    );
 
     test('doğru+yanlış+boş soru sayısını aşamaz', () {
       expect(
-        () => call(questionCount: 50, correctCount: 40, wrongCount: 10, emptyCount: 10),
+        () => call(
+            questionCount: 50,
+            correctCount: 40,
+            wrongCount: 10,
+            emptyCount: 10),
         throwsValidation,
       );
     });

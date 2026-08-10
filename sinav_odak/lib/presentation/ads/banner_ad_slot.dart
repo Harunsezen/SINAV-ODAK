@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/ad_providers.dart';
@@ -32,10 +33,10 @@ class BannerAdSlot extends ConsumerWidget {
       height: height,
       alignment: Alignment.center,
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: const Text(
+      child: Text(
         // Her reklam alanının üstünde etiket ZORUNLU.
-        'Sponsorlu',
-        style: TextStyle(fontSize: 11),
+        L10n.of(context).adSponsored,
+        style: const TextStyle(fontSize: 11),
       ),
     );
   }

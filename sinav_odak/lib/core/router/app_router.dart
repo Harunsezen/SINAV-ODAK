@@ -38,9 +38,8 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 /// testler debug modda koşar ve o dal derleme zamanında elenir. Karar
 /// parametreye alınarak **iki dal da** doğrulanabilir hale geldi.
 @visibleForTesting
-Widget settingsPageFor({required bool debug}) => debug
-    ? const DbHealthPage()
-    : const SettingsScreen();
+Widget settingsPageFor({required bool debug}) =>
+    debug ? const DbHealthPage() : const SettingsScreen();
 
 /// Router artık provider'a bağlı: onboarding ve aktif oturum yönlendirmesi
 /// için DB durumunu okuması gerekiyor.

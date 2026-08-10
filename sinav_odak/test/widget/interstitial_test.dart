@@ -13,6 +13,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/done_screen.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/ad_helpers.dart';
 import '../unit/usecase_helpers.dart';
@@ -77,7 +78,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -122,8 +127,7 @@ void main() {
     );
   });
 
-  testWidgets('90 sn dolmadıysa reklam yok, geçiş yine oluyor',
-      (tester) async {
+  testWidgets('90 sn dolmadıysa reklam yok, geçiş yine oluyor', (tester) async {
     await setConsent(consent: true);
     // 30 sn önce bir ara reklam gösterilmiş.
     await db.adEventDao.logShown(

@@ -74,7 +74,6 @@ class SavedResultNotifier extends Notifier<SavedResult?> {
 /// Kayıt tamamlandığında `running` oturum kalmaz; router'ın aktif oturum
 /// koruması bu yüzden /run/done'ı ana panele geri yollardı. Tebrik ekranının
 /// var olma hakkı bu provider'dan gelir (bkz. `app_router.dart` redirect).
-final savedResultProvider =
-    NotifierProvider<SavedResultNotifier, SavedResult?>(
+final savedResultProvider = NotifierProvider<SavedResultNotifier, SavedResult?>(
   SavedResultNotifier.new,
 );

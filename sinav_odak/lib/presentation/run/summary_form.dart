@@ -161,9 +161,9 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
         ? _elapsedStudyS(schedule, pending.endMs)
         : schedule.totalStudyS;
 
-    final coefficient = ref.watch(settingsStreamProvider).valueOrNull
-            ?.netPenaltyCoefficient ??
-        4.0;
+    final coefficient =
+        ref.watch(settingsStreamProvider).valueOrNull?.netPenaltyCoefficient ??
+            4.0;
 
     // Canlı net: doğrulama da domain'in kendisinden gelsin diye hesap
     // try/catch ile çağrılıyor. Aynı kural iki yerde yazılırsa biri
@@ -203,8 +203,7 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
             controller: _questionCtrl,
             onQuick: (add) => _setQuestions(_questionCount + add),
             onReset: () => _setQuestions(0),
-            onManual: (text) =>
-                _setQuestions(int.tryParse(text.trim()) ?? 0),
+            onManual: (text) => _setQuestions(int.tryParse(text.trim()) ?? 0),
           ),
           const SizedBox(height: 16),
 
@@ -272,7 +271,8 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final subject = labels?.subjectName ?? '';
     final topic = labels?.topicName;
-    final title = topic == null || topic.isEmpty ? subject : '$subject · $topic';
+    final title =
+        topic == null || topic.isEmpty ? subject : '$subject · $topic';
 
     return Card(
       key: const Key('summary-header'),

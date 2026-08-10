@@ -13,6 +13,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        // ZORUNLU: flutter_local_notifications, java.time API'lerini
+        // kullanıyor ve bunlar minSdk 26 altında yok. Desugaring olmadan
+        // derleme KIRILIR (paket bunu açıkça şart koşuyor).
+        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -28,6 +33,19 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Bildirimler exact alarm kullanıyor; java.time desugaring de
+        // minSdk 21'den itibaren destekleniyor.
+        minSdk = 21
+
+        // AdMob uygulama kimliği manifest'e BURADAN enjekte edilir.
+        // Varsayılan Google TEST kimliği; production kimliği
+        //   flutter build apk --release -Padmob_app_id=ca-app-pub-XXXX~YYYY
+        // veya android/gradle.properties içindeki `admob_app_id` ile geçilir.
+        // Kimlik koda ASLA girmez.
+        manifestPlaceholders["admobAppId"] =
+            (project.findProperty("admob_app_id")
+                ?: "ca-app-pub-3940256099942544~3347511713")
     }
 
     buildTypes {
@@ -41,4 +59,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // flutter_local_notifications'ın java.time kullanımı için (yukarıdaki
+    // coreLibraryDesugaringEnabled ile birlikte ZORUNLU).
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.2"
 }

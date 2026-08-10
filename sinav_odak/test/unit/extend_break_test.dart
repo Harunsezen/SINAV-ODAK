@@ -21,8 +21,7 @@ void main() {
   tearDown(() async => db.close());
 
   test('+5 dk: mola uzuyor, sonraki bloklar kayıyor', () async {
-    final updated =
-        await extend(sessionId: 's1', breakBlockIndex: breakIndex);
+    final updated = await extend(sessionId: 's1', breakBlockIndex: breakIndex);
 
     expect(updated.blocks[1].seconds, 600);
     expect(updated.blocks[1].extendedS, 300);

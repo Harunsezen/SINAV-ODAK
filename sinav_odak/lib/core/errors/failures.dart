@@ -31,8 +31,9 @@ class ValidationFailure extends AppFailure {
   final String? field;
 
   @override
-  String toString() =>
-      field == null ? 'ValidationFailure: $message' : 'ValidationFailure($field): $message';
+  String toString() => field == null
+      ? 'ValidationFailure: $message'
+      : 'ValidationFailure($field): $message';
 }
 
 /// Veritabanı katmanı hataları.

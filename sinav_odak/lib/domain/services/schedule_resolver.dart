@@ -64,7 +64,8 @@ abstract final class ScheduleResolver {
     for (final block in schedule.blocks) {
       if (nowMs < block.endMs) {
         // Tolerans penceresindeyken kalan süre planlanan süreyi aşmasın.
-        final remainingMs = block.endMs - (nowMs < block.startMs ? block.startMs : nowMs);
+        final remainingMs =
+            block.endMs - (nowMs < block.startMs ? block.startMs : nowMs);
 
         return block.isStudy
             ? SessionState.inBlock(

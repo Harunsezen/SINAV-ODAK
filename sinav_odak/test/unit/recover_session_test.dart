@@ -105,7 +105,8 @@ void main() {
 
     final r = await recovery.check(nowMs: t0 + 600000);
     expect(r.outcome, RecoveryOutcome.resume);
-    expect(r.state, isNull, reason: 'çizelge çözülemedi, UI kaldığı yeri gösterir');
+    expect(r.state, isNull,
+        reason: 'çizelge çözülemedi, UI kaldığı yeri gösterir');
   });
 
   test('çizelgesiz running kayıt sessizce temizleniyor', () async {

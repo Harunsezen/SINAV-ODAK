@@ -10,6 +10,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/ads/banner_ad_slot.dart';
 import 'package:sinav_odak/presentation/ads/native_ad_slot.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -69,7 +70,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(home: Scaffold(body: slot)),
+        child: MaterialApp(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          home: Scaffold(body: slot),
+        ),
       ),
     );
     await tester.pump();

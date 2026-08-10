@@ -5,8 +5,6 @@ import 'package:drift/drift.dart';
 import '../../../core/utils/date_key.dart';
 import '../../../domain/entities/enums.dart';
 import '../database.dart';
-import '../tables/session_tables.dart';
-import '../tables/tracking_tables.dart';
 
 part 'stats_dao.g.dart';
 
@@ -86,9 +84,11 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
   /// Oturum kaydedildiğinde, düzenlendiğinde ve silindiğinde çağrılır.
   Future<void> recomputeDay(String dayKey) async {
     final rows = await (select(studySessions)
-          ..where((t) =>
-              t.dateKey.equals(dayKey) &
-              t.status.equalsValue(SessionStatus.running).not()))
+          ..where(
+            (t) =>
+                t.dateKey.equals(dayKey) &
+                t.status.equalsValue(SessionStatus.running).not(),
+          ))
         .get();
 
     if (rows.isEmpty) {
@@ -152,9 +152,11 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
     final f = dateKeyOf(from);
     final t = dateKeyOf(to);
     return (select(dailyStats)
-          ..where((r) =>
-              r.dateKey.isBiggerOrEqualValue(f) &
-              r.dateKey.isSmallerOrEqualValue(t))
+          ..where(
+            (r) =>
+                r.dateKey.isBiggerOrEqualValue(f) &
+                r.dateKey.isSmallerOrEqualValue(t),
+          )
           ..orderBy([(r) => OrderingTerm.asc(r.dateKey)]))
         .watch();
   }
@@ -162,9 +164,11 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
   /// Aralık toplamı — haftalık/aylık özet kartları için.
   Future<StatsSummary> summaryFor(DateTime from, DateTime to) async {
     final rows = await (select(dailyStats)
-          ..where((r) =>
-              r.dateKey.isBiggerOrEqualValue(dateKeyOf(from)) &
-              r.dateKey.isSmallerOrEqualValue(dateKeyOf(to))))
+          ..where(
+            (r) =>
+                r.dateKey.isBiggerOrEqualValue(dateKeyOf(from)) &
+                r.dateKey.isSmallerOrEqualValue(dateKeyOf(to)),
+          ))
         .get();
     if (rows.isEmpty) return StatsSummary.empty();
 
@@ -270,7 +274,11 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
         Variable<String>(SessionStatus.running.name),
         Variable<int>(limit),
       ],
-      readsFrom: {studySessions, attachedDatabase.topics, attachedDatabase.subjects},
+      readsFrom: {
+        studySessions,
+        attachedDatabase.topics,
+        attachedDatabase.subjects
+      },
     ).get();
 
     return rows

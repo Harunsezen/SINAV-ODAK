@@ -19,7 +19,9 @@ import '../../domain/ports/session_activity_tracker.dart';
 /// `foregroundS` burada YAZILMAZ; oturum kapanırken
 /// `actualDurationS - awayS` olarak hesaplanır. Doğrudan ölçüm, uygulama
 /// öldürüldüğünde son önplan dilimini kaybederdi.
-class LifecycleTracker with WidgetsBindingObserver implements SessionActivityTracker {
+class LifecycleTracker
+    with WidgetsBindingObserver
+    implements SessionActivityTracker {
   LifecycleTracker(this._db, {required this.nowMsProvider});
 
   final AppDatabase _db;

@@ -11,6 +11,7 @@ import 'package:sinav_odak/domain/ports/ad_gateway.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/settings/settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/ad_helpers.dart';
 import '../unit/usecase_helpers.dart';
@@ -65,7 +66,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(home: SettingsScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          home: SettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -165,6 +170,7 @@ void main() {
     await tester.pumpAndSettle();
     await tapSupport(tester);
 
-    expect(find.textContaining('Şu an gösterilecek reklam yok'), findsOneWidget);
+    expect(
+        find.textContaining('Şu an gösterilecek reklam yok'), findsOneWidget);
   });
 }

@@ -34,7 +34,8 @@ class ScheduleWriter {
           scheduleJson: Value(jsonEncode(schedule.toJson())),
         ),
       );
-      await _db.sessionDao.replaceBlocks(sessionId, blocksOf(sessionId, schedule));
+      await _db.sessionDao
+          .replaceBlocks(sessionId, blocksOf(sessionId, schedule));
     });
 
     // Bildirimler mutlak zamana bağlı; çizelge kayınca hepsi yenilenmeli.

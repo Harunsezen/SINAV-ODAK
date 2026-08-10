@@ -61,8 +61,15 @@ class SetupSelection {
       other.activityTypeName == activityTypeName;
 
   @override
-  int get hashCode => Object.hash(subjectId, subjectName, subjectColorHex,
-      topicId, topicName, activityTypeId, activityTypeName);
+  int get hashCode => Object.hash(
+        subjectId,
+        subjectName,
+        subjectColorHex,
+        topicId,
+        topicName,
+        activityTypeId,
+        activityTypeName,
+      );
 
   @override
   String toString() =>

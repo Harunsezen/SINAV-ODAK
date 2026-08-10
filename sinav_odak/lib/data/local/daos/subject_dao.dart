@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import '../../../core/utils/time.dart';
 import '../../../domain/entities/enums.dart';
 import '../database.dart';
-import '../tables/catalog_tables.dart';
 
 part 'subject_dao.g.dart';
 
@@ -15,7 +14,8 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
 
   Stream<List<Subject>> watchSubjects(ExamType exam) {
     return (select(subjects)
-          ..where((t) => t.examType.equalsValue(exam) & t.isArchived.equals(false))
+          ..where(
+              (t) => t.examType.equalsValue(exam) & t.isArchived.equals(false))
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
         .watch();
   }
@@ -74,8 +74,9 @@ class SubjectDao extends DatabaseAccessor<AppDatabase> with _$SubjectDaoMixin {
 
   Stream<List<Topic>> watchTopics(String subjectId) {
     return (select(topics)
-          ..where((t) =>
-              t.subjectId.equals(subjectId) & t.isArchived.equals(false))
+          ..where(
+            (t) => t.subjectId.equals(subjectId) & t.isArchived.equals(false),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
         .watch();
   }

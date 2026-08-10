@@ -8,6 +8,7 @@ import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/home/recovery_gate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -50,6 +51,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
           home: RecoveryGate(child: Scaffold(body: Text('ANA PANEL'))),
         ),
       ),
@@ -106,7 +109,8 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const Key('recovery-interrupted-dialog')), findsOneWidget);
+    expect(
+        find.byKey(const Key('recovery-interrupted-dialog')), findsOneWidget);
     expect(find.text('Oturum yarıda kesildi'), findsOneWidget);
     expect(find.textContaining('48dk'), findsOneWidget);
   });
@@ -176,8 +180,7 @@ void main() {
     expect(find.text('Cihaz saati değişmiş görünüyor'), findsOneWidget);
   });
 
-  testWidgets('clockMovedBack [Devam et]: oturum AÇIK kalıyor',
-      (tester) async {
+  testWidgets('clockMovedBack [Devam et]: oturum AÇIK kalıyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     final session = (await db.sessionDao.findById('s1'))!;
     fakeNow = t0 - 60000;
@@ -240,6 +243,8 @@ void main() {
       UncontrolledProviderScope(
         container: c,
         child: const MaterialApp(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
           home: RecoveryGate(
             key: ValueKey('ikinci-kurulum'),
             child: Scaffold(body: Text('ANA PANEL 2')),

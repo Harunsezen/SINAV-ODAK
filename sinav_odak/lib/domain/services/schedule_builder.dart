@@ -52,7 +52,7 @@ abstract final class ScheduleBuilder {
       throw const PlanFailure('Döngü sayısı en az 1 olmalı.');
     }
     if (workMinutes < minStudyBlockMinutes) {
-      throw PlanFailure(
+      throw const PlanFailure(
         'Çalışma bloğu en az $minStudyBlockMinutes dakika olmalı.',
       );
     }
@@ -175,7 +175,7 @@ abstract final class ScheduleBuilder {
     final studyS = availableS - totalBreakS;
 
     if (studyS < minStudyBlockMinutes * 60) {
-      throw PlanFailure(
+      throw const PlanFailure(
         'Bu saate kadar yeterli çalışma süresi yok. '
         'Molalar düşüldükten sonra $minStudyBlockMinutes dakikadan az kalıyor.',
       );
@@ -238,7 +238,7 @@ abstract final class ScheduleBuilder {
     final rem = totalStudyMinutes % studyBlocks;
 
     if (base < minStudyBlockMinutes) {
-      throw PlanFailure(
+      throw const PlanFailure(
         'Blok başına en az $minStudyBlockMinutes dakika gerekiyor. '
         'Mola sayısını azalt veya toplam süreyi artır.',
       );

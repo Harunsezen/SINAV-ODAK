@@ -4,7 +4,6 @@ import '../../../core/utils/date_key.dart';
 import '../../../core/utils/time.dart';
 import '../../../domain/entities/enums.dart';
 import '../database.dart';
-import '../tables/tracking_tables.dart';
 
 part 'goal_dao.g.dart';
 

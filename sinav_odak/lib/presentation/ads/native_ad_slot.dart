@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/ad_providers.dart';
@@ -70,17 +71,20 @@ class _NativeAdSlotState extends ConsumerState<NativeAdSlot> {
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Align(
               alignment: Alignment.topLeft,
               child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Sponsorlu', style: TextStyle(fontSize: 11)),
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  L10n.of(context).adSponsored,
+                  style: const TextStyle(fontSize: 11),
+                ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
           ],
         ),
       ),

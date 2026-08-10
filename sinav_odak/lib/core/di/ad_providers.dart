@@ -4,7 +4,10 @@ import '../../data/local/daos/ad_event_dao.dart';
 import '../../domain/entities/ad_placement.dart';
 import '../../domain/ports/ad_gateway.dart';
 import '../../domain/services/ad_policy_engine.dart';
+import '../../domain/entities/consent_state.dart';
+import '../../domain/ports/consent_gateway.dart';
 import '../../services/ads/noop_ad_gateway.dart';
+import '../../services/ads/noop_consent_gateway.dart';
 import 'app_providers.dart';
 
 /// Reklam katmanının DI'ı.
@@ -16,13 +19,54 @@ import 'app_providers.dart';
 final adEventDaoProvider =
     Provider<AdEventDao>((ref) => ref.watch(databaseProvider).adEventDao);
 
-/// Reklam rızası (KVKK/GDPR).
+/// UMP rıza akışı. `main()` gerçek cihazda `UmpConsentGateway` ile override
+/// eder; testler ve UMP'siz çalıştırma bu haliyle kalır.
+final consentGatewayProvider =
+    Provider<ConsentGateway>((ref) => const NoopConsentGateway());
+
+/// UMP'nin AÇILIŞTAKİ sonucu. `main()` hesaplayıp override eder.
+///
+/// Varsayılan `notRequired + canRequestAds: true`: bu "UMP çalışmadı"
+/// demektir, "rıza var" değil — rızanın kendisi [adConsentProvider]'da
+/// kullanıcı tercihiyle BİRLİKTE değerlendiriliyor.
+final consentBootResultProvider = Provider<ConsentResult>(
+  (ref) => const ConsentResult(
+    state: ConsentState.notRequired,
+    canRequestAds: true,
+  ),
+);
+
+/// Kullanıcı Ayarlar'dan gizlilik formunu yeniden açtığında oluşan YENİ sonuç.
+///
+/// Açılış değeri `null` = "kullanıcı bu oturumda tercihini değiştirmedi".
+/// Ayrı bir provider olması şart: `consentBootResultProvider` `main()`
+/// tarafından sabit bir değerle override ediliyor, üzerine yazılamaz.
+final consentResultOverrideProvider =
+    StateProvider<ConsentResult?>((_) => null);
+
+/// UMP'nin ŞU ANKİ sonucu: kullanıcı formu yeniden açtıysa o karar, yoksa
+/// açılıştaki karar.
+final consentResultProvider = Provider<ConsentResult>((ref) {
+  return ref.watch(consentResultOverrideProvider) ??
+      ref.watch(consentBootResultProvider);
+});
+
+/// Reklam rızası (KVKK/GDPR) — **iki kapının İKİSİ de açık olmalı**.
+///
+/// 1. `personalizedAdsConsent`: kullanıcının onboarding'de verdiği tercih
+/// 2. UMP `canRequestAds`: Google'ın resmi rıza akışının kararı
+///
+/// UMP yalnızca KISITLAYABİLİR: "hayır" derse kullanıcı tercihi ne olursa
+/// olsun reklam yok. Tersi geçerli değil — UMP "evet" dese bile kullanıcı
+/// toggle'ı kapalıysa reklam gösterilmez.
 ///
 /// **Ayar okunamazsa `false`.** Varsayılanın "izin var" olması, ayar akışı
 /// bir an gecikince rızasız reklam göstermek demekti.
 final adConsentProvider = Provider<bool>((ref) {
-  return ref.watch(settingsStreamProvider).valueOrNull?.personalizedAdsConsent ??
-      false;
+  final stored =
+      ref.watch(settingsStreamProvider).valueOrNull?.personalizedAdsConsent ??
+          false;
+  return stored && ref.watch(consentResultProvider).canRequestAds;
 });
 
 /// Aktif çalışma ekranında ince banner gösterilsin mi (kullanıcı ayarı).

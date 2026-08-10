@@ -10,6 +10,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/onboarding/onboarding_screen.dart';
 import 'package:sinav_odak/services/notifications/notification_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -83,7 +84,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -185,15 +190,14 @@ void main() {
     await pumpOnboarding(tester);
     await tapNext(tester);
 
-    var btn = tester
-        .widget<FilledButton>(find.byKey(const Key('onboarding-next')));
+    var btn =
+        tester.widget<FilledButton>(find.byKey(const Key('onboarding-next')));
     expect(btn.onPressed, isNull, reason: 'ders listesi buna bağlı');
 
     await tester.tap(find.byKey(const Key('onboarding-exam-kpss')));
     await tester.pumpAndSettle();
 
-    btn = tester
-        .widget<FilledButton>(find.byKey(const Key('onboarding-next')));
+    btn = tester.widget<FilledButton>(find.byKey(const Key('onboarding-next')));
     expect(btn.onPressed, isNotNull);
   });
 
@@ -351,8 +355,7 @@ void main() {
     expect(find.byKey(const Key('onboarding-step-summary')), findsOneWidget);
   });
 
-  testWidgets('10) Atla izin İSTEMEDEN sonraki adıma geçiyor',
-      (tester) async {
+  testWidgets('10) Atla izin İSTEMEDEN sonraki adıma geçiyor', (tester) async {
     await pumpOnboarding(tester);
     await gotoGoalStep(tester);
     await tapNext(tester);
@@ -423,8 +426,7 @@ void main() {
     expect(find.text('ANA PANEL'), findsOneWidget);
   });
 
-  testWidgets('12b) yarıda bırakılan onboarding ayar YAZMIYOR',
-      (tester) async {
+  testWidgets('12b) yarıda bırakılan onboarding ayar YAZMIYOR', (tester) async {
     await pumpOnboarding(tester);
     await gotoGoalStep(tester);
     await tapNext(tester);

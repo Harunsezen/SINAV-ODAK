@@ -53,7 +53,8 @@ void main() {
     expect(sel().isReadyForPlan, isFalse);
 
     n().selectActivityType(id: 'act_soru', name: 'Soru Çözümü');
-    expect(sel().isReadyForPlan, isTrue, reason: 'konusuz da plana geçilebilir');
+    expect(sel().isReadyForPlan, isTrue,
+        reason: 'konusuz da plana geçilebilir');
   });
 
   test('ders değişince önceki konu seçimi düşüyor', () {

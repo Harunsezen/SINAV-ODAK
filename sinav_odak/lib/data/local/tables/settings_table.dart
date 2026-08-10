@@ -13,7 +13,8 @@ class UserSettings extends Table {
   TextColumn get examType =>
       textEnum<ExamType>().withDefault(const Constant('yks'))();
 
-  IntColumn get dailyGoalMinutes => integer().withDefault(const Constant(240))();
+  IntColumn get dailyGoalMinutes =>
+      integer().withDefault(const Constant(240))();
   IntColumn get dailyGoalQuestions =>
       integer().withDefault(const Constant(100))();
 

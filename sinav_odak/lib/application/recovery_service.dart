@@ -67,7 +67,8 @@ class RecoveryService {
       );
 
       return switch (state) {
-        SessionInBlock() || SessionInBreak() =>
+        SessionInBlock() ||
+        SessionInBreak() =>
           RecoveryResult(RecoveryOutcome.resume, session: active, state: state),
         SessionClockMovedBack() => RecoveryResult(
             RecoveryOutcome.clockMovedBack,

@@ -9,6 +9,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/run/summary_form.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -34,7 +35,8 @@ void main() {
   GoRouter buildRouter() => GoRouter(
         initialLocation: '/run/summary',
         routes: [
-          GoRoute(path: '/run/summary', builder: (_, __) => const SummaryForm()),
+          GoRoute(
+              path: '/run/summary', builder: (_, __) => const SummaryForm()),
           GoRoute(
             path: '/run/done',
             builder: (_, __) => const Scaffold(body: Text('DONE EKRANI')),
@@ -69,7 +71,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -173,7 +179,8 @@ void main() {
     expect(find.byKey(const Key('summary-invariant-error')), findsNothing);
   });
 
-  testWidgets('D+Y+B soru sayısını aşarsa ValidationFailure mesajı çıkıyor '
+  testWidgets(
+      'D+Y+B soru sayısını aşarsa ValidationFailure mesajı çıkıyor '
       've KAYDET pasifleşiyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     fakeNow = lastEnd + 1000;

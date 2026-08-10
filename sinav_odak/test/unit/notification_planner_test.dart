@@ -101,7 +101,8 @@ void main() {
 
   group('bildirim kimlikleri', () {
     test('aynı oturum için deterministik', () {
-      expect(NotificationPlanner.baseIdOf(sid), NotificationPlanner.baseIdOf(sid));
+      expect(
+          NotificationPlanner.baseIdOf(sid), NotificationPlanner.baseIdOf(sid));
     });
 
     test('farklı oturumlar farklı taban alıyor', () {
@@ -146,8 +147,7 @@ void main() {
     test('mola atlanınca bildirim anları öne çekiliyor', () {
       final skipped =
           ScheduleModifier.skipBreak(schedule, 1, t0 + 1440000 + 120000);
-      final after =
-          NotificationPlanner.plan(sessionId: sid, schedule: skipped);
+      final after = NotificationPlanner.plan(sessionId: sid, schedule: skipped);
 
       expect(after[1].atMs, t0 + 1440000 + 120000);
       expect(after[2].atMs, schedule.blocks[2].endMs - 180000);

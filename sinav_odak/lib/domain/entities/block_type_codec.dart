@@ -17,7 +17,6 @@ library;
 import 'enums.dart';
 import 'schedule_codec_exception.dart';
 
-
 /// Çalışma bloğunun JSON/DB karşılığı.
 const String kBlockTypeStudy = 'study';
 

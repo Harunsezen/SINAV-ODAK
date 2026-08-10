@@ -140,9 +140,8 @@ class _SourceBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: isAuto
-            ? scheme.secondaryContainer
-            : scheme.surfaceContainerHighest,
+        color:
+            isAuto ? scheme.secondaryContainer : scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

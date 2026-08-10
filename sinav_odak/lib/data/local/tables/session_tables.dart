@@ -80,6 +80,7 @@ class SessionBlocks extends Table {
 
   /// Çizelgedeki sıra (0'dan başlar, çalışma ve mola karışık).
   IntColumn get indexNo => integer()();
+
   /// `textEnum` yerine converter: DB'ye `'breakTime'` değil **`'break'`**
   /// yazılır. Böylece `session_blocks.type` ile `schedule_json` içindeki
   /// blok tipi aynı sözleşmeyi kullanır.

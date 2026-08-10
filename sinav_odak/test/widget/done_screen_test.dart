@@ -11,6 +11,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/done_screen.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -55,7 +56,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -85,8 +90,7 @@ void main() {
 
   // ---------------------------------------------------------------------
 
-  testWidgets('kaydedilmiş sonuç yoksa boş durum gösteriliyor',
-      (tester) async {
+  testWidgets('kaydedilmiş sonuç yoksa boş durum gösteriliyor', (tester) async {
     await pumpDone(tester);
     expect(find.byKey(const Key('done-empty')), findsOneWidget);
   });
@@ -122,9 +126,7 @@ void main() {
 
     // Varsayılan günlük hedef 240 dk; bu günde 3600 sn (1sa) çalışılmış.
     expect(
-      tester
-          .widget<Text>(find.byKey(const Key('done-progress-text')))
-          .data,
+      tester.widget<Text>(find.byKey(const Key('done-progress-text'))).data,
       '1sa / 4sa',
     );
     expect(

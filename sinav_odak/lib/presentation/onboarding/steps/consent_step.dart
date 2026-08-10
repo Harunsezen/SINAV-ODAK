@@ -44,7 +44,6 @@ class ConsentStep extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
-
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -69,7 +68,6 @@ class ConsentStep extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-
         Card(
           child: SwitchListTile(
             key: const Key('onboarding-consent-toggle'),
@@ -84,7 +82,6 @@ class ConsentStep extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-
         Text(
           'Bildirimler',
           style: Theme.of(context).textTheme.titleSmall,

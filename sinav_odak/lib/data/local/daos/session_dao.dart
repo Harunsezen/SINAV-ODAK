@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import '../../../core/utils/date_key.dart';
 import '../../../domain/entities/enums.dart';
 import '../database.dart';
-import '../tables/session_tables.dart';
 
 part 'session_dao.g.dart';
 
@@ -83,9 +82,11 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
 
   Stream<List<StudySession>> watchByDate(String dateKey) {
     return (select(studySessions)
-          ..where((t) =>
-              t.dateKey.equals(dateKey) &
-              t.status.equalsValue(SessionStatus.running).not())
+          ..where(
+            (t) =>
+                t.dateKey.equals(dateKey) &
+                t.status.equalsValue(SessionStatus.running).not(),
+          )
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]))
         .watch();
   }
@@ -102,10 +103,12 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
     final fromKey = dateKeyOf(from);
     final toKey = dateKeyOf(to);
     return (select(studySessions)
-          ..where((t) =>
-              t.dateKey.isBiggerOrEqualValue(fromKey) &
-              t.dateKey.isSmallerOrEqualValue(toKey) &
-              t.status.equalsValue(SessionStatus.running).not())
+          ..where(
+            (t) =>
+                t.dateKey.isBiggerOrEqualValue(fromKey) &
+                t.dateKey.isSmallerOrEqualValue(toKey) &
+                t.status.equalsValue(SessionStatus.running).not(),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.startedAt)]))
         .get();
   }
@@ -162,8 +165,10 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
   Future<bool> hasSessionOn(String dateKey) async {
     final q = selectOnly(studySessions)
       ..addColumns([studySessions.id.count()])
-      ..where(studySessions.dateKey.equals(dateKey) &
-          studySessions.status.equalsValue(SessionStatus.running).not());
+      ..where(
+        studySessions.dateKey.equals(dateKey) &
+            studySessions.status.equalsValue(SessionStatus.running).not(),
+      );
     final row = await q.getSingle();
     return (row.read(studySessions.id.count()) ?? 0) > 0;
   }

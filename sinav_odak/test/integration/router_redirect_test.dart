@@ -11,6 +11,7 @@ import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/shell/db_health_page.dart';
 import 'package:sinav_odak/presentation/settings/settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -59,7 +60,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
     await tester.pump();
@@ -70,8 +75,7 @@ void main() {
       await tester.pump();
     }
 
-    return router
-        .routerDelegate.currentConfiguration.uri.toString();
+    return router.routerDelegate.currentConfiguration.uri.toString();
   }
 
   group('onboarding yönlendirmesi', () {
@@ -229,7 +233,11 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: MaterialApp(home: settingsPageFor(debug: false)),
+          child: MaterialApp(
+            localizationsDelegates: L10n.localizationsDelegates,
+            supportedLocales: L10n.supportedLocales,
+            home: settingsPageFor(debug: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();

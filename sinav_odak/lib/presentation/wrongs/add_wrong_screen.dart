@@ -86,7 +86,6 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
                 ),
             ],
           ),
-
           if (_subjectId != null) ...[
             const SizedBox(height: 20),
             Text(
@@ -109,7 +108,6 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
               ],
             ),
           ],
-
           const SizedBox(height: 20),
           Text('Yanlış sayısı', style: Theme.of(context).textTheme.titleSmall),
           Row(
@@ -137,7 +135,6 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
           TextField(
             key: const Key('add-wrong-note'),
@@ -148,7 +145,6 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 24),
           FilledButton(
             key: const Key('add-wrong-save'),

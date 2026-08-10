@@ -14,6 +14,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/pending_finish_controller.dart';
 import 'package:sinav_odak/presentation/run/run_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -75,7 +76,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pump();
@@ -311,8 +316,7 @@ void main() {
     }
   });
 
-  testWidgets('çalışma ekranında rıza yoksa banner yuvası boş',
-      (tester) async {
+  testWidgets('çalışma ekranında rıza yoksa banner yuvası boş', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     await pumpRun(tester);
 
@@ -321,8 +325,7 @@ void main() {
     expect(find.byKey(const Key('banner-slot-runBanner')), findsNothing);
   });
 
-  testWidgets('mola başlayınca otomatik mola ekranına geçiyor',
-      (tester) async {
+  testWidgets('mola başlayınca otomatik mola ekranına geçiyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     await pumpRun(tester);
 

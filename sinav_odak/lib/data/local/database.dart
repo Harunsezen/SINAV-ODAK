@@ -82,7 +82,7 @@ class AppDatabase extends _$AppDatabase {
           // schemaVersion 1'de KALIYOR (temiz şema değişikliği): geliştirme
           // cihazında eski veritabanı varsa uygulama SİLİNMELİDİR.
           await customStatement(
-            "CREATE UNIQUE INDEX idx_one_running "
+            'CREATE UNIQUE INDEX idx_one_running '
             "ON study_sessions(status) WHERE status = 'running'",
           );
 

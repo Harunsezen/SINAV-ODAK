@@ -9,6 +9,7 @@ import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/session_setup/plan_setup.dart';
 import 'package:sinav_odak/presentation/session_setup/setup_controller.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -57,14 +58,19 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
     return container;
   }
 
-  Future<void> tapStepper(WidgetTester tester, Key key, {required bool plus, int times = 1}) async {
+  Future<void> tapStepper(WidgetTester tester, Key key,
+      {required bool plus, int times = 1}) async {
     for (var i = 0; i < times; i++) {
       await tester.tap(
         find.descendant(
@@ -78,8 +84,7 @@ void main() {
 
   // ---------------------------------------------------------------------
 
-  testWidgets('hazır mod: 25+5 x3 -> 5 blok, son blok çalışma',
-      (tester) async {
+  testWidgets('hazır mod: 25+5 x3 -> 5 blok, son blok çalışma', (tester) async {
     await pumpPlan(tester);
 
     // Varsayılan: preset 0 (25+5), cycles 3.
@@ -103,7 +108,7 @@ void main() {
     await tester.tap(find.text('Özel'));
     await tester.pumpAndSettle();
 
-    // Varsayılan 100 dk -> 101'e çıkar (adım 5, o yüzden 105 olur; 
+    // Varsayılan 100 dk -> 101'e çıkar (adım 5, o yüzden 105 olur;
     // bunun yerine doğrudan 100 dk / 3 mola dağıtımını doğrula).
     expect(find.text('25 · 5m · 25 · 5m · 25 · 5m · 25'), findsOneWidget);
     expect(find.text('Çalışma: 1sa 40dk'), findsOneWidget);
@@ -132,7 +137,8 @@ void main() {
     await tapStepper(tester, const Key('custom-total'), plus: false, times: 18);
 
     expect(find.byKey(const Key('plan-error')), findsOneWidget);
-    final btn = tester.widget<FilledButton>(find.byKey(const Key('plan-start')));
+    final btn =
+        tester.widget<FilledButton>(find.byKey(const Key('plan-start')));
     expect(btn.onPressed, isNull, reason: 'geçersiz planla başlatılamaz');
   });
 
@@ -149,8 +155,7 @@ void main() {
     expect(find.byKey(const Key('plan-warning-blockTooLong')), findsOneWidget);
   });
 
-  testWidgets('bitiş saati: saat seçilmeden hata gösteriliyor',
-      (tester) async {
+  testWidgets('bitiş saati: saat seçilmeden hata gösteriliyor', (tester) async {
     await pumpPlan(tester);
     await tester.tap(find.text('Bitiş'));
     await tester.pumpAndSettle();
@@ -174,7 +179,8 @@ void main() {
 
     // KARAR K7: otomatik yarına taşınmaz, hata gösterilir.
     expect(find.byKey(const Key('plan-error')), findsOneWidget);
-    final btn = tester.widget<FilledButton>(find.byKey(const Key('plan-start')));
+    final btn =
+        tester.widget<FilledButton>(find.byKey(const Key('plan-start')));
     expect(btn.onPressed, isNull);
   });
 

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/config/ad_config.dart';
 import '../../data/local/daos/ad_event_dao.dart';
 import '../../domain/entities/ad_placement.dart';
 import '../../domain/entities/enums.dart';
@@ -43,22 +44,18 @@ class AdMobGateway implements AdGateway {
 
   bool _initialized = false;
 
-  // --- GOOGLE TEST BİRİM KİMLİKLERİ ---
-  static const String testBannerUnit = 'ca-app-pub-3940256099942544/6300978111';
-  static const String testNativeUnit = 'ca-app-pub-3940256099942544/2247696110';
-  static const String testInterstitialUnit =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String testRewardedUnit =
-      'ca-app-pub-3940256099942544/5224354917';
+  // Birim kimlikleri `AdConfig`'ten gelir: varsayılan TEST, production
+  // --dart-define ile. Sabitleri burada tutmak, birinin yanlışlıkla
+  // production kimliğini koda yazmasına kapı açardı.
 
   /// Native kartın görünme gecikmesi: kart aniden belirip göz yormasın.
   static const Duration nativeRevealDelay = Duration(milliseconds: 1200);
 
   String _unitFor(AdPlacement p) => switch (p.kind) {
-        AdKind.banner => testBannerUnit,
-        AdKind.native => testNativeUnit,
-        AdKind.interstitial => testInterstitialUnit,
-        AdKind.rewarded => testRewardedUnit,
+        AdKind.banner => AdConfig.bannerUnit,
+        AdKind.native => AdConfig.nativeUnit,
+        AdKind.interstitial => AdConfig.interstitialUnit,
+        AdKind.rewarded => AdConfig.rewardedUnit,
       };
 
   @override
@@ -91,8 +88,7 @@ class AdMobGateway implements AdGateway {
     );
   }
 
-  Future<void> _log(AdPlacement placement, {String? id}) =>
-      _events.logShown(
+  Future<void> _log(AdPlacement placement, {String? id}) => _events.logShown(
         id: id ?? const Uuid().v4(),
         placement: placement,
         shownAtMs: _clock(),

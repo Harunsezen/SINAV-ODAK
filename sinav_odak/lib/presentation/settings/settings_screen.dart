@@ -22,6 +22,20 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _busy = false;
 
+  /// UMP "gizlilik seçenekleri" formunu yeniden açar.
+  ///
+  /// KVKK/GDPR: verilen rıza her zaman GERİ ALINABİLİR olmalı. Form
+  /// kapandıktan sonra sonucu okuyup [consentResultProvider]'ı tazeliyoruz;
+  /// aksi halde kullanıcı "reddet" dese bile uygulama eski kararla reklam
+  /// göstermeye devam ederdi.
+  Future<void> _privacyOptions() async {
+    setState(() => _busy = true);
+    final result = await ref.read(consentGatewayProvider).showPrivacyOptions();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ref.read(consentResultOverrideProvider.notifier).state = result;
+  }
+
   Future<void> _support() async {
     setState(() => _busy = true);
     final earned = await ref.read(rewardedControllerProvider).maybeShow();
@@ -95,6 +109,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           ),
+          // UMP formu yalnızca GEREKLİ olduğu bölgelerde (AEA/UK) anlamlı.
+          // Gerekmeyen yerde göstermek, hiçbir şey açmayan ölü bir düğme
+          // olurdu.
+          if (ref.watch(consentResultProvider).privacyOptionsRequired) ...[
+            const SizedBox(height: 16),
+            Card(
+              child: ListTile(
+                key: const Key('settings-privacy-options'),
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title: const Text('Gizlilik tercihleri'),
+                subtitle: const Text(
+                  'Reklam kişiselleştirme rızanı buradan değiştirebilirsin.',
+                ),
+                enabled: !_busy,
+                onTap: _busy ? null : _privacyOptions,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           const Card(
             child: ListTile(

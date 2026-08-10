@@ -61,7 +61,8 @@ class AdEventDao extends DatabaseAccessor<AppDatabase> with _$AdEventDaoMixin {
   /// edilemezdi (sabit epoch kuralı).
   Future<int> pruneOlderThan(int nowMs, {int days = retentionDays}) {
     final cutoff = nowMs - Duration(days: days).inMilliseconds;
-    return (delete(adEvents)..where((t) => t.shownAt.isSmallerThanValue(cutoff)))
+    return (delete(adEvents)
+          ..where((t) => t.shownAt.isSmallerThanValue(cutoff)))
         .go();
   }
 

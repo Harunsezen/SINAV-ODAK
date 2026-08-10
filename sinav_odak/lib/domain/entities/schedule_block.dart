@@ -182,7 +182,8 @@ class ScheduleBlock {
     };
   }
 
-  static int _readInt(Map<String, dynamic> json, String key, {int? blockIndex}) {
+  static int _readInt(Map<String, dynamic> json, String key,
+      {int? blockIndex}) {
     final v = json[key];
     if (v == null) {
       throw SessionScheduleCodecException(

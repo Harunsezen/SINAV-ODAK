@@ -38,20 +38,23 @@ void main() {
 
   group('aynı gün', () {
     test('ikinci oturum streak\'i ARTIRMIYOR', () {
-      final r = run(day: '2025-08-06', last: '2025-08-06', current: 3, longest: 5);
+      final r =
+          run(day: '2025-08-06', last: '2025-08-06', current: 3, longest: 5);
       expect(r.currentStreak, 3);
       expect(r.lastStudyDate, '2025-08-06');
     });
 
     test('aynı gün tekrarında rekor gerideyse güncelleniyor', () {
-      final r = run(day: '2025-08-06', last: '2025-08-06', current: 7, longest: 2);
+      final r =
+          run(day: '2025-08-06', last: '2025-08-06', current: 7, longest: 2);
       expect(r.longestStreak, 7);
     });
   });
 
   group('GECE YARISI geçişi — ardışık gün', () {
     test('dün çalışılmışsa streak +1', () {
-      final r = run(day: '2025-08-07', last: '2025-08-06', current: 3, longest: 5);
+      final r =
+          run(day: '2025-08-07', last: '2025-08-06', current: 3, longest: 5);
       expect(r.currentStreak, 4);
       expect(r.lastStudyDate, '2025-08-07');
     });
@@ -62,7 +65,8 @@ void main() {
     });
 
     test('yıl sınırı: 31 Aralık -> 1 Ocak ardışık sayılıyor', () {
-      final r = run(day: '2026-01-01', last: '2025-12-31', current: 10, longest: 10);
+      final r =
+          run(day: '2026-01-01', last: '2025-12-31', current: 10, longest: 10);
       expect(r.currentStreak, 11);
       expect(r.longestStreak, 11);
     });
@@ -82,19 +86,22 @@ void main() {
 
   group('BOŞ GÜN — zincir kopması', () {
     test('bir gün atlanırsa streak 1\'e döner', () {
-      final r = run(day: '2025-08-08', last: '2025-08-06', current: 9, longest: 9);
+      final r =
+          run(day: '2025-08-08', last: '2025-08-06', current: 9, longest: 9);
       expect(r.currentStreak, 1, reason: '07 boş geçti');
       expect(r.longestStreak, 9, reason: 'rekor SİLİNMEZ');
     });
 
     test('uzun aradan sonra streak 1', () {
-      final r = run(day: '2025-09-20', last: '2025-08-06', current: 12, longest: 12);
+      final r =
+          run(day: '2025-09-20', last: '2025-08-06', current: 12, longest: 12);
       expect(r.currentStreak, 1);
       expect(r.longestStreak, 12);
     });
 
     test('rekor yalnızca aşıldığında güncelleniyor', () {
-      final r = run(day: '2025-08-07', last: '2025-08-06', current: 5, longest: 5);
+      final r =
+          run(day: '2025-08-07', last: '2025-08-06', current: 5, longest: 5);
       expect(r.currentStreak, 6);
       expect(r.longestStreak, 6);
     });
@@ -102,7 +109,8 @@ void main() {
 
   group('SAAT GERİ ALMA / geçmişe dönük kayıt', () {
     test('geçmiş bir güne kayıt zinciri BOZMUYOR', () {
-      final r = run(day: '2025-08-04', last: '2025-08-06', current: 5, longest: 5);
+      final r =
+          run(day: '2025-08-04', last: '2025-08-06', current: 5, longest: 5);
       expect(r.currentStreak, 5, reason: 'ne artar ne sıfırlanır');
       expect(
         r.lastStudyDate,
@@ -112,7 +120,8 @@ void main() {
     });
 
     test('geçmişe kayıt rekoru düşürmüyor', () {
-      final r = run(day: '2025-01-01', last: '2025-08-06', current: 3, longest: 20);
+      final r =
+          run(day: '2025-01-01', last: '2025-08-06', current: 3, longest: 20);
       expect(r.longestStreak, 20);
     });
 

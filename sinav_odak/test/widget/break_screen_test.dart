@@ -9,6 +9,7 @@ import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/run/break_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -71,7 +72,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pump();
@@ -164,8 +169,7 @@ void main() {
     expect(blocks[2].plannedStartAt, fakeNow);
   });
 
-  testWidgets('mola bitince otomatik çalışma ekranına dönüyor',
-      (tester) async {
+  testWidgets('mola bitince otomatik çalışma ekranına dönüyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     await pumpBreak(tester);
 

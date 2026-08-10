@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import '../../../core/utils/time.dart';
 import '../../../domain/entities/enums.dart';
 import '../database.dart';
-import '../tables/tracking_tables.dart';
 
 part 'wrong_item_dao.g.dart';
 
@@ -40,9 +39,11 @@ class WrongItemDao extends DatabaseAccessor<AppDatabase>
     String? note,
   }) async {
     final existing = await (select(wrongItems)
-          ..where((t) =>
-              t.sessionId.equals(sessionId) &
-              t.source.equalsValue(WrongItemSource.auto)))
+          ..where(
+            (t) =>
+                t.sessionId.equals(sessionId) &
+                t.source.equalsValue(WrongItemSource.auto),
+          ))
         .getSingleOrNull();
 
     if (existing != null) {
@@ -80,9 +81,11 @@ class WrongItemDao extends DatabaseAccessor<AppDatabase>
   /// Aksi halde kullanıcı "Yanlışlar" sekmesinde "0 yanlış" kartı görüyordu.
   Future<void> deleteAutoFor(String sessionId) {
     return (delete(wrongItems)
-          ..where((t) =>
-              t.sessionId.equals(sessionId) &
-              t.source.equalsValue(WrongItemSource.auto)))
+          ..where(
+            (t) =>
+                t.sessionId.equals(sessionId) &
+                t.source.equalsValue(WrongItemSource.auto),
+          ))
         .go();
   }
 
@@ -122,8 +125,10 @@ class WrongItemDao extends DatabaseAccessor<AppDatabase>
 
   Stream<List<WrongItemView>> watchByStatus(WrongItemStatus status) {
     final q = select(wrongItems).join([
-      innerJoin(attachedDatabase.subjects, attachedDatabase.subjects.id.equalsExp(wrongItems.subjectId)),
-      leftOuterJoin(attachedDatabase.topics, attachedDatabase.topics.id.equalsExp(wrongItems.topicId)),
+      innerJoin(attachedDatabase.subjects,
+          attachedDatabase.subjects.id.equalsExp(wrongItems.subjectId)),
+      leftOuterJoin(attachedDatabase.topics,
+          attachedDatabase.topics.id.equalsExp(wrongItems.topicId)),
     ])
       ..where(wrongItems.status.equalsValue(status))
       ..orderBy([OrderingTerm.desc(wrongItems.createdAt)]);

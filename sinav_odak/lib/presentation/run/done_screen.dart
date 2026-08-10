@@ -45,11 +45,8 @@ class DoneScreen extends ConsumerWidget {
     }
 
     final stat = ref.watch(dayStatsProvider(saved.dateKey)).valueOrNull;
-    final goalMinutes = ref
-            .watch(settingsStreamProvider)
-            .valueOrNull
-            ?.dailyGoalMinutes ??
-        0;
+    final goalMinutes =
+        ref.watch(settingsStreamProvider).valueOrNull?.dailyGoalMinutes ?? 0;
 
     final todayStudyS = stat?.totalStudyS ?? 0;
     final goalS = goalMinutes * 60;
@@ -78,7 +75,6 @@ class DoneScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-
             Card(
               key: const Key('done-progress'),
               child: Padding(
@@ -110,9 +106,7 @@ class DoneScreen extends ConsumerWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
-
             FilledButton(
               key: const Key('done-new-session'),
               onPressed: () {

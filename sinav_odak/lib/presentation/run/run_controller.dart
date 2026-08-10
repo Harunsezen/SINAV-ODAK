@@ -102,5 +102,4 @@ class RunController {
   }
 }
 
-final runControllerProvider =
-    Provider<RunController>(RunController.new);
+final runControllerProvider = Provider<RunController>(RunController.new);

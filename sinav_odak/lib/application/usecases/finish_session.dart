@@ -54,8 +54,7 @@ class FinishSessionUseCase {
 
     final status =
         early ? SessionStatus.earlyFinished : SessionStatus.completed;
-    final actualDurationS =
-        early ? elapsed.studyS : schedule.totalStudyS;
+    final actualDurationS = early ? elapsed.studyS : schedule.totalStudyS;
     final totalBreakS = early ? elapsed.breakS : schedule.totalBreakS;
 
     // Net katsayısı kullanıcı ayarından gelir (YKS 4, bazı sınavlarda 3).

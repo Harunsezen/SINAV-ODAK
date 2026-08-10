@@ -9,21 +9,21 @@ const int t0 = 1754467200000;
 
 /// Geçerli çizelge: 24dk çalışma + 5dk mola + 24dk çalışma.
 List<ScheduleBlock> validBlocks() => [
-      ScheduleBlock(
+      const ScheduleBlock(
         index: 0,
         type: BlockType.study,
         startMs: t0,
         endMs: t0 + 1440000,
         seconds: 1440,
       ),
-      ScheduleBlock(
+      const ScheduleBlock(
         index: 1,
         type: BlockType.breakTime,
         startMs: t0 + 1440000,
         endMs: t0 + 1740000,
         seconds: 300,
       ),
-      ScheduleBlock(
+      const ScheduleBlock(
         index: 2,
         type: BlockType.study,
         startMs: t0 + 1740000,
@@ -35,9 +35,10 @@ List<ScheduleBlock> validBlocks() => [
 SessionSchedule validSchedule() =>
     SessionSchedule.fromBlocks(createdAtMs: t0, blocks: validBlocks());
 
-Matcher codecReason(ScheduleCodecReason reason) =>
-    throwsA(isA<SessionScheduleCodecException>()
-        .having((e) => e.reason, 'reason', reason));
+Matcher codecReason(ScheduleCodecReason reason) => throwsA(
+      isA<SessionScheduleCodecException>()
+          .having((e) => e.reason, 'reason', reason),
+    );
 
 void main() {
   group('ScheduleBlock doğrulama', () {
@@ -50,7 +51,8 @@ void main() {
         seconds: 1,
         skipped: true,
       );
-      expect(b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
+      expect(
+          b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
     });
 
     test('çalışma bloğunda extendedS kabul edilmiyor', () {
@@ -62,7 +64,8 @@ void main() {
         seconds: 1,
         extendedS: 300,
       );
-      expect(b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
+      expect(
+          b.validate, codecReason(ScheduleCodecReason.invalidStudyBlockFlags));
     });
 
     test('mola bloğunda skipped ve extendedS serbest', () {
@@ -176,7 +179,8 @@ void main() {
 
     test('negatif createdAtMs reddediliyor', () {
       expect(
-        () => SessionSchedule.fromBlocks(createdAtMs: -1, blocks: validBlocks()),
+        () =>
+            SessionSchedule.fromBlocks(createdAtMs: -1, blocks: validBlocks()),
         codecReason(ScheduleCodecReason.invalidNegativeValue),
       );
     });

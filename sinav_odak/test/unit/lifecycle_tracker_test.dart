@@ -26,8 +26,7 @@ void main() {
     await db.close();
   });
 
-  Future<StudySession> read() async =>
-      (await db.sessionDao.findById('s1'))!;
+  Future<StudySession> read() async => (await db.sessionDao.findById('s1'))!;
 
   void advance(int seconds) => fakeNow += seconds * 1000;
 

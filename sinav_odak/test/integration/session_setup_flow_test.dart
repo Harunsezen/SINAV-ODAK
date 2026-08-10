@@ -10,6 +10,7 @@ import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/session_setup/setup_controller.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -49,7 +50,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: c,
-        child: MaterialApp.router(routerConfig: c.read(appRouterProvider)),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: c.read(appRouterProvider),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -158,7 +163,8 @@ void main() {
 
   testWidgets('kurulum ekranlarında alt navigasyon GİZLİ', (tester) async {
     await pumpApp(tester);
-    expect(find.byType(NavigationBar), findsOneWidget, reason: 'ana panelde var');
+    expect(find.byType(NavigationBar), findsOneWidget,
+        reason: 'ana panelde var');
 
     await tester.tap(find.byKey(const Key('home-start')));
     await tester.pumpAndSettle();

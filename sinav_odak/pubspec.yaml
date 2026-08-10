@@ -79,4 +79,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # generate: true  # i18n v1.2'de açılacak (l10n.yaml + arb dosyalarıyla birlikte)
+  # FAZ 6: gen_l10n altyapısı açıldı (l10n.yaml + lib/l10n/*.arb).
+  # Tam çeviri v1.2'ye ait (K8); şu an TR şablon + EN iskelet.
+  generate: true

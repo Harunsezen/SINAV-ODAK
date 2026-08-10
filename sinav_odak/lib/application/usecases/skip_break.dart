@@ -27,8 +27,7 @@ class SkipBreakUseCase {
     }
 
     final current = ScheduleWriter.parse(session);
-    final updated =
-        ScheduleModifier.skipBreak(current, breakBlockIndex, nowMs);
+    final updated = ScheduleModifier.skipBreak(current, breakBlockIndex, nowMs);
 
     await _writer.rewrite(sessionId: sessionId, schedule: updated);
     return updated;

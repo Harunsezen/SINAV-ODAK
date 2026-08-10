@@ -57,8 +57,9 @@ class WrongItems extends Table {
   IntColumn get createdAt => integer()();
 
   /// Otomatik kayıtlarda oturuma bağlıdır; manuel eklemede null olabilir.
-  TextColumn get sessionId =>
-      text().nullable().references(StudySessions, #id, onDelete: KeyAction.setNull)();
+  TextColumn get sessionId => text()
+      .nullable()
+      .references(StudySessions, #id, onDelete: KeyAction.setNull)();
 
   TextColumn get subjectId =>
       text().references(Subjects, #id, onDelete: KeyAction.restrict)();

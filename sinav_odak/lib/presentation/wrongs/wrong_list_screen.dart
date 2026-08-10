@@ -40,8 +40,7 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
         WrongItemStatus.reviewed =>
           'Tekrar ettiğin konu yok.\nAktif listeden "Tekrar ettim" ile '
               'buraya taşıyabilirsin.',
-        WrongItemStatus.mastered =>
-          'Henüz öğrenildi işaretlediğin konu yok.',
+        WrongItemStatus.mastered => 'Henüz öğrenildi işaretlediğin konu yok.',
       };
 
   @override
@@ -70,15 +69,13 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
               ],
               selected: {_status},
               showSelectedIcon: false,
-              onSelectionChanged: (sel) =>
-                  setState(() => _status = sel.first),
+              onSelectionChanged: (sel) => setState(() => _status = sel.first),
             ),
           ),
           Expanded(
             child: items.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) =>
-                  Center(child: Text('Yanlışlar yüklenemedi: $e')),
+              error: (e, _) => Center(child: Text('Yanlışlar yüklenemedi: $e')),
               data: (list) {
                 if (list.isEmpty) {
                   return Center(

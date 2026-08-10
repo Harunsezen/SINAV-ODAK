@@ -393,7 +393,7 @@ void main() {
 
   group('fromEndTime', () {
     test('60 dk pencere, 1 mola x 10 dk -> tam bitiş anına oturur', () {
-      final end = t0 + 3600000;
+      const end = t0 + 3600000;
       final r = ScheduleBuilder.fromEndTime(
         nowMs: t0,
         endAtMs: end,
@@ -407,7 +407,7 @@ void main() {
     });
 
     test('endAtMs saniye hizalı değilse hizalanır', () {
-      final end = t0 + 3600000 + 500;
+      const end = t0 + 3600000 + 500;
       final r = ScheduleBuilder.fromEndTime(
         nowMs: t0,
         endAtMs: end,
@@ -418,7 +418,7 @@ void main() {
     });
 
     test('nowMs hizalı değilken de bitiş anı korunur', () {
-      final end = t0 + 3600000;
+      const end = t0 + 3600000;
       final r = ScheduleBuilder.fromEndTime(
         nowMs: t0 + 750,
         endAtMs: end,
@@ -430,7 +430,7 @@ void main() {
 
     test('artık saniyeler son çalışma bloğuna eklenir, kaybolmaz', () {
       // 3630 sn pencere - 600 sn mola = 3030 sn çalışma -> 50 dk + 30 sn
-      final end = t0 + 3630000;
+      const end = t0 + 3630000;
       final r = ScheduleBuilder.fromEndTime(
         nowMs: t0,
         endAtMs: end,

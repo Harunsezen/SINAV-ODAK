@@ -13,7 +13,15 @@ abstract final class AppColors {
 
   /// Ders renk paleti (kullanıcı ders eklerken bu havuzdan seçer).
   static const subjectPalette = <String>[
-    '#4F5BD5', '#2E9E6B', '#D9534F', '#E08D3C', '#2FA3A0',
-    '#7B4FD5', '#C2417F', '#3C7DE0', '#8A9A2B', '#5C6B7A',
+    '#4F5BD5',
+    '#2E9E6B',
+    '#D9534F',
+    '#E08D3C',
+    '#2FA3A0',
+    '#7B4FD5',
+    '#C2417F',
+    '#3C7DE0',
+    '#8A9A2B',
+    '#5C6B7A',
   ];
 }

@@ -91,9 +91,12 @@ void main() {
 
     test('uzatma sayısı state içinde taşınıyor', () {
       // UI "molayı 2 kez uzattın, hakkın doldu" mesajını buradan okuyacak.
-      expect((breakState(extensionsUsed: 0) as SessionInBreak).extensionsUsed, 0);
-      expect((breakState(extensionsUsed: 1) as SessionInBreak).extensionsUsed, 1);
-      expect((breakState(extensionsUsed: 2) as SessionInBreak).extensionsUsed, 2);
+      expect(
+          (breakState(extensionsUsed: 0) as SessionInBreak).extensionsUsed, 0);
+      expect(
+          (breakState(extensionsUsed: 1) as SessionInBreak).extensionsUsed, 1);
+      expect(
+          (breakState(extensionsUsed: 2) as SessionInBreak).extensionsUsed, 2);
     });
 
     test('blok indeksi state içinde taşınıyor', () {
@@ -142,8 +145,10 @@ void main() {
           schedule: schedule(),
         );
 
-    test('1500 ms -> 1 sn', () => expect(withRemaining(1500).remainingSeconds, 1));
-    test('999 ms -> 0 sn', () => expect(withRemaining(999).remainingSeconds, 0));
+    test('1500 ms -> 1 sn',
+        () => expect(withRemaining(1500).remainingSeconds, 1));
+    test(
+        '999 ms -> 0 sn', () => expect(withRemaining(999).remainingSeconds, 0));
     test('0 ms -> 0 sn', () => expect(withRemaining(0).remainingSeconds, 0));
   });
 }

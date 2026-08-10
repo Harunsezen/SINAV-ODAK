@@ -27,7 +27,7 @@ class ActivityPicker extends ConsumerWidget {
           children: [
             Text(
               setup.topicName == null
-                  ? '${setup.subjectName ?? ""}'
+                  ? setup.subjectName ?? ''
                   : '${setup.subjectName ?? ""} · ${setup.topicName}',
               style: Theme.of(context).textTheme.titleSmall,
             ),

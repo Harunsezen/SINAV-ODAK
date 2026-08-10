@@ -11,6 +11,7 @@ import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/home/home_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -65,7 +66,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -107,9 +112,7 @@ void main() {
     expect(find.byKey(const Key('home-streak')), findsNothing);
     expect(find.byKey(const Key('home-recent-empty')), findsOneWidget);
     expect(
-      tester
-          .widget<Text>(find.byKey(const Key('home-today-duration')))
-          .data,
+      tester.widget<Text>(find.byKey(const Key('home-today-duration'))).data,
       '0dk / 4sa',
       reason: 'varsayılan hedef 240 dk',
     );
@@ -204,7 +207,8 @@ void main() {
     expect(find.text('Sponsorlu'), findsOneWidget);
   });
 
-  testWidgets('[Oturumu Başlat] kurulum akışını sıfırlayıp ders seçimine gidiyor',
+  testWidgets(
+      '[Oturumu Başlat] kurulum akışını sıfırlayıp ders seçimine gidiyor',
       (tester) async {
     await pumpHome(tester);
 

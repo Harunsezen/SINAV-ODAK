@@ -93,10 +93,9 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
   /// Ders ve tür dolu olduğu için `SetupSelection.isReadyForPlan` sağlanır;
   /// kullanıcı ders/konu/tür ekranlarını tekrar gezmez.
   void _studyThisTopic() {
-    final activities =
-        ref.read(activityTypesProvider).valueOrNull ?? const [];
-    final matches = activities
-        .where((a) => a.id == WrongDetailSheet.analysisActivityId);
+    final activities = ref.read(activityTypesProvider).valueOrNull ?? const [];
+    final matches =
+        activities.where((a) => a.id == WrongDetailSheet.analysisActivityId);
     final analysis = matches.isEmpty ? null : matches.first;
 
     // Sayfa kapandıktan sonra bu State'in context'i kullanılamaz;

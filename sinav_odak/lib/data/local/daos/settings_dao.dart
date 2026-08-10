@@ -2,14 +2,14 @@ import 'package:drift/drift.dart';
 
 import '../../../core/utils/time.dart';
 import '../database.dart';
-import '../tables/settings_table.dart';
 
 part 'settings_dao.g.dart';
 
 const kSettingsId = 'me';
 
 @DriftAccessor(tables: [UserSettings])
-class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin {
+class SettingsDao extends DatabaseAccessor<AppDatabase>
+    with _$SettingsDaoMixin {
   SettingsDao(super.db);
 
   /// Ayar satırını garanti eder (ilk açılış / bozulma durumları).
@@ -42,5 +42,6 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
   }
 
   Future<UserSetting> read() =>
-      (select(userSettings)..where((t) => t.id.equals(kSettingsId))).getSingle();
+      (select(userSettings)..where((t) => t.id.equals(kSettingsId)))
+          .getSingle();
 }

@@ -30,8 +30,7 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(db),
         clockProvider.overrideWithValue(() => fakeNow),
-        sessionNotifierProvider
-            .overrideWithValue(notifier as SessionNotifier),
+        sessionNotifierProvider.overrideWithValue(notifier as SessionNotifier),
         activityTrackerProvider
             .overrideWithValue(tracker as SessionActivityTracker),
         uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
@@ -195,8 +194,9 @@ void main() {
     );
     addTearDown(c2.dispose);
     await seedRunningSession(db2, id: 's2', sch: schedule());
-    final fullScore =
-        await c2.read(runControllerProvider).finish(sessionId: 's2', early: false);
+    final fullScore = await c2
+        .read(runControllerProvider)
+        .finish(sessionId: 's2', early: false);
     await db2.close();
 
     expect(earlyScore!, lessThan(fullScore!));
@@ -208,8 +208,7 @@ void main() {
 
     // Uygulama öldü, çizelge bitti, çok sonra açıldı.
     fakeNow = lastEnd + 3600000;
-    final result =
-        await RecoveryService(db, newRepo(db)).check(nowMs: fakeNow);
+    final result = await RecoveryService(db, newRepo(db)).check(nowMs: fakeNow);
 
     expect(result.outcome.name, 'needsDecision');
     expect(result.recoveredStudyS, 2880);

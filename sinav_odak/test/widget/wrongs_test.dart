@@ -11,6 +11,7 @@ import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/session_setup/setup_controller.dart';
 import 'package:sinav_odak/presentation/wrongs/add_wrong_screen.dart';
 import 'package:sinav_odak/presentation/wrongs/wrong_list_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -75,7 +76,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: buildRouter()),
+        child: MaterialApp.router(
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          routerConfig: buildRouter(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -135,8 +140,7 @@ void main() {
     expect(find.text('elle'), findsOneWidget, reason: 'kaynak rozeti');
   });
 
-  testWidgets('oturumdan gelen kayıt auto rozetiyle görünüyor',
-      (tester) async {
+  testWidgets('oturumdan gelen kayıt auto rozetiyle görünüyor', (tester) async {
     await seedRunningSession(db, id: 's1', sch: schedule());
     await db.wrongItemDao.upsertFromSession(
       id: 'wr_s1',
@@ -154,8 +158,7 @@ void main() {
   testWidgets('SegmentedButton filtresi listeyi ayırıyor', (tester) async {
     await addManual(id: 'w-aktif', wrongCount: 5);
     await addManual(id: 'w-tekrar', wrongCount: 7, topic: null);
-    await db.wrongItemDao
-        .setStatus('w-tekrar', WrongItemStatus.reviewed);
+    await db.wrongItemDao.setStatus('w-tekrar', WrongItemStatus.reviewed);
     await pumpWrongs(tester);
 
     // Aktif sekmesi yalnızca aktif kaydı gösterir.
@@ -220,8 +223,7 @@ void main() {
     expect(rows.single.note, 'yeni not');
   });
 
-  testWidgets('silme ONAY istiyor; vazgeçilirse kayıt duruyor',
-      (tester) async {
+  testWidgets('silme ONAY istiyor; vazgeçilirse kayıt duruyor', (tester) async {
     await addManual();
     await pumpWrongs(tester);
 
@@ -301,8 +303,8 @@ void main() {
     await tester.tap(find.byKey(const Key('wrongs-add')));
     await tester.pumpAndSettle();
 
-    final btn = tester
-        .widget<FilledButton>(find.byKey(const Key('add-wrong-save')));
+    final btn =
+        tester.widget<FilledButton>(find.byKey(const Key('add-wrong-save')));
     expect(btn.onPressed, isNull, reason: 'ders ZORUNLU');
   });
 
@@ -347,8 +349,8 @@ void main() {
     await tester.tap(find.byKey(const Key('wrongs-add')));
     await tester.pumpAndSettle();
 
-    final dec = tester
-        .widget<IconButton>(find.byKey(const Key('add-wrong-dec')));
+    final dec =
+        tester.widget<IconButton>(find.byKey(const Key('add-wrong-dec')));
     expect(dec.onPressed, isNull, reason: '0 yanlışlı kayıt anlamsız');
   });
 }

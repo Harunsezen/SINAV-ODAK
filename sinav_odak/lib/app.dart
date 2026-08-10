@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,9 +28,13 @@ class SinavOdakApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: ref.watch(appRouterProvider),
+      // FAZ 6: metinler `lib/l10n/*.arb`'den geliyor. Şablon dil TÜRKÇE;
+      // EN dosyası altyapının çalıştığını gösteren iskelet, tam çeviri
+      // v1.2'ye ait (K8). Uygulama şimdilik TR'ye sabit.
       locale: const Locale('tr'),
-      supportedLocales: const [Locale('tr'), Locale('en')],
+      supportedLocales: L10n.supportedLocales,
       localizationsDelegates: const [
+        L10n.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

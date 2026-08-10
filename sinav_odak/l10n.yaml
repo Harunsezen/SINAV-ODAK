@@ -1,0 +1,9 @@
+# gen_l10n yapılandırması (FAZ 6).
+#
+# Şablon TÜRKÇE: ürünün birincil dili Türkçe ve metinler önce TR yazılıyor.
+# EN dosyası altyapının çalıştığını gösteren iskelet; tam çeviri v1.2'ye ait.
+arb-dir: lib/l10n
+template-arb-file: app_tr.arb
+output-localization-file: app_localizations.dart
+output-class: L10n
+nullable-getter: false

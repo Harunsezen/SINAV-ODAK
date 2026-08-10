@@ -94,8 +94,7 @@ class _RunningBody extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final elapsedS =
-        state.schedule.totalStudyS - state.remainingMs ~/ 1000;
+    final elapsedS = state.schedule.totalStudyS - state.remainingMs ~/ 1000;
 
     final confirmed = await showDialog<bool>(
       context: context,

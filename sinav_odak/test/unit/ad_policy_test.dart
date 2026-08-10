@@ -387,8 +387,8 @@ void main() {
 
     test('isFullScreen YALNIZCA interstitial ve rewarded için true', () {
       for (final p in AdPlacement.values) {
-        final expected = p.kind == AdKind.interstitial ||
-            p.kind == AdKind.rewarded;
+        final expected =
+            p.kind == AdKind.interstitial || p.kind == AdKind.rewarded;
         expect(p.isFullScreen, expected, reason: '$p');
       }
     });

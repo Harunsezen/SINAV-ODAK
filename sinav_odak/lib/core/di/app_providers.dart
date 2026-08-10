@@ -5,6 +5,8 @@
 /// Yani data katmanı domain'e bağımlı hale gelmiş, `providers -> recovery_service
 /// -> database` şeklinde döngüsel bir bağımlılık oluşmuştu. Bağımlılık kurulumu
 /// (DI) hiçbir katmana ait değildir; `core/di` bunun doğru yeridir.
+library;
+
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,8 +48,8 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 });
 
 /// Oturum yazma orkestrasyonu (oturum + yanlış defteri + daily_stats).
-final sessionRepositoryProvider =
-    Provider<SessionRepository>((ref) => SessionRepository(ref.watch(databaseProvider)));
+final sessionRepositoryProvider = Provider<SessionRepository>(
+    (ref) => SessionRepository(ref.watch(databaseProvider)));
 
 /// Açılışta hesaplanan kurtarma sonucu. main() içinde override edilir.
 final pendingRecoveryProvider = Provider<RecoveryResult>(
@@ -305,8 +307,7 @@ final dayStatsProvider = StreamProvider.family<DailyStat?, String>(
 /// tiplerini isimlendirmeden tükettiği için ad çözümlemesi burada yapılır.
 typedef ActiveLabels = ({String subjectName, String? topicName});
 
-final activeSessionLabelsProvider =
-    FutureProvider<ActiveLabels?>((ref) async {
+final activeSessionLabelsProvider = FutureProvider<ActiveLabels?>((ref) async {
   final session = ref.watch(activeSessionProvider).valueOrNull;
   if (session == null) return null;
 
@@ -334,7 +335,9 @@ final examTypeProvider = Provider<ExamType>((ref) {
 
 /// Aktif sınav türüne ait, arşivlenmemiş dersler.
 final subjectsProvider = StreamProvider<List<Subject>>((ref) {
-  return ref.watch(subjectDaoProvider).watchSubjects(ref.watch(examTypeProvider));
+  return ref
+      .watch(subjectDaoProvider)
+      .watchSubjects(ref.watch(examTypeProvider));
 });
 
 /// Bir dersin arşivlenmemiş konuları.

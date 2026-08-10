@@ -151,12 +151,13 @@ void main() {
           );
 
       expect(id, 's1');
-      expect((await db.sessionDao.findById('s1'))!.status,
-          SessionStatus.running);
+      expect(
+        (await db.sessionDao.findById('s1'))!.status,
+        SessionStatus.running,
+      );
     });
 
-    test('extendBreak molada çalışıyor, çalışma bloğunda çalışmıyor',
-        () async {
+    test('extendBreak molada çalışıyor, çalışma bloğunda çalışmıyor', () async {
       await seedRunningSession(db, id: 's1', sch: schedule());
       final c = makeContainer();
       addTearDown(c.dispose);

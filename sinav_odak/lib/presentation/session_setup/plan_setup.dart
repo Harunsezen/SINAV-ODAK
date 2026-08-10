@@ -91,8 +91,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
           }
           final now = DateTime.fromMillisecondsSinceEpoch(nowMs);
           // KARAR K7: geçmişte kalan saat otomatik yarına TAŞINMAZ.
-          final end =
-              DateTime(now.year, now.month, now.day, hour, _endMinute);
+          final end = DateTime(now.year, now.month, now.day, hour, _endMinute);
           return (
             result: ScheduleBuilder.fromEndTime(
               nowMs: nowMs,
@@ -155,7 +154,6 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 16),
-
           SegmentedButton<PlanMode>(
             segments: const [
               ButtonSegment(value: PlanMode.preset, label: Text('Hazır')),
@@ -166,13 +164,10 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
             onSelectionChanged: (s) => setState(() => _mode = s.first),
           ),
           const SizedBox(height: 16),
-
           if (_mode == PlanMode.preset) ..._presetControls(),
           if (_mode == PlanMode.custom) ..._customControls(),
           if (_mode == PlanMode.endTime) ..._endTimeControls(),
-
           const Divider(height: 32),
-
           if (built.error != null)
             Card(
               key: const Key('plan-error'),
@@ -182,7 +177,6 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
                 child: Text(built.error!),
               ),
             ),
-
           if (built.result != null) ...[
             for (final w in built.result!.warnings)
               Card(
@@ -195,13 +189,11 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
               ),
             _Preview(schedule: schedule!),
           ],
-
           const SizedBox(height: 24),
           FilledButton(
             key: const Key('plan-start'),
-            onPressed: (schedule == null || _starting)
-                ? null
-                : () => _start(schedule),
+            onPressed:
+                (schedule == null || _starting) ? null : () => _start(schedule),
             child: Text(_starting ? 'Başlatılıyor...' : 'BAŞLAT'),
           ),
         ],
@@ -287,7 +279,8 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
               hint: const Text('Saat'),
               items: [
                 for (var h = 0; h < 24; h++)
-                  DropdownMenuItem(value: h, child: Text(h.toString().padLeft(2, '0'))),
+                  DropdownMenuItem(
+                      value: h, child: Text(h.toString().padLeft(2, '0'))),
               ],
               onChanged: (v) => setState(() => _endHour = v),
             ),

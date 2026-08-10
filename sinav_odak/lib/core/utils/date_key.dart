@@ -7,7 +7,6 @@ library;
 
 import 'package:intl/intl.dart';
 
-
 final DateFormat _fmt = DateFormat('yyyy-MM-dd');
 
 String dateKeyOf(DateTime dt) => _fmt.format(dt);

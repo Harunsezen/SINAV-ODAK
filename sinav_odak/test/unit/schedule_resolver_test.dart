@@ -97,8 +97,10 @@ void main() {
     });
 
     test('tam 3 sn geri -> hâlâ tolerans içinde', () {
-      expect(at(t0 - ScheduleResolver.clockSkewToleranceMs),
-          isA<SessionInBlock>());
+      expect(
+        at(t0 - ScheduleResolver.clockSkewToleranceMs),
+        isA<SessionInBlock>(),
+      );
     });
 
     test('3001 ms geri -> clockMovedBack', () {

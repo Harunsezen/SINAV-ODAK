@@ -70,7 +70,6 @@ class HomeScreen extends ConsumerWidget {
           children: [
             const BannerAdSlot(placement: AdPlacement.homeBanner),
             const SizedBox(height: 12),
-
             Card(
               key: const Key('home-today'),
               child: Padding(
@@ -127,7 +126,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
             FilledButton(
               key: const Key('home-start'),
@@ -138,7 +136,6 @@ class HomeScreen extends ConsumerWidget {
               },
               child: const Text('Oturumu Başlat'),
             ),
-
             const SizedBox(height: 24),
             Text(
               'Son oturumlar',
