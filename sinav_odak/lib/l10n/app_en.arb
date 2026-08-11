@@ -1,0 +1,222 @@
+{
+  "@@locale": "en",
+  "appTitle": "Sınav Odak",
+  "@appTitle": {
+    "description": "Uygulama adı"
+  },
+  "navHome": "Ana Panel",
+  "navStats": "İstatistik",
+  "navWrongs": "Yanlışlar",
+  "navCalendar": "Takvim",
+  "navSettings": "Ayarlar",
+  "runRemaining": "kalan",
+  "runNextBreak": "Sonraki: mola",
+  "runLastBlock": "Son blok",
+  "runFinish": "Bitir",
+  "runSkipBreak": "Molayı Atla",
+  "runBackBlocked": "Oturumu bitirmek için \"Bitir\"e bas.",
+  "runBlockOf": "{index}. blok / {total}",
+  "@runBlockOf": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "runConfirmTitle": "Oturumu bitirelim mi?",
+  "runConfirmCancel": "Vazgeç",
+  "runConfirmYes": "Evet, bitir",
+  "runClockMovedBack": "Cihaz saati değişmiş görünüyor.\nOturumun doğru sürdürülebilmesi için saati kontrol et.",
+  "breakTitle": "MOLA",
+  "breakRemaining": "kalan mola",
+  "breakEnd": "Molayı Bitir",
+  "breakExtend": "+5 dk ({left} hak)",
+  "@breakExtend": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryTitle": "Oturum Sonu",
+  "summaryDone": "Oturum tamamlandı",
+  "summaryQuestionsTitle": "Kaç soru çözdün?",
+  "summaryQuestionCount": "Soru sayısı",
+  "summaryReset": "Sıfırla",
+  "summaryBreakdownTitle": "Doğru / Yanlış / Boş",
+  "summaryCorrect": "Doğru",
+  "summaryWrong": "Yanlış",
+  "summaryEmpty": "Boş",
+  "summaryNet": "Net",
+  "summaryMoodTitle": "Nasıl geçti?",
+  "summaryNote": "Not (opsiyonel)",
+  "summarySave": "KAYDET",
+  "summaryNoAds": "Bu ekranda reklam gösterilmez.",
+  "summaryEmptyState": "Özetlenecek oturum yok.",
+  "summaryStudy": "Çalışma: {duration}",
+  "@summaryStudy": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryBreak": "Mola: {duration}",
+  "@summaryBreak": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "adSponsored": "Sponsorlu",
+  "settingsTitle": "Ayarlar",
+  "settingsAppearance": "Görünüm",
+  "settingsTheme": "Tema",
+  "settingsThemeSystem": "Sistem",
+  "settingsThemeLight": "Açık",
+  "settingsThemeDark": "Koyu",
+  "settingsKeepScreenOn": "Ekran açık kalsın",
+  "settingsKeepScreenOnNote": "Çalışma sırasında ekran kendiliğinden kapanmaz. Pil tüketimini artırır.",
+  "settingsStudy": "Çalışma",
+  "settingsNetCoefficient": "Net katsayısı",
+  "settingsNetCoefficientNote": "Net = doğru − (yanlış ÷ katsayı). YKS'de 4, bazı sınavlarda 3.",
+  "settingsNetRecomputeTitle": "Geçmiş netler yeniden hesaplansın mı?",
+  "settingsNetRecomputeBody": "Katsayıyı {from} yerine {to} yaparsan geçmiş oturumların netleri de bu katsayıyla yeniden hesaplanır. Aksi halde istatistiklerin iki farklı katsayının karışımı olur.",
+  "@settingsNetRecomputeBody": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsNetRecomputeConfirm": "Hesapla",
+  "settingsNetRecomputeDone": "{count} oturumun neti güncellendi.",
+  "@settingsNetRecomputeDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDailyGoal": "Günlük hedef (dakika)",
+  "settingsNotifications": "Bildirim ve ses",
+  "settingsNotificationEnabled": "Bildirimler",
+  "settingsNotificationNote": "Mola ve oturum bitişinde haber ver.",
+  "settingsSound": "Ses",
+  "settingsVibration": "Titreşim",
+  "settingsCatalog": "Ders ve konular",
+  "settingsCatalogNote": "Ders, konu ve çalışma türü ekle veya düzenle.",
+  "settingsCatalogOpen": "Yönet",
+  "settingsData": "Veri",
+  "settingsReset": "Verileri sıfırla",
+  "settingsResetNote": "Tüm oturumlar, istatistikler ve yanlış defteri silinir.",
+  "settingsResetStep1Title": "Verilerin tamamı silinsin mi?",
+  "settingsResetStep1Body": "Oturum geçmişin, istatistiklerin, yanlış defterin, hedeflerin ve eklediğin dersler silinir. Bu işlem GERİ ALINAMAZ.",
+  "settingsResetStep1Continue": "Devam et",
+  "settingsResetStep2Title": "Son onay",
+  "settingsResetStep2Body": "Onaylamak için aşağıya {word} yaz.",
+  "@settingsResetStep2Body": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsResetKeyword": "SIFIRLA",
+  "settingsResetConfirm": "Kalıcı olarak sil",
+  "settingsResetDone": "Tüm veriler silindi.",
+  "settingsAbout": "Hakkında",
+  "settingsVersion": "Sürüm",
+  "settingsAboutBody": "Sınav Odak %100 ücretsizdir ve hiçbir özelliği kilitli değildir. Çalışma verilerin yalnızca bu cihazda tutulur, hiçbir sunucuya gönderilmez.",
+  "settingsPrivacyPolicy": "Gizlilik politikası",
+  "settingsTestAdsWarning": "TEST reklam kimlikleri kullanılıyor.",
+  "commonCancel": "Vazgeç",
+  "commonSave": "Kaydet",
+  "commonAdd": "Ekle",
+  "commonEdit": "Düzenle",
+  "commonBack": "Geri",
+  "commonRetry": "Tekrar dene",
+  "catalogTitle": "Ders ve Konular",
+  "catalogTabSubjects": "Dersler",
+  "catalogTabActivities": "Türler",
+  "catalogAddSubject": "Ders ekle",
+  "catalogEditSubject": "Dersi düzenle",
+  "catalogSubjectName": "Ders adı",
+  "catalogAddTopic": "Konu ekle",
+  "catalogEditTopic": "Konuyu düzenle",
+  "catalogTopicName": "Konu adı",
+  "catalogAddActivity": "Tür ekle",
+  "catalogEditActivity": "Türü düzenle",
+  "catalogActivityName": "Tür adı",
+  "catalogArchive": "Arşivle",
+  "catalogUnarchive": "Arşivden çıkar",
+  "catalogArchived": "Arşivlenmiş",
+  "catalogShowArchived": "Arşivlenenleri göster",
+  "catalogNoDelete": "Kayıtlar silinmez, arşivlenir: silinen ders geçmiş istatistikleri bozar.",
+  "catalogNameRequired": "Ad boş olamaz.",
+  "catalogTopicCount": "{count} konu",
+  "@catalogTopicCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogEmptyTopics": "Bu derste henüz konu yok.",
+  "catalogColor": "Renk",
+  "statsTitle": "İstatistik",
+  "statsRangeWeek": "Hafta",
+  "statsRangeMonth": "Ay",
+  "statsTotalStudy": "Toplam çalışma",
+  "statsSessionCount": "Oturum",
+  "statsNet": "Net",
+  "statsAvgFocus": "Ortalama odak",
+  "statsSuccessRate": "Başarı oranı",
+  "statsDailyChart": "Günlük çalışma (dakika)",
+  "statsSubjectBreakdown": "Ders dağılımı",
+  "statsWeakestTopics": "Gelişim gereken konular",
+  "statsWeakestTopicWrongs": "{count} yanlış",
+  "@statsWeakestTopicWrongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsEmpty": "Bu aralıkta kayıtlı oturum yok.",
+  "statsEmptyHint": "İlk oturumunu tamamladığında grafikler burada belirir.",
+  "statsExport": "CSV olarak dışa aktar",
+  "statsExportSubject": "Sınav Odak — çalışma kayıtları",
+  "statsExportDone": "Dosya paylaşıma hazır.",
+  "statsExportEmpty": "Dışa aktarılacak oturum yok.",
+  "statsExportFailed": "Dışa aktarma yapılamadı.",
+  "statsQuestions": "Soru",
+  "statsCorrect": "Doğru",
+  "statsWrong": "Yanlış",
+  "durationHm": "{hours} sa {minutes} dk",
+  "@durationHm": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationM": "{minutes} dk",
+  "@durationM": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
+}
