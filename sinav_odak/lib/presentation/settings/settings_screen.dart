@@ -181,6 +181,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
 
+          // --- İlerleme: hedefler ve rozetler ---
+          _SectionCard(
+            title: l.goalsTitle,
+            icon: Icons.flag_outlined,
+            children: [
+              ListTile(
+                key: const Key('settings-goals'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.track_changes_outlined),
+                title: Text(l.goalsTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.goals),
+              ),
+              ListTile(
+                key: const Key('settings-achievements'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.emoji_events_outlined),
+                title: Text(l.achievementsTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.achievements),
+              ),
+            ],
+          ),
+
           // --- Ders ve konular ---
           _SectionCard(
             title: l.settingsCatalog,

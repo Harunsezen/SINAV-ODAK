@@ -24,4 +24,5 @@ abstract final class Routes {
   static const onboarding = '/onboarding';
   static const manage = '/manage';
   static const goals = '/goals';
+  static const achievements = '/achievements';
 }

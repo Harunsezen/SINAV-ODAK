@@ -50,4 +50,15 @@ class GoalDao extends DatabaseAccessor<AppDatabase> with _$GoalDaoMixin {
 
   Future<void> deleteGoal(String id) =>
       (delete(goals)..where((t) => t.id.equals(id))).go();
+
+  /// Tüm hedefler — Hedefler ekranı aktif ve tamamlananları birlikte gösterir.
+  Stream<List<Goal>> watchAll() {
+    return (select(goals)
+          ..orderBy([
+            // Aktifler üstte: kullanıcı önce üzerinde çalıştığını görmeli.
+            (t) => OrderingTerm.asc(t.status),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .watch();
+  }
 }

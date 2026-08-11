@@ -189,5 +189,112 @@
   "durationM": "{minutes} dk",
   "@durationM": {
     "placeholders": {"minutes": {"type": "int"}}
-  }
+  }  ,
+
+  "calendarTitle": "Takvim",
+  "calendarPrevMonth": "Önceki ay",
+  "calendarNextMonth": "Sonraki ay",
+  "calendarToday": "Bugün",
+  "calendarEmpty": "Bu ayda kayıtlı oturum yok.",
+  "calendarEmptyHint": "Çalıştığın günler burada renklenir.",
+  "calendarMonthTotal": "Ay toplamı",
+  "calendarStudyDays": "{count} gün çalışıldı",
+  "@calendarStudyDays": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "calendarDayDetail": "{day} — {duration}, {sessions} oturum",
+  "@calendarDayDetail": {
+    "placeholders": {
+      "day": {"type": "String"},
+      "duration": {"type": "String"},
+      "sessions": {"type": "int"}
+    }
+  },
+  "calendarDayEmpty": "{day} — çalışma yok",
+  "@calendarDayEmpty": {
+    "placeholders": {"day": {"type": "String"}}
+  },
+  "calendarLegendLess": "az",
+  "calendarLegendMore": "çok",
+  "calendarWeekdayMon": "Pt",
+  "calendarWeekdayTue": "Sa",
+  "calendarWeekdayWed": "Ça",
+  "calendarWeekdayThu": "Pe",
+  "calendarWeekdayFri": "Cu",
+  "calendarWeekdaySat": "Ct",
+  "calendarWeekdaySun": "Pz",
+  "monthName": "{month, select, 1{Ocak} 2{Şubat} 3{Mart} 4{Nisan} 5{Mayıs} 6{Haziran} 7{Temmuz} 8{Ağustos} 9{Eylül} 10{Ekim} 11{Kasım} 12{Aralık} other{}}",
+  "@monthName": {
+    "placeholders": {"month": {"type": "String"}}
+  },
+
+  "goalsTitle": "Hedefler",
+  "goalsActive": "Aktif",
+  "goalsCompleted": "Tamamlanan",
+  "goalsEmpty": "Henüz hedef yok.",
+  "goalsEmptyHint": "Küçük ve ulaşılabilir bir hedefle başla.",
+  "goalsAdd": "Hedef ekle",
+  "goalsNew": "Yeni hedef",
+  "goalsTypeLabel": "Hedef türü",
+  "goalsTargetLabel": "Hedef değeri",
+  "goalsSubjectLabel": "Ders",
+  "goalsCreate": "Oluştur",
+  "goalsProgress": "{current} / {target}",
+  "@goalsProgress": {
+    "placeholders": {
+      "current": {"type": "String"},
+      "target": {"type": "String"}
+    }
+  },
+  "goalsReached": "Tamamlandı",
+  "goalsDelete": "Hedefi sil",
+  "goalsDeleteConfirm": "Bu hedef silinsin mi?",
+  "goalsUnitMinutes": "dk",
+  "goalsUnitQuestions": "soru",
+  "goalsUnitDays": "gün",
+  "goalsUnitTopics": "konu",
+  "goalsUnitNet": "net",
+  "goalTypeDailyMinutes": "Günlük çalışma süresi",
+  "goalTypeWeeklyMinutes": "Haftalık çalışma süresi",
+  "goalTypeDailyQuestions": "Günlük soru sayısı",
+  "goalTypeWeeklyQuestions": "Haftalık soru sayısı",
+  "goalTypeSubjectMinutes": "Ders bazlı süre",
+  "goalTypeTopicCompletion": "Tamamlanan konu",
+  "goalTypeNet": "Günlük net",
+  "goalTypeStreak": "Seri (gün)",
+
+  "achievementsTitle": "Rozetler",
+  "achievementsUnlockedOf": "{unlocked} / {total} rozet",
+  "@achievementsUnlockedOf": {
+    "placeholders": {
+      "unlocked": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "achievementsLocked": "Kilitli",
+  "achievementsNew": "YENİ",
+  "achStreak3Title": "Üç Gün Üst Üste",
+  "achStreak3Body": "3 gün arka arkaya çalıştın.",
+  "achStreak7Title": "Bir Hafta Kesintisiz",
+  "achStreak7Body": "7 gün arka arkaya çalıştın.",
+  "achStreak30Title": "Bir Ay Kesintisiz",
+  "achStreak30Body": "30 gün arka arkaya çalıştın.",
+  "achFirstSessionTitle": "İlk Adım",
+  "achFirstSessionBody": "İlk oturumunu tamamladın.",
+  "achHours10Title": "10 Saat",
+  "achHours10Body": "Toplam 10 saat çalıştın.",
+  "achHours100Title": "100 Saat",
+  "achHours100Body": "Toplam 100 saat çalıştın.",
+  "achQuestions1000Title": "1000 Soru",
+  "achQuestions1000Body": "Toplam 1000 soru çözdün.",
+  "achMarathonDayTitle": "Maraton",
+  "achMarathonDayBody": "Tek günde 6 saat çalıştın.",
+  "achFocus90Title": "Tam Odak",
+  "achFocus90Body": "Bir günün odak puanı 90'ı geçti.",
+  "achEarlyBirdTitle": "Erken Kuş",
+  "achEarlyBirdBody": "Sabah 06:00-08:00 arasında oturum başlattın.",
+  "achNightOwlTitle": "Gece Kuşu",
+  "achNightOwlBody": "Gece 00:00-04:00 arasında oturum başlattın.",
+  "achUnknownTitle": "Bilinmeyen rozet",
+  "achUnknownBody": ""
 }

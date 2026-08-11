@@ -10,6 +10,7 @@ import '../../domain/entities/enums.dart';
 import 'connection/connection.dart';
 import 'converters/block_type_converter.dart';
 import 'daos/ad_event_dao.dart';
+import 'daos/achievement_dao.dart';
 import 'daos/goal_dao.dart';
 import 'daos/session_dao.dart';
 import 'daos/settings_dao.dart';
@@ -52,6 +53,7 @@ part 'database.g.dart';
     StatsDao,
     GoalDao,
     WrongItemDao,
+    AchievementDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

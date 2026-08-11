@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 
 import '../../core/utils/date_key.dart';
 import '../../domain/entities/enums.dart';
+import '../../core/utils/time.dart';
+import '../../domain/services/achievement_calculator.dart';
 import '../../domain/services/goal_progress_calculator.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../local/database.dart';
@@ -58,6 +60,10 @@ class SessionRepository {
       // açıldığında sessizce atlanırdı — `daily_stats`'ın başına gelen buydu.
       await recomputeStreak(dateKey);
       await recomputeGoals(dateKey);
+      // FAZ 7B: rozetler de AYNI yoldan. Ayrı bir tetikleyiciye bırakmak,
+      // oturum yazan ikinci bir kod yolu açıldığında sessizce atlanması
+      // demekti — `daily_stats`, streak ve goals'ın başına gelen buydu.
+      await recomputeAchievements(dateKey);
     });
   }
 
@@ -130,6 +136,52 @@ class SessionRepository {
         await _db.goalDao.setStatus(g.id, GoalStatus.completed);
       }
     }
+  }
+
+  /// Kazanılan rozetleri açar.
+  ///
+  /// `achievements` tablosu Adım 1'den beri şemadaydı ama **yazan kod
+  /// yoktu**; tablo sonsuza kadar boş kalıyordu.
+  ///
+  /// **Rozetler geri ALINMAZ**: hesap yalnızca "yeni açılanları" döner.
+  /// Seri bozulunca kazanılmış rozeti silmek cezalandırma olurdu.
+  ///
+  /// Dönen değer bu çağrıda AÇILAN rozet kodlarıdır (tebrik ekranı
+  /// kullanabilir).
+  Future<Set<String>> recomputeAchievements(String dateKey) async {
+    final day = dateKeyToLocal(dateKey);
+    final settings = await _db.settingsDao.ensure();
+    final totals = await _db.achievementDao.lifetimeTotals();
+    final dayStats = await _db.statsDao.summaryFor(day, day);
+    final already = await _db.achievementDao.unlockedCodes();
+
+    // O günün SON oturumunun başlangıç saati — gece/sabah rozetleri için.
+    final daySessions = await _db.sessionDao.rangeSessions(day, day);
+    final startHour = daySessions.isEmpty
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(daySessions.last.startedAt).hour;
+
+    final newly = AchievementCalculator.evaluate(
+      already: already,
+      metrics: AchievementMetrics(
+        currentStreak: settings.currentStreak,
+        longestStreak: settings.longestStreak,
+        totalSessions: totals.sessionCount,
+        totalStudyS: totals.studyS,
+        totalQuestions: totals.questionCount,
+        daySessionCount: dayStats.sessionCount,
+        dayStudyS: dayStats.totalStudyS,
+        dayFocusScore: dayStats.avgFocusScore,
+        startHour: startHour,
+      ),
+    );
+
+    for (final code in newly) {
+      // Açılış anı: rozetin kazanıldığı GÜN değil, kaydın yazıldığı an.
+      // Gün anahtarı yerel gün; rozet listesi kronolojik sıralanıyor.
+      await _db.achievementDao.unlock(code: code, unlockedAtMs: nowMs());
+    }
+    return newly;
   }
 
   Future<void> delete(String sessionId) async {

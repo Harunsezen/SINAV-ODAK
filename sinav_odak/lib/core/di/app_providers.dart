@@ -11,6 +11,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/local/daos/achievement_dao.dart';
 import '../../data/local/daos/goal_dao.dart';
 import '../../data/local/daos/session_dao.dart';
 import '../../data/local/daos/settings_dao.dart';
@@ -459,4 +460,42 @@ final allSubjectsProvider = StreamProvider<List<Subject>>(
 final allActivityTypesProvider = StreamProvider<List<ActivityType>>(
   (ref) =>
       ref.watch(subjectDaoProvider).watchActivityTypes(includeArchived: true),
+);
+
+// ---------------------------------------------------------------------------
+// FAZ 7B — Takvim, hedefler, rozetler
+// ---------------------------------------------------------------------------
+
+/// "Bugün" — saat DIŞARIDAN geliyor, `DateTime.now()` değil.
+final calendarTodayProvider = Provider<DateTime>((ref) {
+  final now = DateTime.fromMillisecondsSinceEpoch(ref.watch(clockProvider)());
+  return DateTime(now.year, now.month, now.day);
+});
+
+/// Takvimde görüntülenen ay (ayın ilk günü).
+final calendarMonthProvider = StateProvider<DateTime>((ref) {
+  final t = ref.watch(calendarTodayProvider);
+  return DateTime(t.year, t.month);
+});
+
+/// Görüntülenen ayın günlük satırları.
+final calendarDaysProvider = StreamProvider<List<DailyStat>>((ref) {
+  final m = ref.watch(calendarMonthProvider);
+  // Ayın son günü: bir sonraki ayın "0."ıncı günü.
+  final last = DateTime(m.year, m.month + 1, 0);
+  return ref.watch(statsDaoProvider).watchRange(m, last);
+});
+
+/// Tüm hedefler (aktifler üstte).
+final allGoalsProvider = StreamProvider<List<Goal>>(
+  (ref) => ref.watch(goalDaoProvider).watchAll(),
+);
+
+final achievementDaoProvider = Provider<AchievementDao>(
+  (ref) => ref.watch(databaseProvider).achievementDao,
+);
+
+/// Açılmış rozetler.
+final achievementsProvider = StreamProvider<List<Achievement>>(
+  (ref) => ref.watch(achievementDaoProvider).watchAll(),
 );

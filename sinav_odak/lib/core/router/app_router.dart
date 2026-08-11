@@ -16,14 +16,14 @@ import '../../presentation/session_setup/subject_picker.dart';
 import '../../presentation/session_setup/topic_picker.dart';
 import '../../presentation/shell/app_shell.dart';
 import '../../presentation/shell/db_health_page.dart';
-import '../../presentation/ads/banner_ad_slot.dart';
+import '../../presentation/achievements/achievements_screen.dart';
+import '../../presentation/calendar/calendar_screen.dart';
+import '../../presentation/goals/goals_screen.dart';
 import '../../presentation/settings/catalog_screen.dart';
 import '../../presentation/settings/settings_screen.dart';
 import '../../presentation/stats/stats_screen.dart';
-import '../../presentation/shell/placeholder_page.dart';
 import '../../presentation/wrongs/add_wrong_screen.dart';
 import '../../presentation/wrongs/wrong_list_screen.dart';
-import '../../domain/entities/ad_placement.dart';
 import '../di/app_providers.dart';
 import 'routes.dart';
 
@@ -153,6 +153,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
+      // --- Hedefler ve rozetler (Ayarlar'dan açılıyor) ---
+      GoRoute(
+        path: Routes.goals,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const GoalsScreen(),
+      ),
+      GoRoute(
+        path: Routes.achievements,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const AchievementsScreen(),
+      ),
+
       // --- Katalog yönetimi (Ayarlar > Ders ve konular) ---
       //
       // Shell DIŞINDA: düzenleme sırasında alt navigasyon çubuğu
@@ -210,11 +222,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.calendar,
-                builder: (_, __) => const _BannerPlaceholder(
-                  title: 'Takvim',
-                  note: 'Sonraki tur: ay görünümü + gün detayı.',
-                  placement: AdPlacement.calendarBanner,
-                ),
+                builder: (_, __) => const CalendarScreen(),
               ),
             ],
           ),
@@ -231,33 +239,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-/// Henüz yazılmamış sekmeler için yer tutucu + banner yuvası.
-///
-/// Banner burada da politika kapılı: rıza yoksa hiç yer ayrılmaz. Ekranların
-/// kendisi sonraki turda gelecek, ama reklam yerleşimi şimdiden test
-/// edilebilir durumda.
-class _BannerPlaceholder extends StatelessWidget {
-  const _BannerPlaceholder({
-    required this.title,
-    required this.note,
-    required this.placement,
-  });
-
-  final String title;
-  final String note;
-  final AdPlacement placement;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Column(
-        children: [
-          Expanded(child: PlaceholderPage(title: title, note: note)),
-          BannerAdSlot(placement: placement),
-        ],
-      ),
-    );
-  }
-}
