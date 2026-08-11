@@ -139,6 +139,8 @@ class _GoalCard extends ConsumerWidget {
                   child: Text(
                     goalTypeLabel(l, type),
                     style: Theme.of(context).textTheme.titleSmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
@@ -150,12 +152,18 @@ class _GoalCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                key: Key('goal-progress-$id'),
-                value: ratio,
-                minHeight: 10,
+            Semantics(
+              label: l.a11yGoalProgress(
+                goalTypeLabel(l, type),
+                (ratio * 100).round(),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  key: Key('goal-progress-$id'),
+                  value: ratio,
+                  minHeight: 10,
+                ),
               ),
             ),
             const SizedBox(height: 6),

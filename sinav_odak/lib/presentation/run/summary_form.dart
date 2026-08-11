@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -114,6 +117,11 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
           );
       ref.read(pendingFinishProvider.notifier).clear();
 
+      // Kayıt tamamlandı: ince dokunsal onay. `unawaited` — titreşim
+      // motorunu beklemek yönlendirmeyi geciktirirdi; kaydın doğruluğu
+      // titreşime bağlı değil.
+      unawaited(ref.read(hapticGatewayProvider).success());
+
       if (mounted) context.go(Routes.runDone);
     } on AppFailure catch (e) {
       if (!mounted) return;
@@ -143,9 +151,9 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
           body: Center(child: CircularProgressIndicator()),
         );
       }
-      return const Scaffold(
-        key: Key('summary-empty'),
-        body: Center(child: Text('Özetlenecek oturum yok.')),
+      return Scaffold(
+        key: const Key('summary-empty'),
+        body: Center(child: Text(L10n.of(context).summaryEmptyState)),
       );
     }
 
@@ -186,10 +194,11 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
 
     final labels = ref.watch(activeSessionLabelsProvider).valueOrNull;
     final canSave = invariantError == null && !_saving;
+    final l = L10n.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Oturum Sonu'),
+        title: Text(l.summaryTitle),
         automaticallyImplyLeading: false,
       ),
       body: ListView(
@@ -237,17 +246,17 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('KAYDET'),
+                : Text(l.summarySave),
           ),
           const SizedBox(height: 8),
 
           // ADIM 6 UYARISI: bu ekrana reklam EKLENMEZ. Aşağıdaki metin
           // `summary_form_test.dart` içinde regresyon kalkanı olarak
           // aranıyor; kaldırılırsa test kırılır.
-          const Text(
-            'Bu ekranda reklam gösterilmez.',
+          Text(
+            l.summaryNoAds,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
         ],
       ),
@@ -285,22 +294,30 @@ class _Header extends StatelessWidget {
               children: [
                 const Icon(Icons.check_circle_outline),
                 const SizedBox(width: 8),
-                Text(
-                  'Oturum tamamlandı',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: Text(
+                    L10n.of(context).summaryDone,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
               ],
             ),
             if (title.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(title, key: const Key('summary-subject')),
+              // Uzun ders/konu adı taşmasın: iki satırda kırpılıyor.
+              Text(
+                title,
+                key: const Key('summary-subject'),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
             const SizedBox(height: 12),
             Text(
-              'Çalışma: ${formatDurationShort(studyS)}',
+              L10n.of(context).summaryStudy(formatDurationShort(studyS)),
               key: const Key('summary-study'),
             ),
-            Text('Mola: ${formatDurationShort(breakS)}'),
+            Text(L10n.of(context).summaryBreak(formatDurationShort(breakS))),
           ],
         ),
       ),
@@ -331,7 +348,7 @@ class _QuestionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Kaç soru çözdün?',
+              L10n.of(context).summaryQuestionsTitle,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 12),
@@ -356,7 +373,7 @@ class _QuestionCard extends StatelessWidget {
                 TextButton(
                   key: const Key('summary-q-reset'),
                   onPressed: onReset,
-                  child: const Text('Sıfırla'),
+                  child: Text(L10n.of(context).summaryReset),
                 ),
               ],
             ),
@@ -366,9 +383,9 @@ class _QuestionCard extends StatelessWidget {
               controller: controller,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'Soru sayısı',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: L10n.of(context).summaryQuestionCount,
+                border: const OutlineInputBorder(),
               ),
               onChanged: onManual,
             ),
@@ -412,26 +429,26 @@ class _BreakdownCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Doğru / Yanlış / Boş',
+              L10n.of(context).summaryBreakdownTitle,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
             _Counter(
-              label: 'Doğru',
+              label: L10n.of(context).summaryCorrect,
               slug: 'correct',
               color: AppColors.correct,
               value: correct,
               onChanged: onCorrect,
             ),
             _Counter(
-              label: 'Yanlış',
+              label: L10n.of(context).summaryWrong,
               slug: 'wrong',
               color: AppColors.wrong,
               value: wrong,
               onChanged: onWrong,
             ),
             _Counter(
-              label: 'Boş',
+              label: L10n.of(context).summaryEmpty,
               slug: 'empty',
               color: AppColors.empty,
               value: empty,
@@ -452,7 +469,7 @@ class _BreakdownCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  const Text('Net  '),
+                  Text('${L10n.of(context).summaryNet}  '),
                   Text(
                     formatNet(net ?? 0),
                     key: const Key('summary-net'),
@@ -542,7 +559,7 @@ class _MoodCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Nasıl geçti?',
+              L10n.of(context).summaryMoodTitle,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -566,9 +583,9 @@ class _MoodCard extends StatelessWidget {
               key: const Key('summary-note'),
               controller: noteController,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Not (opsiyonel)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: L10n.of(context).summaryNote,
+                border: const OutlineInputBorder(),
               ),
             ),
           ],

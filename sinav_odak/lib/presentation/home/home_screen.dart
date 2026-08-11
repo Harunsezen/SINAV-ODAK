@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,6 +28,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
     final today = ref.watch(todayKeyProvider);
     final stat = ref.watch(dayStatsProvider(today)).valueOrNull;
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
@@ -42,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
     return RecoveryGate(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Sınav Odak'),
+          title: Text(l.appTitle),
           actions: [
             if (streak > 0)
               Padding(
@@ -78,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Bugün',
+                      l.homeToday,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 12),
@@ -87,8 +89,10 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       goalS == 0
                           ? formatDurationShort(studyS)
-                          : '${formatDurationShort(studyS)}'
-                              ' / ${formatDurationShort(goalS)}',
+                          : l.homeProgressOf(
+                              formatDurationShort(studyS),
+                              formatDurationShort(goalS),
+                            ),
                       key: const Key('home-today-duration'),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
@@ -98,7 +102,7 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _Metric(
                             slug: 'questions',
-                            label: 'Soru',
+                            label: l.homeQuestions,
                             value: goalQuestions == 0
                                 ? '${stat?.questionCount ?? 0}'
                                 : '${stat?.questionCount ?? 0}/$goalQuestions',
@@ -107,14 +111,14 @@ class HomeScreen extends ConsumerWidget {
                         Expanded(
                           child: _Metric(
                             slug: 'net',
-                            label: 'Net',
+                            label: l.homeNet,
                             value: formatNet(stat?.net ?? 0),
                           ),
                         ),
                         Expanded(
                           child: _Metric(
                             slug: 'focus',
-                            label: 'Odak',
+                            label: l.homeFocus,
                             value: stat == null || stat.avgFocusScore == 0
                                 ? '—'
                                 : stat.avgFocusScore.round().toString(),
@@ -134,11 +138,11 @@ class HomeScreen extends ConsumerWidget {
                 ref.read(setupProvider.notifier).reset();
                 context.go(Routes.sessionSubject);
               },
-              child: const Text('Oturumu Başlat'),
+              child: Text(l.homeStartSession),
             ),
             const SizedBox(height: 24),
             Text(
-              'Son oturumlar',
+              l.homeRecentSessions,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -182,12 +186,12 @@ class _RecentSessions extends ConsumerWidget {
     final recent = ref.watch(recentSessionsProvider).valueOrNull;
 
     if (recent == null || recent.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
-          'Henüz kayıtlı oturum yok.',
-          key: Key('home-recent-empty'),
-          style: TextStyle(fontSize: 12),
+          L10n.of(context).homeNoSessions,
+          key: const Key('home-recent-empty'),
+          style: const TextStyle(fontSize: 12),
         ),
       );
     }
@@ -201,8 +205,13 @@ class _RecentSessions extends ConsumerWidget {
               dense: true,
               title: Text(formatDurationShort(s.actualDurationS)),
               subtitle: Text(
-                '${s.dateKey} · ${s.questionCount} soru'
-                ' · net ${formatNet(s.net)}',
+                L10n.of(context).homeSessionLine(
+                  s.dateKey,
+                  s.questionCount,
+                  formatNet(s.net),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               trailing: Text(
                 s.focusScore?.toString() ?? '—',

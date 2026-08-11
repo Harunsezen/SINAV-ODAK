@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/utils/color_hex.dart';
 import '../../domain/entities/enums.dart';
@@ -38,16 +39,16 @@ class WrongCard extends StatelessWidget {
   /// `mastered` kayıtta `null` gelir ve buton gizlenir.
   final VoidCallback? onAdvance;
 
-  static String labelOf(WrongItemStatus s) => switch (s) {
-        WrongItemStatus.active => 'Aktif',
-        WrongItemStatus.reviewed => 'Tekrar edildi',
-        WrongItemStatus.mastered => 'Öğrenildi',
+  static String labelOf(L10n l, WrongItemStatus s) => switch (s) {
+        WrongItemStatus.active => l.wrongsStatusActive,
+        WrongItemStatus.reviewed => l.wrongsStatusReviewed,
+        WrongItemStatus.mastered => l.wrongsStatusMastered,
       };
 
   /// Bir sonraki adımın buton metni.
-  static String? advanceLabelOf(WrongItemStatus s) => switch (s) {
-        WrongItemStatus.active => 'Tekrar ettim',
-        WrongItemStatus.reviewed => 'Öğrendim',
+  static String? advanceLabelOf(L10n l, WrongItemStatus s) => switch (s) {
+        WrongItemStatus.active => l.wrongsMarkReviewed,
+        WrongItemStatus.reviewed => l.wrongsMarkMastered,
         WrongItemStatus.mastered => null,
       };
 
@@ -55,7 +56,7 @@ class WrongCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = colorFromHex(colorHex, fallback: theme.colorScheme.primary);
-    final advanceLabel = advanceLabelOf(status);
+    final advanceLabel = advanceLabelOf(L10n.of(context), status);
     final trimmedNote = note?.trim();
 
     return Card(
@@ -81,7 +82,10 @@ class WrongCard extends StatelessWidget {
                             child: Text(
                               topicName == null || topicName!.isEmpty
                                   ? subjectName
-                                  : '$subjectName · $topicName',
+                                  : L10n.of(context).wrongsSubjectTopic(
+                                      subjectName,
+                                      topicName!,
+                                    ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -95,7 +99,7 @@ class WrongCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$wrongCount yanlış',
+                        L10n.of(context).wrongsCount(wrongCount),
                         style: theme.textTheme.bodySmall,
                       ),
                       if (trimmedNote != null && trimmedNote.isNotEmpty) ...[

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,17 +19,21 @@ class ActivityPicker extends ConsumerWidget {
     final setup = ref.watch(setupProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Çalışma Türü')),
+      appBar: AppBar(title: Text(L10n.of(context).setupActivityTitle)),
       body: types.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Türler yüklenemedi: $e')),
+        error: (e, _) =>
+            Center(child: Text(L10n.of(context).setupActivitiesFailed('$e'))),
         data: (list) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Text(
               setup.topicName == null
                   ? setup.subjectName ?? ''
-                  : '${setup.subjectName ?? ""} · ${setup.topicName}',
+                  : L10n.of(context).setupBreadcrumb(
+                      setup.subjectName ?? '',
+                      setup.topicName ?? '',
+                    ),
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 16),

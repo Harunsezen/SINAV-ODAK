@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/utils/formatters.dart';
 import '../../../domain/entities/enums.dart';
@@ -32,13 +33,13 @@ class SummaryStep extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Hazırsın',
+          L10n.of(context).onboardingSummaryTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Bunları sonradan ayarlardan değiştirebilirsin.',
-          style: TextStyle(fontSize: 12),
+        Text(
+          L10n.of(context).onboardingSummaryNote,
+          style: const TextStyle(fontSize: 12),
         ),
         const SizedBox(height: 20),
         Card(
@@ -46,15 +47,17 @@ class SummaryStep extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.school_outlined),
-                title: const Text('Sınav'),
+                title: Text(L10n.of(context).onboardingSummaryExam),
                 trailing: Text(
-                  examType == null ? '—' : ExamStep.labelOf(examType!),
+                  examType == null
+                      ? '—'
+                      : ExamStep.labelOf(L10n.of(context), examType!),
                   key: const Key('onboarding-summary-exam'),
                 ),
               ),
               ListTile(
                 leading: const Icon(Icons.schedule),
-                title: const Text('Günlük süre'),
+                title: Text(L10n.of(context).onboardingSummaryMinutes),
                 trailing: Text(
                   formatDurationShort(minutes * 60),
                   key: const Key('onboarding-summary-minutes'),
@@ -62,7 +65,7 @@ class SummaryStep extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.edit_note),
-                title: const Text('Günlük soru'),
+                title: Text(L10n.of(context).onboardingSummaryQuestions),
                 trailing: Text(
                   '$questions',
                   key: const Key('onboarding-summary-questions'),
@@ -70,9 +73,11 @@ class SummaryStep extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.privacy_tip_outlined),
-                title: const Text('Kişiselleştirilmiş reklam'),
+                title: Text(L10n.of(context).onboardingAdsTitle),
                 trailing: Text(
-                  consent ? 'Açık' : 'Kapalı',
+                  consent
+                      ? L10n.of(context).commonOn
+                      : L10n.of(context).commonOff,
                   key: const Key('onboarding-summary-consent'),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -59,9 +60,9 @@ class _RunScreenState extends ConsumerState<RunScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Oturumu bitirmek için "Bitir"e bas.'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(L10n.of(context).runBackBlocked),
+            duration: const Duration(seconds: 2),
           ),
         );
       },
@@ -96,24 +97,27 @@ class _RunningBody extends ConsumerWidget {
   ) async {
     final elapsedS = state.schedule.totalStudyS - state.remainingMs ~/ 1000;
 
+    final l = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Oturumu bitirelim mi?'),
+        title: Text(l.runConfirmTitle),
         content: Text(
-          '${formatDurationShort(state.schedule.totalStudyS)} planın '
-          '${formatDurationShort(elapsedS.clamp(0, state.schedule.totalStudyS))} '
-          'kadarı tamamlandı.\n'
-          "Bu oturum 'erken bitirildi' olarak kaydedilecek.",
+          l.runConfirmBody(
+            formatDurationShort(state.schedule.totalStudyS),
+            formatDurationShort(
+              elapsedS.clamp(0, state.schedule.totalStudyS),
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Vazgeç'),
+            child: Text(l.runConfirmCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Evet, bitir'),
+            child: Text(l.runConfirmYes),
           ),
         ],
       ),
@@ -132,6 +136,7 @@ class _RunningBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
     final schedule = state.schedule;
     final ordinal = schedule.studyOrdinalOf(state.blockIndex);
     final isLastBlock = state.blockIndex == schedule.blockCount - 1;
@@ -139,17 +144,27 @@ class _RunningBody extends ConsumerWidget {
     return Column(
       children: [
         const SizedBox(height: 16),
-        Text('$ordinal. blok / ${schedule.studyBlockCount}'),
+        Text(l.runBlockOf(ordinal, schedule.studyBlockCount)),
         const Spacer(),
-        Text(
-          formatClock(state.remainingSeconds),
-          style: AppTheme.counterStyle,
+        // Sayaç ekran okuyucuya "24:00" diye okutulursa anlaşılmıyor;
+        // canlı bölge olarak dakika/saniye sözle veriliyor.
+        Semantics(
+          liveRegion: true,
+          label: l.a11yRemaining(
+            state.remainingSeconds ~/ 60,
+            state.remainingSeconds % 60,
+          ),
+          excludeSemantics: true,
+          child: Text(
+            formatClock(state.remainingSeconds),
+            style: AppTheme.counterStyle,
+          ),
         ),
         const SizedBox(height: 8),
-        const Text('kalan'),
+        Text(l.runRemaining),
         const SizedBox(height: 16),
         Text(
-          isLastBlock ? 'Son blok' : 'Sonraki: mola',
+          isLastBlock ? l.runLastBlock : l.runNextBreak,
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const Spacer(),
@@ -172,12 +187,11 @@ class _ClockMovedBackBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Text(
-          'Cihaz saati değişmiş görünüyor.\n'
-          'Oturumun doğru sürdürülebilmesi için saati kontrol et.',
+          L10n.of(context).runClockMovedBack,
           textAlign: TextAlign.center,
         ),
       ),
@@ -197,6 +211,7 @@ class _ControlBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 12,
@@ -209,15 +224,15 @@ class _ControlBar extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: onFinish,
               icon: const Icon(Icons.stop),
-              label: const Text('Bitir'),
+              label: Text(l.runFinish),
             ),
           ),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             // Çalışma sırasında PASİF; yalnızca molada aktif olur.
             child: OutlinedButton(
               onPressed: null,
-              child: Text('Molayı Atla'),
+              child: Text(l.runSkipBreak),
             ),
           ),
         ],

@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../domain/services/achievement_calculator.dart';
+import '../achievements/achievements_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -35,12 +40,13 @@ class DoneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
     final saved = ref.watch(savedResultProvider);
 
     if (saved == null) {
-      return const Scaffold(
-        key: Key('done-empty'),
-        body: Center(child: Text('Gösterilecek oturum yok.')),
+      return Scaffold(
+        key: const Key('done-empty'),
+        body: Center(child: Text(l.doneEmpty)),
       );
     }
 
@@ -54,7 +60,7 @@ class DoneScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tebrikler'),
+        title: Text(l.doneTitle),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -63,15 +69,21 @@ class DoneScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 8),
-            const Center(child: Text('Odak skorun')),
+            Center(child: Text(l.doneFocusScore)),
             const SizedBox(height: 8),
             Center(
-              child: Text(
-                // `interrupted` dışındaki her kapanışta skor hesaplanır;
-                // yine de null gelirse çizgi gösterilir, ekran çökmez.
-                saved.focusScore?.toString() ?? '—',
-                key: const Key('done-focus-score'),
-                style: AppTheme.counterStyle,
+              child: Semantics(
+                label: saved.focusScore == null
+                    ? null
+                    : l.a11yFocusScore(saved.focusScore!),
+                excludeSemantics: saved.focusScore != null,
+                child: Text(
+                  // `interrupted` dışındaki her kapanışta skor hesaplanır;
+                  // yine de null gelirse çizgi gösterilir, ekran çökmez.
+                  saved.focusScore?.toString() ?? '—',
+                  key: const Key('done-focus-score'),
+                  style: AppTheme.counterStyle,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -83,7 +95,7 @@ class DoneScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Bugünkü ilerleme',
+                      l.doneTodayProgress,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     const SizedBox(height: 12),
@@ -92,20 +104,25 @@ class DoneScreen extends ConsumerWidget {
                     Text(
                       goalS == 0
                           ? formatDurationShort(todayStudyS)
-                          : '${formatDurationShort(todayStudyS)}'
-                              ' / ${formatDurationShort(goalS)}',
+                          : l.homeProgressOf(
+                              formatDurationShort(todayStudyS),
+                              formatDurationShort(goalS),
+                            ),
                       key: const Key('done-progress-text'),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Soru: ${stat?.questionCount ?? 0}'
-                      ' · Net: ${formatNet(stat?.net ?? 0)}',
+                      l.doneQuestionsNet(
+                        stat?.questionCount ?? 0,
+                        formatNet(stat?.net ?? 0),
+                      ),
                       key: const Key('done-progress-questions'),
                     ),
                   ],
                 ),
               ),
             ),
+            const _NewAchievementsCard(),
             const SizedBox(height: 24),
             FilledButton(
               key: const Key('done-new-session'),
@@ -115,7 +132,7 @@ class DoneScreen extends ConsumerWidget {
                 ref.read(savedResultProvider.notifier).clear();
                 context.go(Routes.sessionSubject);
               },
-              child: const Text('Yeni oturum'),
+              child: Text(l.doneNewSession),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
@@ -125,9 +142,111 @@ class DoneScreen extends ConsumerWidget {
               // gösterilebilir. Reklam gösterilse de gösterilmese de
               // yönlendirme AYNI şekilde yapılır — akış beklemez.
               onPressed: () => _goHome(ref, context),
-              child: const Text('Ana panel'),
+              child: Text(l.doneHome),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bu oturumda açılan rozetleri kutlar.
+///
+/// Rozetler `SessionRepository.save()` içinde açılıyor ama kullanıcıya hiçbir
+/// yerde söylenmiyordu. Kart yalnızca **görülmemiş** rozet varsa çıkar ve
+/// gösterildiği anda rozetleri "görüldü" işaretler; aksi halde her tebrik
+/// ekranında yeniden kutlanırdı.
+class _NewAchievementsCard extends ConsumerStatefulWidget {
+  const _NewAchievementsCard();
+
+  @override
+  ConsumerState<_NewAchievementsCard> createState() =>
+      _NewAchievementsCardState();
+}
+
+class _NewAchievementsCardState extends ConsumerState<_NewAchievementsCard> {
+  /// İlk görülen rozet listesi. **Sabitleniyor**: `markSeen` çağrısı akışı
+  /// güncelliyor ve liste anında boşalıyordu — kart tek karede kaybolup
+  /// kullanıcı kazandığı rozeti göremiyordu.
+  List<String>? _shown;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    final unseen = ref.watch(unseenAchievementsProvider).valueOrNull;
+
+    if (_shown == null) {
+      if (unseen == null || unseen.isEmpty) return const SizedBox.shrink();
+      _shown = [for (final a in unseen) a.code];
+      // Kutlama titreşimi ve "görüldü" işareti build DIŞINDA: build içinde
+      // veritabanına yazmak yeniden çizim döngüsü yaratırdı.
+      final codes = _shown!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(ref.read(hapticGatewayProvider).celebrate());
+        for (final code in codes) {
+          unawaited(ref.read(achievementDaoProvider).markSeen(code));
+        }
+      });
+    }
+
+    final codes = _shown!;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Card(
+        key: const Key('done-new-achievements'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.emoji_events),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l.doneNewAchievement,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              for (final code in codes)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      Icon(
+                        achievementIcon(
+                          AchievementCalculator.byCode(code)?.iconKey ?? '',
+                        ),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          achievementText(l, code).title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  key: const Key('done-see-achievements'),
+                  onPressed: () => context.push(Routes.achievements),
+                  child: Text(l.doneSeeAchievements),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

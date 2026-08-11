@@ -1,10 +1,5 @@
-// DOĞRULANMADI — flutter test/analyze bekliyor.
-// Gerekli komutlar (sırayla):
-//   dart run build_runner build --delete-conflicting-outputs
-//   flutter analyze
-//   flutter test
-
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -48,6 +43,7 @@ class BreakScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
     final state = ref.watch(runStateProvider);
 
     // Mola bitince otomatik olarak çalışma ekranına dön.
@@ -72,14 +68,22 @@ class BreakScreen extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 24),
-              const Text('MOLA'),
+              Text(l.breakTitle),
               const Spacer(),
-              Text(
-                formatClock(state.remainingSeconds),
-                style: AppTheme.counterStyle,
+              Semantics(
+                liveRegion: true,
+                label: l.a11yBreakRemaining(
+                  state.remainingSeconds ~/ 60,
+                  state.remainingSeconds % 60,
+                ),
+                excludeSemantics: true,
+                child: Text(
+                  formatClock(state.remainingSeconds),
+                  style: AppTheme.counterStyle,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text('kalan mola'),
+              Text(l.breakRemaining),
               const Spacer(),
 
               // Mola, reklam için doğal andır: öğrenci zaten dinleniyor.
@@ -106,7 +110,7 @@ class BreakScreen extends ConsumerWidget {
                         onPressed: remainingExtensions > 0
                             ? () => _extend(context, ref)
                             : null,
-                        child: Text('+5 dk ($remainingExtensions hak)'),
+                        child: Text(l.breakExtend(remainingExtensions)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -115,7 +119,7 @@ class BreakScreen extends ConsumerWidget {
                         key: const Key('break-skip'),
                         onPressed: () =>
                             ref.read(runControllerProvider).skipBreak(),
-                        child: const Text('Molayı Bitir'),
+                        child: Text(l.breakEnd),
                       ),
                     ),
                   ],

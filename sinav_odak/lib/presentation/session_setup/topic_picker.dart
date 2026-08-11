@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,21 +27,23 @@ class TopicPicker extends ConsumerWidget {
     final topics = ref.watch(topicsProvider(subjectId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(setup.subjectName ?? 'Konu Seç')),
+      appBar: AppBar(
+        title: Text(setup.subjectName ?? L10n.of(context).setupTopicTitle),
+      ),
       body: Column(
         children: [
           Expanded(
             child: topics.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Konular yüklenemedi: $e')),
+              error: (e, _) =>
+                  Center(child: Text(L10n.of(context).setupTopicsFailed('$e'))),
               data: (list) {
                 if (list.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Bu derste henüz konu yok.\n'
-                        'Konu seçmeden devam edebilirsin.',
+                        L10n.of(context).setupNoTopics,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -78,7 +81,7 @@ class TopicPicker extends ConsumerWidget {
                     ref.read(setupProvider.notifier).skipTopic();
                     context.go(Routes.sessionType);
                   },
-                  child: const Text('Konu seçmeden devam et'),
+                  child: Text(L10n.of(context).setupSkipTopic),
                 ),
               ),
             ),
@@ -100,9 +103,12 @@ class _MissingSubject extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Önce ders seçmen gerekiyor.'),
+            Text(L10n.of(context).setupPickSubjectFirst),
             const SizedBox(height: 12),
-            FilledButton(onPressed: onBack, child: const Text('Ders Seç')),
+            FilledButton(
+              onPressed: onBack,
+              child: Text(L10n.of(context).setupSubjectTitle),
+            ),
           ],
         ),
       ),

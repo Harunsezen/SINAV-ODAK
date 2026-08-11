@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -34,13 +35,9 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
   }
 
   String get _emptyMessage => switch (_status) {
-        WrongItemStatus.active =>
-          'Aktif yanlışın yok.\nOturum sonu formuna yanlış girdiğinde '
-              'buraya otomatik düşer.',
-        WrongItemStatus.reviewed =>
-          'Tekrar ettiğin konu yok.\nAktif listeden "Tekrar ettim" ile '
-              'buraya taşıyabilirsin.',
-        WrongItemStatus.mastered => 'Henüz öğrenildi işaretlediğin konu yok.',
+        WrongItemStatus.active => L10n.of(context).wrongsEmptyActive,
+        WrongItemStatus.reviewed => L10n.of(context).wrongsEmptyReviewed,
+        WrongItemStatus.mastered => L10n.of(context).wrongsEmptyMastered,
       };
 
   @override
@@ -48,7 +45,7 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
     final items = ref.watch(wrongItemsProvider(_status));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Yanlışlar')),
+      appBar: AppBar(title: Text(L10n.of(context).wrongsTitle)),
       floatingActionButton: FloatingActionButton(
         key: const Key('wrongs-add'),
         onPressed: () => context.go(Routes.wrongsAdd),
@@ -64,7 +61,7 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
                 for (final s in WrongItemStatus.values)
                   ButtonSegment(
                     value: s,
-                    label: Text(WrongCard.labelOf(s)),
+                    label: Text(WrongCard.labelOf(L10n.of(context), s)),
                   ),
               ],
               selected: {_status},
@@ -75,7 +72,8 @@ class _WrongListScreenState extends ConsumerState<WrongListScreen> {
           Expanded(
             child: items.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Yanlışlar yüklenemedi: $e')),
+              error: (e, _) =>
+                  Center(child: Text(L10n.of(context).wrongsFailed('$e'))),
               data: (list) {
                 if (list.isEmpty) {
                   return Center(

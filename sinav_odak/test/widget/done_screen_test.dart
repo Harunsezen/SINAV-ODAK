@@ -53,6 +53,14 @@ void main() {
     );
     addTearDown(container.dispose);
 
+    // FAZ 8'de tebrik ekranına "yeni rozet" kartı eklendi ve ekran uzadı;
+    // varsayılan 800x600 yüzeyde alt butonlar görünür alanın dışında
+    // kalıyordu. İddia aynı, yalnızca görünürlük koşulu sağlanıyor.
+    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,

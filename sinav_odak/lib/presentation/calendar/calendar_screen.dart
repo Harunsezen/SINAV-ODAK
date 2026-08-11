@@ -181,6 +181,7 @@ class _MonthGrid extends ConsumerWidget {
             return _DayCell(
               key: Key('calendar-day-$dayNumber'),
               day: dayNumber,
+              monthLabel: l.monthName(month.month.toString()),
               minutes: minutes,
               sessions: entry?.sessions ?? 0,
               isToday: isToday,
@@ -206,6 +207,7 @@ class _MonthGrid extends ConsumerWidget {
 class _DayCell extends StatelessWidget {
   const _DayCell({
     required this.day,
+    required this.monthLabel,
     required this.minutes,
     required this.sessions,
     required this.isToday,
@@ -214,6 +216,7 @@ class _DayCell extends StatelessWidget {
   });
 
   final int day;
+  final String monthLabel;
   final int minutes;
   final int sessions;
   final bool isToday;
@@ -231,34 +234,47 @@ class _DayCell extends StatelessWidget {
       message: minutes > 0
           ? l.calendarDayDetail('$day', _duration(context, minutes), sessions)
           : l.calendarDayEmpty('$day'),
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
-          border: isToday ? Border.all(color: scheme.primary, width: 2) : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '$day',
-              style: TextStyle(
-                fontSize: 12,
-                color: onColor,
-                fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
-              ),
-            ),
-            if (sessions > 0)
-              Container(
-                margin: const EdgeInsets.only(top: 2),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
+      // Ekran okuyucu için: sadece "5" demek yerine günün özeti.
+      child: Semantics(
+        label: minutes > 0
+            ? l.a11yCalendarDay(
+                day,
+                monthLabel,
+                _duration(context, minutes),
+                sessions,
+              )
+            : l.a11yCalendarDayEmpty(day, monthLabel),
+        excludeSemantics: true,
+        child: Container(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(8),
+            border:
+                isToday ? Border.all(color: scheme.primary, width: 2) : null,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$day',
+                style: TextStyle(
+                  fontSize: 12,
                   color: onColor,
-                  shape: BoxShape.circle,
+                  fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
-          ],
+              if (sessions > 0)
+                Container(
+                  margin: const EdgeInsets.only(top: 2),
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: onColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

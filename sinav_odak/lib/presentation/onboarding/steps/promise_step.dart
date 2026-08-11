@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Onboarding 1/5 — Vaat.
 ///
@@ -20,22 +21,20 @@ class PromiseStep extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Sınav Odak',
+          L10n.of(context).onboardingPromiseTitle,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 12),
-        const Text(
-          'Ne kadar çalıştığını tahmin etmeyi bırak.\n'
-          'Süre tut, soru gir, gelişimini gör.',
+        Text(
+          L10n.of(context).onboardingPromiseBody,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Sayaç duraklatılamaz: başladığın bloğu bitirirsin.\n'
-          'Uygulama %100 ücretsizdir.',
+        Text(
+          L10n.of(context).onboardingPromiseRules,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 12),
         ),
       ],
     );

@@ -21,6 +21,13 @@ class SinavOdakApp extends ConsumerWidget {
       _ => ThemeMode.system,
     };
 
+    // Ekran kilidi: ayar açık VE aktif oturum varken ekran kapanmasın.
+    // Tek yerde dinleniyor — RunScreen/BreakScreen'e ayrı ayrı konsaydı
+    // ekranlar arası geçişte kilit bırakılıp yeniden alınırdı.
+    ref.listen<bool>(shouldKeepScreenOnProvider, (previous, next) {
+      ref.read(screenWakeGatewayProvider).setEnabled(enabled: next);
+    });
+
     return MaterialApp.router(
       title: 'Sınav Odak',
       debugShowCheckedModeBanner: false,

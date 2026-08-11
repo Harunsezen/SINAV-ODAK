@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -56,11 +57,14 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
         : ref.watch(topicsProvider(_subjectId!)).valueOrNull ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Yanlış Ekle')),
+      appBar: AppBar(title: Text(L10n.of(context).wrongsAddTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Ders', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            L10n.of(context).wrongsSubject,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -89,7 +93,7 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
           if (_subjectId != null) ...[
             const SizedBox(height: 20),
             Text(
-              'Konu (opsiyonel)',
+              L10n.of(context).wrongsTopicOptional,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -109,7 +113,10 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
             ),
           ],
           const SizedBox(height: 20),
-          Text('Yanlış sayısı', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            L10n.of(context).wrongsCountLabel,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           Row(
             children: [
               IconButton(
@@ -140,9 +147,9 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
             key: const Key('add-wrong-note'),
             controller: _noteCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Not (opsiyonel)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: L10n.of(context).wrongsNoteOptional,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
@@ -150,7 +157,7 @@ class _AddWrongScreenState extends ConsumerState<AddWrongScreen> {
             key: const Key('add-wrong-save'),
             // Ders ZORUNLU; seçilmeden kayıt açılmaz.
             onPressed: _subjectId == null || _saving ? null : _save,
-            child: const Text('KAYDET'),
+            child: Text(L10n.of(context).wrongsSave),
           ),
         ],
       ),

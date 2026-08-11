@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -161,7 +162,8 @@ class _ProgressHeader extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '$shown/${OnboardingScreen.stepCount}',
+              L10n.of(context)
+                  .onboardingStepOf(shown, OnboardingScreen.stepCount),
               key: const Key('onboarding-progress-label'),
               style: const TextStyle(fontSize: 12),
             ),
@@ -201,21 +203,21 @@ class _BottomBar extends StatelessWidget {
             TextButton(
               key: const Key('onboarding-back'),
               onPressed: onBack,
-              child: const Text('Geri'),
+              child: Text(L10n.of(context).onboardingBack),
             ),
           const Spacer(),
           if (isLast)
             FilledButton(
               key: const Key('onboarding-start'),
               onPressed: saving ? null : onFinish,
-              child: const Text('Başla'),
+              child: Text(L10n.of(context).onboardingStart),
             )
           else
             FilledButton(
               key: const Key('onboarding-next'),
               // Sınav türü seçilmeden pasif.
               onPressed: canGoNext ? onNext : null,
-              child: const Text('Devam'),
+              child: Text(L10n.of(context).onboardingNext),
             ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../domain/entities/notification_prefs.dart';
 import '../../domain/entities/session_schedule.dart';
 import '../../domain/ports/session_notifier.dart';
 import '../../domain/services/notification_planner.dart';
@@ -16,18 +17,33 @@ import 'notification_service.dart';
 /// platform çağrısı patlarsa sessizce geçer — oturumun doğruluğu
 /// bildirimlere bağlı değildir.
 class LocalSessionNotifier implements SessionNotifier {
-  LocalSessionNotifier(this._service, {required this.nowMsProvider});
+  LocalSessionNotifier(
+    this._service, {
+    required this.nowMsProvider,
+    NotificationPrefs Function()? prefsReader,
+  }) : prefsReader = prefsReader ?? (() => NotificationPrefs.defaults);
 
   final NotificationService _service;
 
   /// Zaman kaynağı dışarıdan verilir; geçmişe bildirim kurulmasın diye.
   final int Function() nowMsProvider;
 
+  /// Kullanıcının bildirim tercihleri. **Her kurulumda YENİDEN okunur**:
+  /// kullanıcı oturum başladıktan sonra ayarı değiştirebilir ve
+  /// yapılandırma anındaki değere kilitlenmek yanlış olurdu.
+  final NotificationPrefs Function() prefsReader;
+
   @override
   Future<void> scheduleFor({
     required String sessionId,
     required SessionSchedule schedule,
   }) async {
+    // Kullanıcı bildirimleri KAPATTIYSA hiçbir şey kurulmaz. Bu kontrol
+    // olmadan ayar yalnızca Ayarlar ekranında duruyor, bildirimler
+    // kurulmaya devam ediyordu.
+    final prefs = prefsReader();
+    if (!prefs.enabled) return;
+
     if (!await _service.initialize()) return;
 
     final planned = NotificationPlanner.plan(
@@ -45,7 +61,7 @@ class LocalSessionNotifier implements SessionNotifier {
           n.title,
           n.body,
           tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, n.atMs),
-          NotificationService.details,
+          _service.detailsFor(prefs),
           // Doze modunda bile tam zamanında tetiklenir. Play politikası
           // timer uygulamaları için buna izin veriyor (USE_EXACT_ALARM).
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

@@ -68,51 +68,57 @@ class _AchievementTile extends StatelessWidget {
     return Card(
       key: Key('achievement-$code'),
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor:
-              isUnlocked ? scheme.primary : scheme.surfaceContainerHighest,
-          child: Icon(
-            achievementIcon(iconKey),
-            color: isUnlocked ? scheme.onPrimary : scheme.outline,
-          ),
-        ),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(
-                text.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: isUnlocked ? null : scheme.outline,
-                ),
-              ),
+      child: Semantics(
+        label: isUnlocked
+            ? l.a11yAchievementUnlocked(text.title)
+            : l.a11yAchievementLocked(text.title),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor:
+                isUnlocked ? scheme.primary : scheme.surfaceContainerHighest,
+            child: Icon(
+              achievementIcon(iconKey),
+              color: isUnlocked ? scheme.onPrimary : scheme.outline,
             ),
-            if (isNew) ...[
-              const SizedBox(width: 8),
-              Container(
-                key: Key('achievement-new-$code'),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: scheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+          ),
+          title: Row(
+            children: [
+              Flexible(
                 child: Text(
-                  l.achievementsNew,
-                  style: const TextStyle(fontSize: 10),
+                  text.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: isUnlocked ? null : scheme.outline,
+                  ),
                 ),
               ),
+              if (isNew) ...[
+                const SizedBox(width: 8),
+                Container(
+                  key: Key('achievement-new-$code'),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: scheme.tertiaryContainer,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    l.achievementsNew,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
-        subtitle: Text(
-          isUnlocked ? text.body : l.achievementsLocked,
-          style: const TextStyle(fontSize: 12),
-        ),
-        trailing: Icon(
-          isUnlocked ? Icons.check_circle : Icons.lock_outline,
-          size: 18,
-          color: isUnlocked ? scheme.primary : scheme.outline,
+          ),
+          subtitle: Text(
+            isUnlocked ? text.body : l.achievementsLocked,
+            style: const TextStyle(fontSize: 12),
+          ),
+          trailing: Icon(
+            isUnlocked ? Icons.check_circle : Icons.lock_outline,
+            size: 18,
+            color: isUnlocked ? scheme.primary : scheme.outline,
+          ),
         ),
       ),
     );

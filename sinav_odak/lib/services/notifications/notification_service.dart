@@ -6,6 +6,8 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../domain/entities/notification_prefs.dart';
+
 /// Bildirim altyapısının kurulumu ve izin yönetimi.
 ///
 /// **Tasarım kuralı: bu sınıf hiçbir zaman akışı durdurmaz.** İzin
@@ -18,10 +20,13 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin plugin;
 
-  static const String channelId = 'session';
-  static const String channelName = 'Çalışma oturumu';
-  static const String channelDescription =
-      'Blok ve mola bitişlerinde bilgilendirir.';
+  /// Kanal adı ve açıklaması ARB'den beslenir (`main()` yüklüyor).
+  ///
+  /// Varsayılanlar yalnızca L10n hiç yüklenemezse devreye girer; kanal
+  /// Android bildirim ayarlarında bu adla görünür.
+  NotificationPrefs Function() prefsReader = () => NotificationPrefs.defaults;
+  String channelName = 'Çalışma oturumu';
+  String channelDescription = 'Blok ve mola bitişlerinde bilgilendirir.';
 
   bool _initialized = false;
   bool _timezoneReady = false;
@@ -115,16 +120,24 @@ class NotificationService {
     }
   }
 
-  /// Bildirim ayrıntıları. Kanal Android'de ilk kullanımda oluşur.
-  static const NotificationDetails details = NotificationDetails(
-    android: AndroidNotificationDetails(
-      channelId,
-      channelName,
-      channelDescription: channelDescription,
-      importance: Importance.high,
-      priority: Priority.high,
-      category: AndroidNotificationCategory.alarm,
-    ),
-    iOS: DarwinNotificationDetails(),
-  );
+  /// Bildirim ayrıntıları — kullanıcı tercihlerine göre.
+  ///
+  /// Kanal Android'de ilk kullanımda oluşur ve **ses/titreşim ayarları o
+  /// anda sabitlenir**; bu yüzden her kombinasyon ayrı bir `channelId`
+  /// kullanıyor (bkz. [NotificationPrefs.channelId]).
+  NotificationDetails detailsFor(NotificationPrefs prefs) {
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        prefs.channelId,
+        channelName,
+        channelDescription: channelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+        category: AndroidNotificationCategory.alarm,
+        playSound: prefs.sound,
+        enableVibration: prefs.vibration,
+      ),
+      iOS: DarwinNotificationDetails(presentSound: prefs.sound),
+    );
+  }
 }

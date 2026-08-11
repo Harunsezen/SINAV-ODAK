@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/utils/formatters.dart';
 
@@ -38,19 +39,18 @@ class GoalStep extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Günlük hedefin ne olsun?',
+          L10n.of(context).onboardingGoalTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Ulaşılabilir bir hedef seç; sonradan ayarlardan '
-          'değiştirebilirsin.',
-          style: TextStyle(fontSize: 12),
+        Text(
+          L10n.of(context).onboardingGoalNote,
+          style: const TextStyle(fontSize: 12),
         ),
         const SizedBox(height: 24),
         _Stepper(
           slug: 'minutes',
-          label: 'Çalışma süresi',
+          label: L10n.of(context).onboardingGoalMinutes,
           display: formatDurationShort(minutes * 60),
           onDec: minutes > minMinutes
               ? () => onMinutes(minutes - stepMinutes)
@@ -62,7 +62,7 @@ class GoalStep extends StatelessWidget {
         const SizedBox(height: 16),
         _Stepper(
           slug: 'questions',
-          label: 'Soru sayısı',
+          label: L10n.of(context).onboardingGoalQuestions,
           display: '$questions soru',
           onDec: questions > minQuestions
               ? () => onQuestions(questions - stepQuestions)

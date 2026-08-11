@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -65,19 +66,19 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         key: const Key('wrong-delete-dialog'),
-        title: const Text('Kayıt silinsin mi?'),
-        content: const Text(
-          'Bu yanlış kaydı tamamen silinecek. Geri alınamaz.',
+        title: Text(L10n.of(context).wrongsDeleteTitle),
+        content: Text(
+          L10n.of(context).wrongsDeleteBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Vazgeç'),
+            child: Text(L10n.of(context).commonCancel),
           ),
           FilledButton(
             key: const Key('wrong-delete-confirm'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sil'),
+            child: Text(L10n.of(context).wrongsDelete),
           ),
         ],
       ),
@@ -117,7 +118,7 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
 
     setup.selectActivityType(
       id: analysis?.id ?? WrongDetailSheet.analysisActivityId,
-      name: analysis?.name ?? 'Analiz / Yanlış Defteri',
+      name: analysis?.name ?? L10n.of(context).wrongsDetailTitle,
     );
 
     Navigator.of(context).pop();
@@ -128,7 +129,8 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
   Widget build(BuildContext context) {
     final title = widget.topicName == null || widget.topicName!.isEmpty
         ? widget.subjectName
-        : '${widget.subjectName} · ${widget.topicName}';
+        : L10n.of(context)
+            .wrongsSubjectTopic(widget.subjectName, widget.topicName!);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -143,22 +145,22 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
         children: [
           Text(title, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
-          Text('${widget.wrongCount} yanlış'),
+          Text(L10n.of(context).wrongsCount(widget.wrongCount)),
           const SizedBox(height: 16),
           TextField(
             key: const Key('wrong-note-field'),
             controller: _noteCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Not',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: L10n.of(context).wrongsNote,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),
           FilledButton(
             key: const Key('wrong-study-topic'),
             onPressed: _studyThisTopic,
-            child: const Text('Bu konuyu çalış'),
+            child: Text(L10n.of(context).wrongsStudyThisTopic),
           ),
           const SizedBox(height: 8),
           Row(
@@ -167,7 +169,7 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
                 child: OutlinedButton(
                   key: const Key('wrong-save-note'),
                   onPressed: _saveNote,
-                  child: const Text('Notu kaydet'),
+                  child: Text(L10n.of(context).wrongsSaveNote),
                 ),
               ),
               const SizedBox(width: 8),
@@ -175,7 +177,7 @@ class _WrongDetailSheetState extends ConsumerState<WrongDetailSheet> {
                 child: OutlinedButton(
                   key: const Key('wrong-delete'),
                   onPressed: _delete,
-                  child: const Text('Sil'),
+                  child: Text(L10n.of(context).wrongsDelete),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +13,8 @@ import 'data/repositories/session_repository.dart';
 import 'domain/ports/ad_gateway.dart';
 import 'services/ads/admob_gateway.dart';
 import 'services/ads/ump_consent_gateway.dart';
+import 'services/background/system_haptic_gateway.dart';
+import 'services/background/wakelock_screen_gateway.dart';
 import 'services/export/file_share_gateway.dart';
 import 'services/notifications/notification_service.dart';
 import 'application/recovery_service.dart';
@@ -35,6 +38,16 @@ Future<void> main() async {
   // istatistiklere hiç yansımıyordu.
   // Bildirim altyapısı: başarısız olursa akış DURMAZ.
   final notifications = NotificationService();
+  // Kanal adı/açıklaması ARB'den. `L10n.delegate.load` context istemiyor;
+  // `runApp`'tan önce çağrılabilen tek yol bu. Kanal Android bildirim
+  // ayarlarında bu adla görünür.
+  try {
+    final l = await L10n.delegate.load(const Locale('tr'));
+    notifications.channelName = l.notificationChannelName;
+    notifications.channelDescription = l.notificationChannelDescription;
+  } on Object catch (e) {
+    debugPrint('Bildirim kanalı metinleri yüklenemedi: $e');
+  }
   await notifications.initialize();
 
   final sessionRepo = SessionRepository(db);
@@ -64,6 +77,15 @@ Future<void> main() async {
         adGatewayProvider.overrideWith(_buildAdGateway),
         // CSV dışa aktarma: varsayılan Noop, gerçek cihazda dosya + paylaşım.
         shareGatewayProvider.overrideWithValue(const FileShareGateway()),
+        // Ekran kilidi: "ekran açık kalsın" ayarının gerçek ucu.
+        screenWakeGatewayProvider
+            .overrideWithValue(const WakelockScreenGateway()),
+        // Dokunsal geri bildirim — kullanıcının titreşim ayarına kapılı.
+        hapticGatewayProvider.overrideWith(
+          (ref) => SystemHapticGateway(
+            enabledReader: () => ref.read(notificationPrefsProvider).vibration,
+          ),
+        ),
       ],
       child: const SinavOdakApp(),
     ),

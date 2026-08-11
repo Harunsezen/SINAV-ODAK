@@ -56,8 +56,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       SnackBar(
         content: Text(
           earned
-              ? 'Teşekkürler! Desteğin uygulamayı ücretsiz tutuyor.'
-              : 'Şu an gösterilecek reklam yok. Sonra tekrar deneyebilirsin.',
+              ? L10n.of(context).supportThanks
+              : L10n.of(context).supportNoAd,
         ),
       ),
     );
@@ -236,17 +236,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const Icon(Icons.favorite_outline),
                       const SizedBox(width: 8),
                       Text(
-                        'Destek ol',
+                        l.supportTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Uygulama %100 ücretsiz ve hiçbir özelliği kilitli değil. '
-                    'İstersen kısa bir reklam izleyerek destek olabilirsin — '
-                    'izlemezsen hiçbir şey değişmez.',
-                    style: TextStyle(fontSize: 12),
+                  Text(
+                    l.supportBody,
+                    style: const TextStyle(fontSize: 12),
                   ),
                   const SizedBox(height: 12),
                   FilledButton.icon(
@@ -255,16 +253,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     // sebebi altında yazıyor.
                     onPressed: consent && !_busy ? _support : null,
                     icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('İzle ve destekle'),
+                    label: Text(l.supportWatch),
                   ),
                   if (!consent) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Reklam tercihi kapalı olduğu için devre dışı. '
-                      'Onboarding\'de verdiğin tercihi buradan '
-                      'değiştirebileceksin.',
-                      key: Key('settings-support-disabled-note'),
-                      style: TextStyle(fontSize: 11),
+                    Text(
+                      l.supportDisabledNote,
+                      key: const Key('settings-support-disabled-note'),
+                      style: const TextStyle(fontSize: 11),
                     ),
                   ],
                 ],
@@ -283,9 +279,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: ListTile(
                 key: const Key('settings-privacy-options'),
                 leading: const Icon(Icons.privacy_tip_outlined),
-                title: const Text('Gizlilik tercihleri'),
-                subtitle: const Text(
-                  'Reklam kişiselleştirme rızanı buradan değiştirebilirsin.',
+                title: Text(l.settingsPrivacyTitle),
+                subtitle: Text(
+                  l.settingsPrivacyNote,
                 ),
                 enabled: !_busy,
                 onTap: _busy ? null : _privacyOptions,

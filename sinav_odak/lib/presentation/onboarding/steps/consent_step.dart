@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Onboarding 4/5 — KVKK/GDPR rızası ve bildirim izni.
 ///
@@ -40,7 +41,7 @@ class ConsentStep extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Gizlilik ve izinler',
+          L10n.of(context).onboardingConsentTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -51,17 +52,13 @@ class ConsentStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Verilerin cihazında kalır',
+                  L10n.of(context).onboardingDataTitle,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Çalışma sürelerin, soru sayıların ve notların yalnızca '
-                  'bu cihazdaki veritabanında saklanır; bir sunucuya '
-                  'gönderilmez. Uygulama ücretsizdir ve gelirini yalnızca '
-                  'reklamdan sağlar. Dilediğin an ayarlardan verilerini '
-                  'silebilir veya dışa aktarabilirsin (KVKK md. 11).',
-                  style: TextStyle(fontSize: 12),
+                Text(
+                  L10n.of(context).onboardingDataBody,
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -73,24 +70,22 @@ class ConsentStep extends StatelessWidget {
             key: const Key('onboarding-consent-toggle'),
             value: consent,
             onChanged: onConsent,
-            title: const Text('Kişiselleştirilmiş reklam'),
-            subtitle: const Text(
-              'Kapalı bırakırsan yine reklam görürsün, ama ilgi alanlarına '
-              'göre seçilmez. İstediğin an ayarlardan değiştirebilirsin.',
-              style: TextStyle(fontSize: 12),
+            title: Text(L10n.of(context).onboardingAdsTitle),
+            subtitle: Text(
+              L10n.of(context).onboardingAdsBody,
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'Bildirimler',
+          L10n.of(context).onboardingNotifTitle,
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Blok ve mola bitişlerini haber verir. İzin vermezsen uygulama '
-          'yine çalışır.',
-          style: TextStyle(fontSize: 12),
+        Text(
+          L10n.of(context).onboardingNotifBody,
+          style: const TextStyle(fontSize: 12),
         ),
         const SizedBox(height: 12),
         Row(
@@ -99,7 +94,7 @@ class ConsentStep extends StatelessWidget {
               child: FilledButton(
                 key: const Key('onboarding-notif-request'),
                 onPressed: onRequestNotifications,
-                child: const Text('Bildirim izni ver'),
+                child: Text(L10n.of(context).onboardingNotifGrant),
               ),
             ),
             const SizedBox(width: 8),
@@ -107,7 +102,7 @@ class ConsentStep extends StatelessWidget {
               child: OutlinedButton(
                 key: const Key('onboarding-notif-skip'),
                 onPressed: onSkipNotifications,
-                child: const Text('Atla'),
+                child: Text(L10n.of(context).commonSkip),
               ),
             ),
           ],
@@ -117,7 +112,7 @@ class ConsentStep extends StatelessWidget {
           Text(
             notificationOutcome!
                 ? 'Bildirim izni verildi.'
-                : 'Bildirim izni verilmedi — sorun değil, devam edebilirsin.',
+                : L10n.of(context).onboardingNotifDenied,
             key: const Key('onboarding-notif-outcome'),
             style: const TextStyle(fontSize: 12),
           ),

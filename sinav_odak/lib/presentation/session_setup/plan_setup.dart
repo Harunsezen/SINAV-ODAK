@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -87,7 +88,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         case PlanMode.endTime:
           final hour = _endHour;
           if (hour == null) {
-            return (result: null, error: 'Bitiş saatini seç.');
+            return (result: null, error: L10n.of(context).planPickEnd);
           }
           final now = DateTime.fromMillisecondsSinceEpoch(nowMs);
           // KARAR K7: geçmişte kalan saat otomatik yarına TAŞINMAZ.
@@ -141,7 +142,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
     final schedule = built.result?.schedule;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Plan')),
+      appBar: AppBar(title: Text(L10n.of(context).planTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -155,10 +156,19 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
           ),
           const SizedBox(height: 16),
           SegmentedButton<PlanMode>(
-            segments: const [
-              ButtonSegment(value: PlanMode.preset, label: Text('Hazır')),
-              ButtonSegment(value: PlanMode.custom, label: Text('Özel')),
-              ButtonSegment(value: PlanMode.endTime, label: Text('Bitiş')),
+            segments: [
+              ButtonSegment(
+                value: PlanMode.preset,
+                label: Text(L10n.of(context).planPreset),
+              ),
+              ButtonSegment(
+                value: PlanMode.custom,
+                label: Text(L10n.of(context).planCustom),
+              ),
+              ButtonSegment(
+                value: PlanMode.endTime,
+                label: Text(L10n.of(context).planByEnd),
+              ),
             ],
             selected: {_mode},
             onSelectionChanged: (s) => setState(() => _mode = s.first),
@@ -194,7 +204,11 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
             key: const Key('plan-start'),
             onPressed:
                 (schedule == null || _starting) ? null : () => _start(schedule),
-            child: Text(_starting ? 'Başlatılıyor...' : 'BAŞLAT'),
+            child: Text(
+              _starting
+                  ? L10n.of(context).planStarting
+                  : L10n.of(context).planStart,
+            ),
           ),
         ],
       ),
@@ -202,14 +216,13 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
   }
 
   String _warningText(ScheduleWarning w) => switch (w) {
-        ScheduleWarning.blockTooLong =>
-          'Bir çalışma bloğu 2 saatten uzun. Odaklanmak zorlaşabilir.',
+        ScheduleWarning.blockTooLong => L10n.of(context).planLongBlockWarning,
         ScheduleWarning.lastBreakLongApplied =>
-          'Son mola iki katına çıkarıldı.',
+          L10n.of(context).planLastBreakDoubled,
       };
 
   List<Widget> _presetControls() => [
-        const Text('Şablon'),
+        Text(L10n.of(context).planTemplate),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -226,7 +239,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         const SizedBox(height: 16),
         _Stepper(
           key: const Key('preset-cycles'),
-          label: 'Döngü sayısı',
+          label: L10n.of(context).planCycles,
           value: _cycles,
           min: 1,
           max: 8,
@@ -237,7 +250,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
   List<Widget> _customControls() => [
         _Stepper(
           key: const Key('custom-total'),
-          label: 'Toplam çalışma (dk)',
+          label: L10n.of(context).planTotalMinutes,
           value: _totalStudyMinutes,
           min: 10,
           max: 480,
@@ -246,7 +259,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         ),
         _Stepper(
           key: const Key('custom-breaks'),
-          label: 'Mola sayısı',
+          label: L10n.of(context).planBreakCount,
           value: _customBreakCount,
           min: 0,
           max: 10,
@@ -254,7 +267,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         ),
         _Stepper(
           key: const Key('custom-break-min'),
-          label: 'Mola süresi (dk)',
+          label: L10n.of(context).planBreakMinutes,
           value: _customBreakMinutes,
           min: 1,
           max: 30,
@@ -262,7 +275,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         ),
         SwitchListTile(
           key: const Key('custom-last-long'),
-          title: const Text('Son mola iki katı olsun'),
+          title: Text(L10n.of(context).planLastBreakLong),
           value: _lastBreakLong,
           onChanged: (v) => setState(() => _lastBreakLong = v),
         ),
@@ -271,12 +284,12 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
   List<Widget> _endTimeControls() => [
         Row(
           children: [
-            const Text('Bitiş saati'),
+            Text(L10n.of(context).planEndTime),
             const SizedBox(width: 16),
             DropdownButton<int>(
               key: const Key('end-hour'),
               value: _endHour,
-              hint: const Text('Saat'),
+              hint: Text(L10n.of(context).planHour),
               items: [
                 for (var h = 0; h < 24; h++)
                   DropdownMenuItem(
@@ -302,7 +315,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         ),
         _Stepper(
           key: const Key('end-breaks'),
-          label: 'Mola sayısı',
+          label: L10n.of(context).planBreakCount,
           value: _endBreakCount,
           min: 0,
           max: 8,
@@ -310,7 +323,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         ),
         _Stepper(
           key: const Key('end-break-min'),
-          label: 'Mola süresi (dk)',
+          label: L10n.of(context).planBreakMinutes,
           value: _endBreakMinutes,
           min: 1,
           max: 30,
@@ -345,10 +358,16 @@ class _Preview extends StatelessWidget {
               key: const Key('plan-preview-blocks'),
             ),
             const SizedBox(height: 8),
-            Text('Çalışma: ${formatDurationShort(schedule.totalStudyS)}'),
-            Text('Mola: ${formatDurationShort(schedule.totalBreakS)}'),
             Text(
-              'Tahmini bitiş: $hh:$mm',
+              L10n.of(context)
+                  .planStudyTotal(formatDurationShort(schedule.totalStudyS)),
+            ),
+            Text(
+              L10n.of(context)
+                  .summaryBreak(formatDurationShort(schedule.totalBreakS)),
+            ),
+            Text(
+              L10n.of(context).planEstimatedEnd('$hh:$mm'),
               key: const Key('plan-preview-end'),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/recovery_service.dart';
@@ -63,26 +64,26 @@ class _RecoveryGateState extends ConsumerState<RecoveryGate> {
   }
 
   Future<void> _askInterrupted(String sessionId, int recoveredStudyS) async {
+    final l = L10n.of(context);
     final delete = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         key: const Key('recovery-interrupted-dialog'),
-        title: const Text('Oturum yarıda kesildi'),
+        title: Text(l.recoveryInterruptedTitle),
         content: Text(
-          '${formatDurationShort(recoveredStudyS)} çalışman kurtarıldı ve '
-          'kaydedildi.\nKaydı silmek ister misin?',
+          l.recoveryInterruptedBody(formatDurationShort(recoveredStudyS)),
         ),
         actions: [
           TextButton(
             key: const Key('recovery-delete'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sil'),
+            child: Text(l.recoveryDelete),
           ),
           FilledButton(
             key: const Key('recovery-keep'),
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Koru'),
+            child: Text(l.recoveryKeep),
           ),
         ],
       ),
@@ -94,26 +95,24 @@ class _RecoveryGateState extends ConsumerState<RecoveryGate> {
   }
 
   Future<void> _askClockMovedBack(String sessionId) async {
+    final l = L10n.of(context);
     final stop = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         key: const Key('recovery-clock-dialog'),
-        title: const Text('Cihaz saati değişmiş görünüyor'),
-        content: const Text(
-          'Devam eden oturumun süresi doğru hesaplanamayabilir.\n'
-          'Oturuma devam edebilir veya burada kesebilirsin.',
-        ),
+        title: Text(l.recoveryClockTitle),
+        content: Text(l.recoveryClockBody),
         actions: [
           TextButton(
             key: const Key('recovery-stop-session'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Oturumu kes'),
+            child: Text(l.recoveryStopSession),
           ),
           FilledButton(
             key: const Key('recovery-continue'),
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Devam et'),
+            child: Text(l.recoveryContinue),
           ),
         ],
       ),

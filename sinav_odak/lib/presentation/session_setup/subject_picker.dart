@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,13 +22,14 @@ class SubjectPicker extends ConsumerWidget {
     final subjects = ref.watch(subjectsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ders Seç')),
+      appBar: AppBar(title: Text(L10n.of(context).setupSubjectTitle)),
       body: subjects.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Dersler yüklenemedi: $e')),
+        error: (e, _) =>
+            Center(child: Text(L10n.of(context).setupSubjectsFailed('$e'))),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(child: Text('Bu sınav türü için ders yok.'));
+            return Center(child: Text(L10n.of(context).setupNoSubjects));
           }
           return GridView.builder(
             padding: const EdgeInsets.all(12),

@@ -28,13 +28,18 @@ import '../../application/usecases/finish_session.dart';
 import '../../application/usecases/skip_break.dart';
 import '../../application/usecases/start_session.dart';
 import '../../domain/entities/enums.dart';
+import '../../domain/entities/notification_prefs.dart';
 import '../../domain/entities/session_schedule.dart';
 import '../../domain/entities/session_state.dart';
+import '../../domain/ports/haptic_gateway.dart';
+import '../../domain/ports/screen_wake_gateway.dart';
 import '../../domain/ports/session_activity_tracker.dart';
 import '../../domain/ports/session_notifier.dart';
 import '../../domain/services/schedule_resolver.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../../services/background/lifecycle_tracker.dart';
+import '../../services/background/system_haptic_gateway.dart';
+import '../../services/background/wakelock_screen_gateway.dart';
 import '../../services/notifications/local_session_notifier.dart';
 import '../../services/notifications/notification_service.dart';
 import '../utils/date_key.dart';
@@ -137,8 +142,54 @@ final sessionNotifierProvider = Provider<SessionNotifier>(
   (ref) => LocalSessionNotifier(
     ref.watch(notificationServiceProvider),
     nowMsProvider: nowMs,
+    // Tercihler KURULUM ANINDA okunuyor (`ref.read`), çünkü kullanıcı
+    // oturum sürerken ayarı değiştirebilir ve bir sonraki bildirim
+    // kurulumu güncel tercihi görmeli.
+    prefsReader: () => ref.read(notificationPrefsProvider),
   ),
 );
+
+/// Ekran kilidi. **Varsayılan Noop**: `wakelock_plus` platform kanalı
+/// istiyor ve testte `MissingPluginException` fırlatıyor. `main()` gerçek
+/// cihazda [WakelockScreenGateway] ile override eder.
+final screenWakeGatewayProvider =
+    Provider<ScreenWakeGateway>((ref) => const NoopScreenWakeGateway());
+
+/// Ekran şu an açık TUTULMALI mı?
+///
+/// İki koşul: kullanıcı ayarı açık **ve** aktif bir oturum var. Ayarın tek
+/// başına ekranı sürekli açık tutması pili boşuna tüketirdi.
+///
+/// FAZ 8 öncesinde `keepScreenOn` ayarı yalnızca veritabanına yazılıyor,
+/// **hiçbir yerde okunmuyordu**: kullanıcı açıyor, çalışma sırasında ekran
+/// yine kapanıyordu.
+final shouldKeepScreenOnProvider = Provider<bool>((ref) {
+  final wants =
+      ref.watch(settingsStreamProvider).valueOrNull?.keepScreenOn ?? false;
+  final hasActive = ref.watch(activeSessionProvider).valueOrNull != null;
+  return wants && hasActive;
+});
+
+/// Dokunsal geri bildirim. **Varsayılan Noop**: `HapticFeedback` platform
+/// kanalı istiyor ve testte akışı bekletiyor. `main()` gerçek cihazda
+/// [SystemHapticGateway] ile override eder — o da kullanıcının **titreşim
+/// ayarına kapılıdır**.
+final hapticGatewayProvider =
+    Provider<HapticGateway>((ref) => const NoopHapticGateway());
+
+/// Ayar satırından okunan bildirim tercihleri.
+///
+/// Ayar akışı henüz gelmediyse **varsayılan** kullanılır: burada `false`'a
+/// düşmek, ilk açılışta bildirimleri sessizce kapatmak olurdu.
+final notificationPrefsProvider = Provider<NotificationPrefs>((ref) {
+  final s = ref.watch(settingsStreamProvider).valueOrNull;
+  if (s == null) return NotificationPrefs.defaults;
+  return NotificationPrefs(
+    enabled: s.notificationEnabled,
+    sound: s.soundEnabled,
+    vibration: s.vibrationEnabled,
+  );
+});
 
 /// Uygulamadan çıkışları ölçen izleyici.
 final activityTrackerProvider = Provider<SessionActivityTracker>(
@@ -494,6 +545,16 @@ final allGoalsProvider = StreamProvider<List<Goal>>(
 final achievementDaoProvider = Provider<AchievementDao>(
   (ref) => ref.watch(databaseProvider).achievementDao,
 );
+
+/// Henüz görülmemiş rozetler — tebrik ekranı bunları kutluyor.
+///
+/// Rozetler `SessionRepository.save()` yolunda sessizce açılıyordu;
+/// kullanıcı Ayarlar > Rozetler'e girmedikçe kazandığından haberi olmuyordu.
+final unseenAchievementsProvider =
+    FutureProvider<List<Achievement>>((ref) async {
+  final all = await ref.watch(achievementsProvider.future);
+  return all.where((a) => !a.isSeen).toList();
+});
 
 /// Açılmış rozetler.
 final achievementsProvider = StreamProvider<List<Achievement>>(

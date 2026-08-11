@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../domain/entities/enums.dart';
 
@@ -15,40 +16,37 @@ class ExamStep extends StatelessWidget {
   final ExamType? selected;
   final ValueChanged<ExamType> onSelect;
 
-  static String labelOf(ExamType t) => switch (t) {
-        ExamType.yks => 'YKS',
-        ExamType.lgs => 'LGS',
-        ExamType.kpss => 'KPSS',
-        ExamType.ales => 'ALES',
-        ExamType.dgs => 'DGS',
-        ExamType.other => 'Diğer',
+  static String labelOf(L10n l, ExamType t) => switch (t) {
+        ExamType.yks => l.examYks,
+        ExamType.lgs => l.examLgs,
+        ExamType.kpss => l.examKpss,
+        ExamType.ales => l.examAles,
+        ExamType.dgs => l.examDgs,
+        ExamType.other => l.examOther,
       };
 
-  static String descriptionOf(ExamType t) => switch (t) {
-        ExamType.yks => 'Üniversite sınavı',
-        ExamType.lgs => 'Liseye geçiş',
-        ExamType.kpss => 'Kamu personeli',
-        ExamType.ales => 'Akademik personel',
-        ExamType.dgs => 'Dikey geçiş',
-        ExamType.other => 'Kendi ders listeni kurarsın',
+  static String descriptionOf(L10n l, ExamType t) => switch (t) {
+        ExamType.yks => l.examYksNote,
+        ExamType.lgs => l.examLgsNote,
+        ExamType.kpss => l.examKpssNote,
+        ExamType.ales => l.examAlesNote,
+        ExamType.dgs => l.examDgsNote,
+        ExamType.other => l.examOtherNote,
       };
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return ListView(
       key: const Key('onboarding-step-exam'),
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Hangi sınava hazırlanıyorsun?',
+          l.onboardingExamTitle,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Ders listen buna göre kurulur. Sonradan ayarlardan '
-          'değiştirebilirsin.',
-          style: TextStyle(fontSize: 12),
-        ),
+        Text(l.onboardingExamNote, style: const TextStyle(fontSize: 12)),
         const SizedBox(height: 20),
         for (final t in ExamType.values)
           Padding(
@@ -60,8 +58,8 @@ class ExamStep extends StatelessWidget {
                   : null,
               child: ListTile(
                 key: Key('onboarding-exam-${t.name}'),
-                title: Text(labelOf(t)),
-                subtitle: Text(descriptionOf(t)),
+                title: Text(labelOf(l, t)),
+                subtitle: Text(descriptionOf(l, t)),
                 trailing: selected == t ? const Icon(Icons.check) : null,
                 onTap: () => onSelect(t),
               ),
