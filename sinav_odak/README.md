@@ -181,15 +181,97 @@ kapattırır.
 `-Padmob_app_id` yerine kalıcı olarak `android/gradle.properties` içine
 `admob_app_id=...` yazılabilir — **bu dosya depoya commit'lenmemelidir.**
 
-### 2. Yayına çıkmadan önce
+### 2. Release imzalama (ZORUNLU)
+
+Play Store'a yüklenecek çıktı **kendi keystore'unla** imzalanmalı. Debug
+anahtarıyla imzalanmış bir AAB/APK **yüklenemez**.
+
+> **Keystore'u KAYBETME ve ASLA paylaşma.** Play, bir uygulamanın imza
+> anahtarını değiştirmene izin vermez: keystore kaybolursa o uygulamaya bir
+> daha güncelleme yayımlayamazsın; sızarsa uygulamanın kimliği çalınır.
+> Yedeğini kendi bilgisayarının dışında da tut.
+
+#### 2.1 Anahtar üret (bir kez)
+
+```bash
+keytool -genkey -v \
+  -keystore ~/anahtarlar/sinav-odak-upload.jks \
+  -storetype JKS \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias upload
+```
+
+Sorulan bilgileri doldur ve **parolayı not et**. `-validity 10000` (~27 yıl)
+Google'ın önerdiği süredir; daha kısası anahtarın ömrü dolduğunda güncelleme
+yayımlamanı engeller.
+
+#### 2.2 `android/key.properties` oluştur
+
+```properties
+storePassword=KEYSTORE_PAROLASI
+keyPassword=ANAHTAR_PAROLASI
+keyAlias=upload
+storeFile=/home/kullanici/anahtarlar/sinav-odak-upload.jks
+```
+
+- Dosyanın yeri: **`android/key.properties`** (proje kökü değil).
+- `storeFile` **mutlak yol** olmalı; göreli yazarsan `android/` klasörüne
+  göre çözülür.
+- Bu dosya ve `*.jks` / `*.keystore` **`.gitignore`'da** — depoya girmezler.
+
+#### 2.3 Nasıl çalışıyor
+
+`android/app/build.gradle`:
+
+- `key.properties` **varsa** → `signingConfigs.release` doldurulur ve release
+  derlemesi onunla imzalanır.
+- **Yoksa** → debug anahtarına düşer (geliştirme kırılmasın diye) ve Gradle
+  şu uyarıyı basar:
+
+  ```
+  UYARI: android/key.properties yok — release derlemesi DEBUG anahtarıyla
+  imzalanıyor. Bu çıktı Play Store'a YÜKLENEMEZ.
+  ```
+
+Yayın derlemesinde bu uyarıyı görüyorsan **dur**: çıktı Play'e yüklenemez.
+
+#### 2.4 Play Store çıktısı: **AAB** (APK değil)
+
+Google Play **Android App Bundle** ister. `flutter build apk` yalnızca
+elden dağıtım / cihaza kurulum içindir.
+
+```bash
+flutter build appbundle --release \
+  --dart-define=ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY \
+  --dart-define=ADMOB_BANNER_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_NATIVE_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_INTERSTITIAL_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
+  -Padmob_app_id=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+```
+
+Çıktı: `build/app/outputs/bundle/release/app-release.aab`
+
+Cihazda denemek için APK (aynı define'larla):
+
+```bash
+flutter build apk --release  # ...aynı --dart-define ve -Padmob_app_id
+# çıktı: build/app/outputs/flutter-apk/app-release.apk
+```
+
+Kimlikleri vermezsen **test reklamları** ile derlenir — geliştirmede doğrusu
+budur, yayında gelir kaybıdır. Release derlemede Ayarlar → Hakkında'daki
+"TEST reklam kimlikleri kullanılıyor" uyarısının **kaybolduğunu** doğrula.
+
+### 3. Yayına çıkmadan önce
 
 - [ ] `AdConfig.usingTestIds == false` (release derlemede doğrula)
-- [ ] `android/app/build.gradle` içinde imzalama yapılandırması (`signingConfigs.release`) tanımlı; şu an `debug` anahtarı kullanılıyor
+- [ ] `android/key.properties` oluşturuldu ve derlemede imzalama uyarısı ÇIKMIYOR (bkz. §2)
 - [ ] `PRIVACY.md` bir URL'de yayımlandı ve Play Console'a girildi
 - [ ] Play Console *Data safety* formu `PRIVACY.md` §10'daki tabloya göre dolduruldu
 - [ ] Hedef kitle yaşı **13+** seçildi
 
-### 3. i18n
+### 4. i18n
 
 Arayüz metinleri `lib/l10n/app_tr.arb` içinde; `L10n` sınıfı
 `flutter gen-l10n` (veya `flutter pub get`) ile üretilir. Uygulama şu an

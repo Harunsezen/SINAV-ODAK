@@ -14,3 +14,15 @@ ios/Runner/GoogleService-Info.plist
 
 # IntelliJ modul dosyasi (flutter create uretir)
 *.iml
+
+# --- İMZALAMA SIRLARI — ASLA COMMIT EDİLMEZ ---
+# `android/.gitignore` bunları zaten dışlıyor; buradaki tekrar, keystore
+# proje kökünde veya başka bir klasörde tutulursa diye güvenlik ağı.
+# Keystore sızarsa uygulamanın kimliği çalınır ve Play'de güncelleme
+# yayımlama yetkisi kaybedilir — keystore DEĞİŞTİRİLEMEZ.
+key.properties
+**/key.properties
+*.keystore
+*.jks
+**/*.keystore
+**/*.jks
