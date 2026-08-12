@@ -686,5 +686,6 @@
   },
   "settingsPrivacyTitle": "Gizlilik tercihleri",
   "commonSkip": "Atla",
-  "planHour": "Saat"
+  "planHour": "Saat",
+  "summaryQuestionCapped": "Tek oturum için en fazla 2000 soru."
 }

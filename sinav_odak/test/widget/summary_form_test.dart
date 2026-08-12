@@ -324,4 +324,61 @@ void main() {
     expect(find.text('Oturum bulunamadı.'), findsOneWidget);
     expect(find.text('DONE EKRANI'), findsNothing);
   });
+
+  // ---------------------------------------------------------------------
+  // D4 — soru sayısı üst sınırı (2000)
+  // ---------------------------------------------------------------------
+
+  testWidgets(
+      '2000 ÜSTÜ giriş 2000e kırpılıyor ve KAYDET kırpılmış değerle '
+      'çalışıyor', (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    fakeNow = lastEnd + 1000;
+    await pumpForm(tester);
+
+    await tester.enterText(find.byKey(const Key('summary-q-field')), '5000');
+    await tester.pumpAndSettle();
+
+    // Alanın kendisi de kırpılmış değeri göstermeli; kullanıcı 5000
+    // yazdığını sanıp 2000 kaydedildiğini sonradan öğrenmemeli.
+    final field = tester.widget<TextField>(
+      find.byKey(const Key('summary-q-field')),
+    );
+    expect(field.controller!.text, '2000');
+
+    await tester.tap(find.byKey(const Key('summary-save')));
+    await tester.pumpAndSettle();
+
+    final s = await db.sessionDao.findById('s1');
+    expect(
+      s!.questionCount,
+      2000,
+      reason: 'kayıt kırpılmış değerle yapılmalı',
+    );
+  });
+
+  testWidgets('kırpma satır içi mesajla bildiriliyor, DİYALOG açılmıyor',
+      (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    fakeNow = lastEnd + 1000;
+    await pumpForm(tester);
+
+    expect(find.byKey(const Key('summary-q-capped')), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('summary-q-field')), '2001');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('summary-q-capped')), findsOneWidget);
+    expect(find.text('Tek oturum için en fazla 2000 soru.'), findsOneWidget);
+    expect(
+      find.byType(AlertDialog),
+      findsNothing,
+      reason: 'veri girerken akış bölünmez — bu ekranın değişmez kuralı',
+    );
+
+    // Sınır İÇİ değere dönünce mesaj kalkmalı.
+    await tester.enterText(find.byKey(const Key('summary-q-field')), '40');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('summary-q-capped')), findsNothing);
+  });
 }

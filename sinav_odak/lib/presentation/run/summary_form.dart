@@ -60,9 +60,25 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
     super.dispose();
   }
 
+  /// Tek oturumda girilebilecek en fazla soru sayısı.
+  ///
+  /// Üst sınır olmadan `999999` gibi bir giriş istatistikleri ve net
+  /// hesabını saçmalaştırıyordu. 2000, deneme sınavı çözen bir öğrencinin
+  /// gerçek üst ucunun (bir TYT+AYT günü ~240 soru) çok üzerinde; yani
+  /// meşru kullanımı engellemiyor, yalnızca hatalı girişi kesiyor.
+  static const int maxQuestions = 2000;
+
+  /// Son girişte tavana kırpma yapıldı mı? Mesaj buna göre gösteriliyor.
+  bool _questionsCapped = false;
+
   void _setQuestions(int value) {
-    final v = value < 0 ? 0 : value;
-    setState(() => _questionCount = v);
+    final clamped =
+        value < 0 ? 0 : (value > maxQuestions ? maxQuestions : value);
+    setState(() {
+      _questionCount = clamped;
+      _questionsCapped = value > maxQuestions;
+    });
+    final v = clamped;
     final text = v.toString();
     if (_questionCtrl.text != text) {
       _questionCtrl.value = TextEditingValue(
@@ -210,6 +226,7 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
 
           _QuestionCard(
             controller: _questionCtrl,
+            capped: _questionsCapped,
             onQuick: (add) => _setQuestions(_questionCount + add),
             onReset: () => _setQuestions(0),
             onManual: (text) => _setQuestions(int.tryParse(text.trim()) ?? 0),
@@ -329,12 +346,16 @@ class _Header extends StatelessWidget {
 class _QuestionCard extends StatelessWidget {
   const _QuestionCard({
     required this.controller,
+    required this.capped,
     required this.onQuick,
     required this.onReset,
     required this.onManual,
   });
 
   final TextEditingController controller;
+
+  /// Değer tavana kırpıldıysa alanın altında satır içi mesaj gösterilir.
+  final bool capped;
   final void Function(int add) onQuick;
   final VoidCallback onReset;
   final void Function(String text) onManual;
@@ -389,6 +410,20 @@ class _QuestionCard extends StatelessWidget {
               ),
               onChanged: onManual,
             ),
+            // Kırpma sessiz olmamalı: kullanıcı 5000 yazıp 2000 görünce
+            // neyin olduğunu bilmeli. Diyalog AÇILMAZ — veri girerken
+            // akışı bölmek bu ekranın değişmez kuralına aykırı.
+            if (capped) ...[
+              const SizedBox(height: 6),
+              Text(
+                L10n.of(context).summaryQuestionCapped,
+                key: const Key('summary-q-capped'),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
           ],
         ),
       ),
