@@ -15,6 +15,22 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
+      // ⚠️ `Size.fromHeight(56)` = `Size(double.infinity, 56)`.
+      //
+      // Kasıtlı: `Column` içindeki birincil butonlar bu sayede tam genişlik
+      // oluyor. AMA genişliği **sınırsız** veren bir kapsayıcının (en sık
+      // `Row`; esnek olmayan çocuklarını sonsuz genişlikle ölçer) içine
+      // konursa sonsuz asgari genişlik geçerli olmayan bir kısıta dönüşür,
+      // buton yerleşemez ve **hiç çizilmez** — release'de sessizce.
+      //
+      // Onboarding alt barı tam olarak bu yüzden bozulmuştu (bkz.
+      // ONBOARDING_BUG.md). Bir `Row` içine `FilledButton` koyacaksan
+      // asgari genişliği yerel olarak ez:
+      //   `style: FilledButton.styleFrom(minimumSize: const Size(88, 56))`
+      // veya butonu `Expanded`/`Flexible` ile sınırla.
+      //
+      // `test/widget/theme_button_constraints_test.dart` bu tuzağı
+      // bekçiliyor.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(56),

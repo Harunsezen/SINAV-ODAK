@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
 import 'package:sinav_odak/core/theme/app_theme.dart';
+import 'package:sinav_odak/presentation/onboarding/onboarding_screen.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/presentation/settings/settings_screen.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
@@ -320,6 +321,68 @@ Future<ProviderContainer> pumpQaSettings(
     ),
   );
   await tester.pumpAndSettle();
+  return container;
+}
+
+/// Onboarding'i DOĞRUDAN kurar ve son (5/5) adıma kadar yürür.
+///
+/// **Neden router üzerinden değil:** `QaSeed`'in kullanıcılarında
+/// `onboardingCompleted = true` olduğu için router `/onboarding`'i her
+/// seferinde ana panele yönlendiriyor — gezinti turunun bu ekrana hiç
+/// uğramamasının ve cihazdaki "birincil buton yok" hatasının fark
+/// edilmemesinin sebebi buydu (ONBOARDING_BUG.md).
+Future<ProviderContainer> pumpQaOnboardingSummary(
+  WidgetTester tester,
+  AppDatabase db, {
+  Size size = const Size(412, 915),
+  Brightness brightness = Brightness.light,
+}) async {
+  final container = ProviderContainer(
+    overrides: [
+      databaseProvider.overrideWithValue(db),
+      clockProvider.overrideWithValue(() => t0),
+      uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
+    ],
+  );
+  addTearDown(container.dispose);
+
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.padding = const FakeViewPadding(top: 48, bottom: 48);
+  tester.view.viewPadding = const FakeViewPadding(top: 48, bottom: 48);
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: RepaintBoundary(
+        key: qaRepaintKey,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme:
+              brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+          locale: const Locale('tr'),
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          home: const OnboardingScreen(),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+
+  Future<void> next() async {
+    await tester.tap(find.byKey(const Key('onboarding-next')));
+    await tester.pumpAndSettle();
+  }
+
+  await next();
+  await tester.tap(find.byKey(const Key('onboarding-exam-yks')));
+  await tester.pumpAndSettle();
+  await next();
+  await next();
+  await next();
+
   return container;
 }
 

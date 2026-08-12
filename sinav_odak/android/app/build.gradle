@@ -24,7 +24,14 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.harunsezen.sinav_odak"
-    compileSdk = flutter.compileSdkVersion
+    // `flutter.compileSdkVersion` DEĞİL, sabit 35: bağımlılıkların bir
+    // bölümü (google_mobile_ads / AndroidX) API 35'e karşı derlenmiş
+    // durumda ve daha düşük bir compileSdk "compiled against a newer
+    // version" hatasıyla derlemeyi durduruyor.
+    //
+    // Bu yalnızca DERLEME hedefi; uygulamanın çalışma davranışını
+    // `minSdk`/`targetSdk` belirliyor (21 / 34, aşağıda).
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

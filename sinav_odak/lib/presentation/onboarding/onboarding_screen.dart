@@ -193,6 +193,22 @@ class _BottomBar extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onFinish;
 
+  /// Alt bardaki butonlar için **yerel** stil.
+  ///
+  /// **Neden zorunlu:** `AppTheme` tüm `FilledButton`'lara
+  /// `minimumSize: Size.fromHeight(56)` veriyor — bu `Size(double.infinity,
+  /// 56)` demek. Bir `Column` içinde genişlik sınırlı olduğu için sorun
+  /// çıkmıyor (istenen "tam genişlik" görünümü zaten bundan geliyor), ama
+  /// `Row` esnek olmayan çocuklarını **sınırsız** genişlikle ölçüyor:
+  /// sonsuz asgari genişlik geçerli olmayan bir kısıta dönüşüyor ve buton
+  /// hiç yerleşemiyor ("BoxConstraints forces an infinite width").
+  /// Sonuç: cihazda yalnızca "Geri" görünüyor, asıl buton yok.
+  ///
+  /// Yükseklik 56'da kalıyor; değişen tek şey asgari genişliğin sonlu
+  /// olması. Buton içeriğine göre yine büyüyor.
+  static ButtonStyle get _barButtonStyle =>
+      FilledButton.styleFrom(minimumSize: const Size(88, 56));
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -209,12 +225,14 @@ class _BottomBar extends StatelessWidget {
           if (isLast)
             FilledButton(
               key: const Key('onboarding-start'),
+              style: _barButtonStyle,
               onPressed: saving ? null : onFinish,
               child: Text(L10n.of(context).onboardingStart),
             )
           else
             FilledButton(
               key: const Key('onboarding-next'),
+              style: _barButtonStyle,
               // Sınav türü seçilmeden pasif.
               onPressed: canGoNext ? onNext : null,
               child: Text(L10n.of(context).onboardingNext),

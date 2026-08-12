@@ -270,6 +270,31 @@ void main() {
     });
   });
 
+  group('onboarding (cihaz hatası kanıtı)', () {
+    // Bu iki görüntü ONBOARDING_BUG.md'nin görsel kanıtı: 5/5 adımında
+    // [Başla] butonu gerçekten çiziliyor. Düzeltmeden önce bu ekranda
+    // yalnızca "Geri" vardı.
+    testWidgets('özet 5/5 açık', (tester) async {
+      await QaSeed.emptyUser(db);
+      await pumpQaOnboardingSummary(tester, db);
+      await shoot(tester, '51_onboarding_summary_light');
+      expect(find.byKey(const Key('onboarding-start')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('özet 5/5 koyu', (tester) async {
+      await QaSeed.emptyUser(db);
+      await pumpQaOnboardingSummary(
+        tester,
+        db,
+        brightness: Brightness.dark,
+      );
+      await shoot(tester, '52_onboarding_summary_dark');
+      expect(find.byKey(const Key('onboarding-start')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('boş durumlar', () {
     testWidgets('istatistik boş', (tester) async {
       await QaSeed.emptyUser(db);

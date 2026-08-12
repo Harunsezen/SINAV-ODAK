@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/routes.dart';
+import 'package:sinav_odak/core/theme/app_theme.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
@@ -60,8 +61,15 @@ void main() {
       );
 
   Future<ProviderContainer> pumpOnboarding(WidgetTester tester) async {
-    // Rıza metni + kartlar uzun; varsayılan 800x600 yüzeyde alt butonlar
-    // görünür alanın dışında kalıyor.
+    // Rıza metni + kartlar uzun; varsayılan 800x600 yüzeyde adım içeriği
+    // sığmıyor. Yüzey bu yüzden büyük.
+    //
+    // **Uyarı — bu dosya tek başına yeterli DEĞİL.** Buradaki yorum bir
+    // zamanlar "alt butonlar görünür alanın dışında kalıyor" diyordu ve
+    // yüzeyi büyütmek gerçek bir cihaz hatasını (birincil butonun hiç
+    // çizilmemesi) yıllarca gizledi. Gerçek tema + gerçek telefon ölçüsüyle
+    // yürüyüş `onboarding_device_walk_test.dart`'ta; teşhis
+    // `ONBOARDING_BUG.md`'de.
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -85,6 +93,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
+          // GERÇEK tema: hata `AppTheme`'in FilledButton stilinden geliyordu
+          // ve varsayılan temayla test edilince görünmüyordu.
+          theme: AppTheme.light(),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           routerConfig: buildRouter(),

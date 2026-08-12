@@ -16,3 +16,19 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+// Eklenti modülleri için Flutter SDK sürümlerini SABİTLE.
+//
+// **Neden gerekli:** eklentilerin kendi `build.gradle` dosyaları
+// `flutter.compileSdkVersion` / `flutter.minSdkVersion` gibi değerleri
+// okuyor. Yeni AGP + Gradle çiftinde bu uzantı bazı eklenti projelerinde
+// çözümlenemiyor ve derleme "Could not get unknown property 'flutter'"
+// ile düşüyor. Değerleri burada tek yerden veriyoruz.
+//
+// Bu değerler UYGULAMANIN kendi ayarlarını EZMİYOR: `app/build.gradle`
+// compileSdk 35 ve minSdk 21'i kendisi belirliyor.
+subprojects {
+    project.extensions.extraProperties.set("flutter",
+        [compileSdkVersion: 34, minSdkVersion: 21,
+         targetSdkVersion: 34])
+}
