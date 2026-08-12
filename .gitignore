@@ -2,3 +2,4 @@
 # Teslim ciktilari (git bundle / kaynak arsivi) depoya girmez
 *.bundle
 *.tar.gz
+*.zip
