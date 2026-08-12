@@ -91,31 +91,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsAppearance,
             icon: Icons.palette_outlined,
             children: [
-              ListTile(
+              // ListTile DEĞİL: `trailing` olarak verilen SegmentedButton
+              // dar ekranda (≈430 px) satırın tamamını kaplıyor ve
+              // ListTile "Trailing widget consumes entire tile width"
+              // assertion'ı ile Ayarlar ekranını ÇÖKERTİYORDU. Etiket ve
+              // seçici artık alt alta.
+              Column(
                 key: const Key('settings-theme'),
-                contentPadding: EdgeInsets.zero,
-                title: Text(l.settingsTheme),
-                trailing: SegmentedButton<ThemeModeSetting>(
-                  segments: [
-                    ButtonSegment(
-                      value: ThemeModeSetting.system,
-                      label: Text(l.settingsThemeSystem),
-                    ),
-                    ButtonSegment(
-                      value: ThemeModeSetting.light,
-                      icon: const Icon(Icons.light_mode_outlined),
-                      tooltip: l.settingsThemeLight,
-                    ),
-                    ButtonSegment(
-                      value: ThemeModeSetting.dark,
-                      icon: const Icon(Icons.dark_mode_outlined),
-                      tooltip: l.settingsThemeDark,
-                    ),
-                  ],
-                  selected: {settings.themeMode},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (s) => _settings.setThemeMode(s.first),
-                ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.settingsTheme),
+                  const SizedBox(height: 8),
+                  SegmentedButton<ThemeModeSetting>(
+                    segments: [
+                      ButtonSegment(
+                        value: ThemeModeSetting.system,
+                        label: Text(l.settingsThemeSystem),
+                      ),
+                      ButtonSegment(
+                        value: ThemeModeSetting.light,
+                        icon: const Icon(Icons.light_mode_outlined),
+                        tooltip: l.settingsThemeLight,
+                      ),
+                      ButtonSegment(
+                        value: ThemeModeSetting.dark,
+                        icon: const Icon(Icons.dark_mode_outlined),
+                        tooltip: l.settingsThemeDark,
+                      ),
+                    ],
+                    selected: {settings.themeMode},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (s) => _settings.setThemeMode(s.first),
+                  ),
+                ],
               ),
               SwitchListTile(
                 key: const Key('settings-keep-screen-on'),
@@ -215,10 +223,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(l.settingsCatalogNote),
                 titleTextStyle: Theme.of(context).textTheme.bodyMedium,
-                trailing: FilledButton.tonal(
-                  onPressed: () => context.push(Routes.manage),
-                  child: Text(l.settingsCatalogOpen),
-                ),
+                // `trailing` olarak buton verilmişti; dar ekranda buton
+                // satırın tamamını kaplayıp ListTile assertion'ı ile
+                // ekranı çökertiyordu. Hedefler/Rozetler satırlarıyla aynı
+                // desene çekildi: küçük ok + satırın tamamı dokunulabilir.
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.manage),
               ),
             ],
           ),

@@ -5,6 +5,13 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/di/app_providers.dart';
 
+/// Katalog ad uzunluğu sınırları — **`catalog_tables.dart` şemasıyla
+/// birebir aynı**. Şema değişirse burası da değişmeli; aksi halde giriş
+/// kabul edilir ama yazma `InvalidDataException` ile çöker.
+const int kSubjectNameMax = 60;
+const int kTopicNameMax = 120;
+const int kActivityNameMax = 60;
+
 /// Ders / konu / çalışma türü yönetimi.
 ///
 /// **SİLME YOK — arşivleme var (G8).** Silinen bir ders geçmiş oturumların
@@ -63,11 +70,17 @@ Future<String?> _promptName(
   BuildContext context, {
   required String title,
   required String label,
+  required int maxLength,
   String initial = '',
 }) {
   return showDialog<String>(
     context: context,
-    builder: (_) => _NameDialog(title: title, label: label, initial: initial),
+    builder: (_) => _NameDialog(
+      title: title,
+      label: label,
+      initial: initial,
+      maxLength: maxLength,
+    ),
   );
 }
 
@@ -83,11 +96,18 @@ class _NameDialog extends StatefulWidget {
     required this.title,
     required this.label,
     required this.initial,
+    required this.maxLength,
   });
 
   final String title;
   final String label;
   final String initial;
+
+  /// Veritabanı sınırı. **Şemayla aynı olmak ZORUNDA:** `subjects.name` ve
+  /// `activity_types.name` 60, `topics.name` 120 karakterle sınırlı. Sınır
+  /// arayüzde uygulanmazsa uzun ad `InvalidDataException` fırlatıyor ve
+  /// uygulama ÇÖKÜYOR — kullanıcı yalnızca uzun bir ders adı yazdığı için.
+  final int maxLength;
 
   @override
   State<_NameDialog> createState() => _NameDialogState();
@@ -119,6 +139,9 @@ class _NameDialogState extends State<_NameDialog> {
         key: const Key('catalog-name-field'),
         controller: _controller,
         autofocus: true,
+        maxLength: widget.maxLength,
+        // `maxLength` tek başına sayaç gösterip girişi keser; sayaç da
+        // kullanıcıya sınırı önceden bildiriyor.
         decoration: InputDecoration(labelText: widget.label),
         onSubmitted: (_) => _submit(),
       ),
@@ -189,6 +212,7 @@ class _SubjectsTab extends ConsumerWidget {
             context,
             title: l.catalogAddSubject,
             label: l.catalogSubjectName,
+            maxLength: kSubjectNameMax,
           );
           if (name == null) return;
           await ref.read(subjectDaoProvider).createSubject(
@@ -308,6 +332,7 @@ class _SubjectTile extends ConsumerWidget {
                         title: l.catalogEditTopic,
                         label: l.catalogTopicName,
                         initial: t.name,
+                        maxLength: kTopicNameMax,
                       );
                       if (name == null) return;
                       await ref
@@ -344,6 +369,7 @@ class _SubjectTile extends ConsumerWidget {
                     context,
                     title: l.catalogAddTopic,
                     label: l.catalogTopicName,
+                    maxLength: kTopicNameMax,
                   );
                   if (name == null) return;
                   await ref.read(subjectDaoProvider).createTopic(
@@ -363,6 +389,7 @@ class _SubjectTile extends ConsumerWidget {
                     title: l.catalogEditSubject,
                     label: l.catalogSubjectName,
                     initial: name,
+                    maxLength: kSubjectNameMax,
                   );
                   if (newName == null) return;
                   await ref
@@ -452,6 +479,7 @@ class _ActivityTypesTab extends ConsumerWidget {
                             title: l.catalogEditActivity,
                             label: l.catalogActivityName,
                             initial: t.name,
+                            maxLength: kActivityNameMax,
                           );
                           if (name == null) return;
                           await ref
@@ -491,6 +519,7 @@ class _ActivityTypesTab extends ConsumerWidget {
             context,
             title: l.catalogAddActivity,
             label: l.catalogActivityName,
+            maxLength: kActivityNameMax,
           );
           if (name == null) return;
           await ref.read(subjectDaoProvider).createActivityType(

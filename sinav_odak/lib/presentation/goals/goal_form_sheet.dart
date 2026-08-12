@@ -164,15 +164,20 @@ class _GoalFormSheetState extends ConsumerState<GoalFormSheet> {
             ],
           ),
           const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          // Row DEĞİL: alt sayfa `isScrollControlled` ile ölçülürken Row
+          // çocuklarına sonsuz genişlik veriyor ve FilledButton
+          // "BoxConstraints forces an infinite width" ile çöküyordu.
+          // OverflowBar hem bu ölçümü güvenli yapıyor hem de dar ekranda
+          // butonları alt alta alıyor.
+          OverflowBar(
+            alignment: MainAxisAlignment.end,
+            spacing: 8,
             children: [
               TextButton(
                 key: const Key('goal-cancel'),
                 onPressed: _busy ? null : () => Navigator.of(context).pop(),
                 child: Text(l.commonCancel),
               ),
-              const SizedBox(width: 8),
               FilledButton(
                 key: const Key('goal-create'),
                 onPressed: canCreate ? _create : null,
