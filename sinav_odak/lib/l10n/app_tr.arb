@@ -30,6 +30,8 @@
   "runConfirmCancel": "Vazgeç",
   "runConfirmYes": "Evet, bitir",
   "runClockMovedBack": "Cihaz saati değişmiş görünüyor.\nOturumun doğru sürdürülebilmesi için saati kontrol et.",
+  "breakStarted": "Mola başladı.",
+  "blockStarted": "Çalışma bloğu başladı.",
   "breakTitle": "MOLA",
   "breakRemaining": "kalan mola",
   "breakEnd": "Molayı Bitir",

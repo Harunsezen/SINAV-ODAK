@@ -220,8 +220,7 @@ void main() {
   // 4. AKTİF OTURUM KATMANI
   // =====================================================================
 
-  testWidgets('aktif oturum: /run açılıyor, geri tuşu KORUYOR',
-      (tester) async {
+  testWidgets('aktif oturum: /run açılıyor, geri tuşu KORUYOR', (tester) async {
     await QaSeed.activeUser(db);
     await seedRunningSession(db, id: 'qa_run', sch: schedule());
     final c = await pumpQaApp(tester, db);
@@ -350,8 +349,7 @@ void main() {
       await goTab(tester, 'Yanlışlar');
     });
 
-    await step(tester, 'sekmeler: Tekrar edildi / Öğrenildi / Aktif',
-        () async {
+    await step(tester, 'sekmeler: Tekrar edildi / Öğrenildi / Aktif', () async {
       await tapIfPresent(tester, find.text('Tekrar edildi'));
       await tapIfPresent(tester, find.text('Öğrenildi'));
       await tapIfPresent(tester, find.text('Aktif'));
@@ -517,8 +515,7 @@ void main() {
   // 8. ROZETLER + KATALOG YÖNETİMİ
   // =====================================================================
 
-  testWidgets('rozetler ve katalog: tüm kontroller, SİLME yok',
-      (tester) async {
+  testWidgets('rozetler ve katalog: tüm kontroller, SİLME yok', (tester) async {
     await QaSeed.activeUser(db);
     final c = await pumpQaApp(tester, db, size: const Size(430, 4000));
 

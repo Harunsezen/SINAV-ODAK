@@ -251,8 +251,9 @@ Future<ProviderContainer> pumpQaApp(
         key: qaRepaintKey,
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          theme:
-              brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+          theme: brightness == Brightness.dark
+              ? AppTheme.dark()
+              : AppTheme.light(),
           locale: const Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
@@ -359,8 +360,9 @@ Future<ProviderContainer> pumpQaOnboardingSummary(
         key: qaRepaintKey,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme:
-              brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+          theme: brightness == Brightness.dark
+              ? AppTheme.dark()
+              : AppTheme.light(),
           locale: const Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
@@ -387,5 +389,9 @@ Future<ProviderContainer> pumpQaOnboardingSummary(
 }
 
 /// Gezintide bulunulan yol.
-String currentRoute(ProviderContainer c) =>
-    c.read(appRouterProvider).routerDelegate.currentConfiguration.uri.toString();
+String currentRoute(ProviderContainer c) => c
+    .read(appRouterProvider)
+    .routerDelegate
+    .currentConfiguration
+    .uri
+    .toString();

@@ -41,6 +41,7 @@ import '../../services/background/lifecycle_tracker.dart';
 import '../../services/background/system_haptic_gateway.dart';
 import '../../services/background/wakelock_screen_gateway.dart';
 import '../../services/notifications/local_session_notifier.dart';
+import '../../services/notifications/foreground_notification_guard.dart';
 import '../../services/notifications/notification_service.dart';
 import '../utils/date_key.dart';
 import '../utils/time.dart';
@@ -189,6 +190,28 @@ final notificationPrefsProvider = Provider<NotificationPrefs>((ref) {
     sound: s.soundEnabled,
     vibration: s.vibrationEnabled,
   );
+});
+
+/// Ön plandayken sistem bildirimlerini susturan bekçi (v1.0.2 hotfix).
+///
+/// **Neden var:** blok/mola bitişleri oturum başlarken mutlak zamana
+/// kuruluyor ve kurulduktan sonra uygulamanın ön planda olup olmadığından
+/// habersiz tetikleniyor. Ürün kuralı ise ön plandayken kullanıcıyı
+/// rahatsız etmemeyi ve **kesinlikle uygulama dışına atmamayı** gerektiriyor
+/// (bkz. HOTFIX.md).
+///
+/// `app.dart` bunu `watch` ediyor; okunmazsa provider hiç oluşmaz ve bekçi
+/// çalışmaz.
+final foregroundNotificationGuardProvider =
+    Provider<ForegroundNotificationGuard>((ref) {
+  final guard = ForegroundNotificationGuard(
+    notifier: ref.watch(sessionNotifierProvider),
+    // `read`: yaşam döngüsü olayı geldiği ANDAKİ oturum okunmalı.
+    readActive: () => ref.read(activeScheduleProvider),
+  );
+  guard.start();
+  ref.onDispose(guard.stop);
+  return guard;
 });
 
 /// Uygulamadan çıkışları ölçen izleyici.

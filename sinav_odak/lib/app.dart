@@ -28,6 +28,11 @@ class SinavOdakApp extends ConsumerWidget {
       ref.read(screenWakeGatewayProvider).setEnabled(enabled: next);
     });
 
+    // Ön plandayken sistem bildirimlerini susturan bekçi (v1.0.2 hotfix).
+    // `watch` ŞART: provider tembel; okunmazsa hiç oluşmaz ve yaşam
+    // döngüsü gözlemcisi kaydolmaz. Bkz. HOTFIX.md.
+    ref.watch(foregroundNotificationGuardProvider);
+
     return MaterialApp.router(
       title: 'Sınav Odak',
       debugShowCheckedModeBanner: false,

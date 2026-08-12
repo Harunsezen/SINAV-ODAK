@@ -40,6 +40,22 @@ class _RunScreenState extends ConsumerState<RunScreen> {
     ref.listen<SessionState>(runStateProvider, (previous, next) {
       if (!mounted) return;
       if (next is SessionInBreak) {
+        // **Ön plandayken geçiş uygulamanın İÇİNDE olur (v1.0.2).**
+        // Kullanıcı ekrana bakıyorsa haber kanalı sistem bildirimi değil,
+        // bu şerit. Bildirim tarafını `ForegroundNotificationGuard`
+        // susturuyor; burada kullanıcıyı bilgilendiriyoruz.
+        //
+        // Snackbar router'ın DIŞINDAKİ `ScaffoldMessenger`'a gidiyor, bu
+        // yüzden hemen ardından gelen `context.go` onu düşürmüyor.
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              key: const Key('phase-change-banner'),
+              content: Text(L10n.of(context).breakStarted),
+              duration: const Duration(seconds: 4),
+            ),
+          );
         context.go(Routes.runBreak);
       } else if (next is SessionSummarizing) {
         // Çizelge normal bitti: bitiş anı planlanan bitiştir. Kullanıcı formu
