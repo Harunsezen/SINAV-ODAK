@@ -23,6 +23,7 @@ import '../../data/repositories/session_repository.dart';
 import '../../application/recovery_service.dart';
 import '../../application/schedule_writer.dart';
 import '../../application/usecases/complete_onboarding.dart';
+import '../../application/usecases/discard_session.dart';
 import '../../application/usecases/extend_break.dart';
 import '../../application/usecases/finish_session.dart';
 import '../../application/usecases/skip_break.dart';
@@ -192,6 +193,44 @@ final notificationPrefsProvider = Provider<NotificationPrefs>((ref) {
   );
 });
 
+/// Kullanıcı aktif oturumu **bilerek** arka plana aldı mı? (v1.1 / FAZ 1.1)
+///
+/// v1.0'da aktif oturum varken router her yolu `/run`'a çeviriyordu:
+/// kullanıcı ana panele, istatistiklere, ayarlara **hiç** gidemiyordu.
+/// Gerekçe "kazara çıkmayı önlemek"ti ama sonuç, kullanıcıyı kendi
+/// uygulamasında hapsetmekti.
+///
+/// Artık çıkış **bilinçli bir onaydan** geçiyor ve bu bayrak o onayı
+/// taşıyor. **"Pause yok" kuralı bozulmuyor:** sayaç duvar saatiyle
+/// işlemeye devam eder, oturum arka planda sürer; değişen tek şey
+/// kullanıcının başka ekranlara bakabilmesi.
+class SessionMinimizedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  /// Onaylı çıkış: router artık `/run` dışına izin verir.
+  void minimize() => state = true;
+
+  /// Oturuma dönüldü veya oturum bitti.
+  void restore() => state = false;
+}
+
+final sessionMinimizedProvider =
+    NotifierProvider<SessionMinimizedNotifier, bool>(
+  SessionMinimizedNotifier.new,
+);
+
+/// Ana panelde "oturum devam ediyor" şeridi gösterilsin mi?
+///
+/// Küçültülmüş **ve** hâlâ aktif bir oturum varsa. Bu şerit olmadan
+/// küçültme bir çıkmaz olurdu: kullanıcı oturumdan çıkar ve geri dönecek
+/// bir kapı bulamazdı.
+final showActiveSessionBannerProvider = Provider<bool>((ref) {
+  final minimized = ref.watch(sessionMinimizedProvider);
+  final active = ref.watch(activeSessionProvider).valueOrNull;
+  return minimized && active != null;
+});
+
 /// Ön plandayken sistem bildirimlerini susturan bekçi (v1.0.2 hotfix).
 ///
 /// **Neden var:** blok/mola bitişleri oturum başlarken mutlak zamana
@@ -245,6 +284,15 @@ final finishSessionProvider = Provider<FinishSessionUseCase>(
   (ref) => FinishSessionUseCase(
     ref.watch(databaseProvider),
     ref.watch(sessionRepositoryProvider),
+    ref.watch(sessionNotifierProvider),
+    ref.watch(activityTrackerProvider),
+  ),
+);
+
+/// Aktif oturumu kaydetmeden siler (FAZ 1.3 — "Bitir → Sil").
+final discardSessionProvider = Provider<DiscardSessionUseCase>(
+  (ref) => DiscardSessionUseCase(
+    ref.watch(sessionDaoProvider),
     ref.watch(sessionNotifierProvider),
     ref.watch(activityTrackerProvider),
   ),

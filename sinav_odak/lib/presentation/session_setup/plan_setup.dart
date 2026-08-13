@@ -142,7 +142,19 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
     final schedule = built.result?.schedule;
 
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.of(context).planTitle)),
+      appBar: AppBar(
+        title: Text(L10n.of(context).planTitle),
+        leading: IconButton(
+          key: const Key('setup-back-plan'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: L10n.of(context).commonBack,
+          // `context.go` yığını DEĞİŞTİRDİĞİ için `Navigator.canPop()`
+          // daima false ve AppBar'ın otomatik geri tuşu HİÇ çizilmiyordu
+          // (v1.0'da dört kurulum adımının hiçbirinde geri yoktu).
+          // Bu yüzden önceki adım açıkça veriliyor.
+          onPressed: () => context.go(Routes.sessionType),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

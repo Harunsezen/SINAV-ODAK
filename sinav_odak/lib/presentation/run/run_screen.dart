@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +12,23 @@ import '../../core/utils/formatters.dart';
 import '../../domain/entities/ad_placement.dart';
 import '../../domain/entities/session_state.dart';
 import '../ads/banner_ad_slot.dart';
+import 'minimize_session.dart';
 import 'pending_finish_controller.dart';
+
+/// "Bitir" diyaloğunun üç yolu (FAZ 1.3).
+///
+/// v1.0'da yalnızca Vazgeç/Evet vardı: yanlışlıkla başlatılan bir oturumu
+/// istatistiklere karıştırmadan kapatmanın hiçbir yolu yoktu.
+enum EarlyFinishChoice {
+  /// Oturuma devam et — hiçbir şey değişmez.
+  keepGoing,
+
+  /// Özet formuna git ve kaydet.
+  save,
+
+  /// Hiç kaydetme, oturumu sil (ikinci onaydan geçer).
+  discard,
+}
 
 /// Aktif çalışma ekranı (S08).
 ///
@@ -71,18 +89,26 @@ class _RunScreenState extends ConsumerState<RunScreen> {
     final state = ref.watch(runStateProvider);
 
     return PopScope(
-      // Geri tuşu oturumu bitirmez; kullanıcı bilinçli olarak "Bitir"e basmalı.
+      // Geri tuşu oturumu BİTİRMEZ ve kazara çıkış olmaz; onay diyaloğundan
+      // geçer. v1.0'da burada yalnızca "çıkamazsın" snackbar'ı vardı ve
+      // kullanıcının hiçbir çıkış yolu yoktu (FAZ 1.1).
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(L10n.of(context).runBackBlocked),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        unawaited(confirmMinimizeSession(context, ref));
       },
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          // Odaklı ekran: başlık yok, yalnızca çıkış kapısı.
+          leading: IconButton(
+            key: const Key('run-minimize'),
+            icon: const Icon(Icons.arrow_back),
+            tooltip: L10n.of(context).runMinimizeConfirm,
+            onPressed: () => confirmMinimizeSession(context, ref),
+          ),
+        ),
         body: SafeArea(
           child: switch (state) {
             SessionInBlock() => _RunningBody(state: state),
@@ -114,40 +140,114 @@ class _RunningBody extends ConsumerWidget {
     final elapsedS = state.schedule.totalStudyS - state.remainingMs ~/ 1000;
 
     final l = L10n.of(context);
-    final confirmed = await showDialog<bool>(
+    final choice = await showDialog<EarlyFinishChoice>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l.runConfirmTitle),
+        key: const Key('run-early-dialog'),
+        title: Text(l.runEarlyTitle),
         content: Text(
-          l.runConfirmBody(
+          l.runEarlyBody(
             formatDurationShort(state.schedule.totalStudyS),
             formatDurationShort(
               elapsedS.clamp(0, state.schedule.totalStudyS),
             ),
           ),
         ),
+        // **Sıra kasıtlı: YIKICI eylem en solda, birincilden en uzakta.**
+        //
+        // İlk hâlinde "Sil" ortadaydı, yani "Kaydet"in hemen yanında.
+        // Ekran görüntüsü incelemesinde (UX_REVIEW §1.3) görüldü ki dar
+        // ekranda eylemler alt alta geçiyor ve "Sil" doğrudan "Kaydet"in
+        // ÜSTÜNE düşüyor — yanlış dokunuş oturumu geri alınamaz şekilde
+        // silebilirdi. Ayrıca hepsine 48 px asgari dokunma alanı verildi;
+        // "Sil" çıplak metin olarak ~30 px genişliğindeydi.
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l.runConfirmCancel),
+            key: const Key('run-early-delete'),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+              minimumSize: const Size(88, 48),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(EarlyFinishChoice.discard),
+            child: Text(l.runEarlyDelete),
+          ),
+          TextButton(
+            key: const Key('run-early-continue'),
+            style: TextButton.styleFrom(minimumSize: const Size(88, 48)),
+            onPressed: () => Navigator.of(ctx).pop(EarlyFinishChoice.keepGoing),
+            child: Text(l.runEarlyContinue),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l.runConfirmYes),
+            key: const Key('run-early-save'),
+            style: FilledButton.styleFrom(minimumSize: const Size(88, 48)),
+            onPressed: () => Navigator.of(ctx).pop(EarlyFinishChoice.save),
+            child: Text(l.runEarlySave),
           ),
         ],
       ),
     );
 
-    if (confirmed != true) return;
+    if (!context.mounted) return;
 
-    // Erken bitirmede süre, onayın verildiği ana kadar hesaplanır.
-    ref.read(pendingFinishProvider.notifier).set(
-          early: true,
-          endMs: ref.read(clockProvider)(),
-        );
+    switch (choice) {
+      case null:
+      case EarlyFinishChoice.keepGoing:
+        return;
 
-    if (context.mounted) context.go(Routes.runSummary);
+      case EarlyFinishChoice.save:
+        // Erken bitirmede süre, onayın verildiği ana kadar hesaplanır.
+        ref.read(pendingFinishProvider.notifier).set(
+              early: true,
+              endMs: ref.read(clockProvider)(),
+            );
+        context.go(Routes.runSummary);
+
+      case EarlyFinishChoice.discard:
+        await _confirmDiscard(context, ref);
+    }
+  }
+
+  /// Oturumu kaydetmeden siler. **İkinci onay şart:** geri alınamaz ve
+  /// kullanıcının çalıştığı süre tamamen kaybolur.
+  Future<void> _confirmDiscard(BuildContext context, WidgetRef ref) async {
+    final l = L10n.of(context);
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('run-discard-dialog'),
+        title: Text(l.runEarlyDeleteConfirmTitle),
+        content: Text(l.runEarlyDeleteConfirmBody),
+        actions: [
+          TextButton(
+            key: const Key('run-discard-cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('run-discard-confirm'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(88, 48),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l.runEarlyDelete),
+          ),
+        ],
+      ),
+    );
+
+    if (sure != true || !context.mounted) return;
+
+    await ref.read(discardSessionProvider)(state.sessionId);
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        key: const Key('run-discarded-banner'),
+        content: Text(l.runEarlyDeleted),
+      ),
+    );
+    context.go(Routes.home);
   }
 
   @override

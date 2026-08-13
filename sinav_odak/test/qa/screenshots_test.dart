@@ -295,6 +295,63 @@ void main() {
     });
   });
 
+  group('FAZ 1 — UX incelemesi görüntüleri', () {
+    testWidgets('aktif oturum: geri tuşu görünür', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await shootRoute(tester, Routes.run, '61_run_backbutton');
+    });
+
+    testWidgets('oturumu küçültme onayı', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await pumpQaApp(tester, db);
+      await tester.tap(find.byKey(const Key('run-minimize')));
+      await tester.pumpAndSettle();
+      await shoot(tester, '62_minimize_dialog');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ana panel: oturuma dön şeridi', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await pumpQaMinimizedHome(tester, db);
+      await shoot(tester, '63_home_active_banner');
+      expect(find.byKey(const Key('home-active-session')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Bitir: üç yollu diyalog', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await pumpQaApp(tester, db);
+      await tester.tap(find.text('Bitir'));
+      await tester.pumpAndSettle();
+      await shoot(tester, '64_early_finish_dialog');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Bitir: üç yollu diyalog, büyük font', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await pumpQaApp(tester, db, size: const Size(360, 800), textScale: 1.3);
+      await tester.tap(find.text('Bitir'));
+      await tester.pumpAndSettle();
+      await shoot(tester, '65_early_finish_bigtext');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('kurulum: ders seçimi geri tuşuyla', (tester) async {
+      await QaSeed.activeUser(db);
+      await shootRoute(tester, Routes.sessionSubject, '66_setup_subject_back');
+    });
+
+    testWidgets('kurulum: plan ekranı geri tuşuyla', (tester) async {
+      await QaSeed.activeUser(db);
+      await shootRoute(tester, Routes.sessionPlan, '67_setup_plan_back');
+    });
+  });
+
   group('boş durumlar', () {
     testWidgets('istatistik boş', (tester) async {
       await QaSeed.emptyUser(db);

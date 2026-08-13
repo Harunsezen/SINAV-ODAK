@@ -250,20 +250,34 @@ void main() {
       expect(skip.onPressed, isNull);
     });
 
+    // v1.1 (FAZ 1.1): oturumdan ONAYLI çıkış kapısı var.
+    await step(tester, 'run: geri tuşu onay soruyor, VAZGEÇ ekranda tutuyor',
+        () async {
+      await tester.tap(find.byKey(const Key('run-minimize')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('run-minimize-dialog')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('run-minimize-cancel')));
+    });
+    expect(currentRoute(c), Routes.run, reason: 'vazgeçince çıkılmaz');
+
+    // v1.1 (FAZ 1.3): Bitir diyaloğu üç yollu.
     await step(tester, 'run: Bitir onay diyaloğu açılıyor', () async {
       await tester.tap(find.text('Bitir'));
     });
-    expect(find.text('Oturumu bitirelim mi?'), findsOneWidget);
+    expect(find.byKey(const Key('run-early-dialog')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-continue')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-delete')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-save')), findsOneWidget);
 
-    await step(tester, 'run: onaydan VAZGEÇ', () async {
-      await tester.tap(find.text('Vazgeç'));
+    await step(tester, 'run: onaydan DEVAM ET', () async {
+      await tester.tap(find.byKey(const Key('run-early-continue')));
     });
     expect(currentRoute(c), Routes.run);
 
-    await step(tester, 'run: Bitir -> onayla -> özet formu', () async {
+    await step(tester, 'run: Bitir -> KAYDET -> özet formu', () async {
       await tester.tap(find.text('Bitir'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Evet, bitir'));
+      await tester.tap(find.byKey(const Key('run-early-save')));
     });
     expect(currentRoute(c), Routes.runSummary);
   });
@@ -281,7 +295,7 @@ void main() {
     await step(tester, 'Bitir + onay', () async {
       await tester.tap(find.text('Bitir'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Evet, bitir'));
+      await tester.tap(find.byKey(const Key('run-early-save')));
     });
     expect(currentRoute(c), Routes.runSummary);
 

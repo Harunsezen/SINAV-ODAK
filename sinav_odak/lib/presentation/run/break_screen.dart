@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import '../../domain/entities/ad_placement.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/services/schedule_modifier.dart';
 import '../ads/native_ad_slot.dart';
+import 'minimize_session.dart';
 import 'run_controller.dart';
 
 /// Mola ekranı İSKELETİ.
@@ -61,9 +64,24 @@ class BreakScreen extends ConsumerWidget {
         (ScheduleModifier.maxTotalExtensionS ~/ 300) - state.extensionsUsed;
 
     return PopScope(
+      // Kazara çıkış yok; onaylı küçültme var (FAZ 1.1).
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        unawaited(confirmMinimizeSession(context, ref));
+      },
       child: Scaffold(
         backgroundColor: AppColors.breakMode.withOpacity(0.08),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            key: const Key('break-minimize'),
+            icon: const Icon(Icons.arrow_back),
+            tooltip: l.runMinimizeConfirm,
+            onPressed: () => confirmMinimizeSession(context, ref),
+          ),
+        ),
         body: SafeArea(
           child: Column(
             children: [

@@ -133,8 +133,12 @@ void main() {
     expect(find.byIcon(Icons.pause_circle_outline), findsNothing);
   });
 
-  testWidgets('geri tuşu yakalanıyor: canPop false ve uyarı çıkıyor',
+  testWidgets('geri tuşu KAZARA çıkarmıyor: canPop false ve onay diyaloğu',
       (tester) async {
+    // v1.1 (FAZ 1.1): kural DEĞİŞTİ. Eskiden geri tuşu "çıkamazsın"
+    // snackbar'ı gösteriyordu ve çıkışın hiçbir yolu yoktu. Artık onaylı
+    // küçültme var. **Korunan değişmez:** tek dokunuşla çıkılmaz —
+    // `canPop` hâlâ false ve araya onay diyaloğu giriyor.
     await seedRunningSession(db, id: 's1', sch: schedule());
     await pumpRun(tester);
 
@@ -148,9 +152,32 @@ void main() {
     // Geri tuşu davranışını tetikle.
     final guard = tester.widgetList(guardFinder).first as PopScope;
     guard.onPopInvokedWithResult!(false, null);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Oturumu bitirmek için "Bitir"e bas.'), findsOneWidget);
+    expect(
+      find.byKey(const Key('run-minimize-dialog')),
+      findsOneWidget,
+      reason: 'geri tuşu doğrudan çıkarmamalı, önce sormalı',
+    );
+    // Varsayılan davranış çıkmamak: Vazgeç ekranda kalır.
+    await tester.tap(find.byKey(const Key('run-minimize-cancel')));
+    await tester.pumpAndSettle();
+    expect(find.byType(RunScreen), findsOneWidget);
+  });
+
+  testWidgets('AppBar geri tuşu da aynı onaydan geçiyor', (tester) async {
+    await seedRunningSession(db, id: 's1', sch: schedule());
+    await pumpRun(tester);
+
+    expect(
+      find.byKey(const Key('run-minimize')),
+      findsOneWidget,
+      reason: 'v1.0\'da hiçbir çıkış kapısı yoktu (FAZ 1.1)',
+    );
+
+    await tester.tap(find.byKey(const Key('run-minimize')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('run-minimize-dialog')), findsOneWidget);
   });
 
   testWidgets('"Molayı Atla" çalışma sırasında PASİF', (tester) async {
@@ -172,12 +199,16 @@ void main() {
     await tester.tap(find.text('Bitir'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Oturumu bitelim mi?'), findsNothing);
-    expect(find.text('Oturumu bitirelim mi?'), findsOneWidget);
-    expect(find.text('Vazgeç'), findsOneWidget);
+    // v1.1 (FAZ 1.3): diyalog artık ÜÇ yol sunuyor — Devam et / Sil /
+    // Kaydet. Eskiden yalnızca Vazgeç/Evet vardı ve yanlışlıkla başlatılan
+    // bir oturumu istatistiklere karıştırmadan kapatmanın yolu yoktu.
+    expect(find.byKey(const Key('run-early-dialog')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-continue')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-delete')), findsOneWidget);
+    expect(find.byKey(const Key('run-early-save')), findsOneWidget);
 
-    // Vazgeç -> oturum hâlâ açık.
-    await tester.tap(find.text('Vazgeç'));
+    // "Devam et" -> oturum hâlâ açık (eski "Vazgeç" ile aynı değişmez).
+    await tester.tap(find.byKey(const Key('run-early-continue')));
     await tester.pumpAndSettle();
 
     final s = await db.sessionDao.findById('s1');
@@ -209,7 +240,7 @@ void main() {
     // için doğrudan metne tıklanıyor.
     await tester.tap(find.text('Bitir'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Evet, bitir'));
+    await tester.tap(find.byKey(const Key('run-early-save')));
     await tester.pumpAndSettle();
 
     final s = await db.sessionDao.findById('s1');

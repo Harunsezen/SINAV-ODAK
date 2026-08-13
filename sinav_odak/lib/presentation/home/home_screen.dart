@@ -8,9 +8,11 @@ import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
 import '../../core/utils/formatters.dart';
 import '../../domain/entities/ad_placement.dart';
+import '../../domain/entities/session_state.dart';
 import '../ads/banner_ad_slot.dart';
 import '../session_setup/setup_controller.dart';
 import 'recovery_gate.dart';
+import '../run/minimize_session.dart';
 
 /// Ana panel (FAZ 5).
 ///
@@ -39,6 +41,7 @@ class HomeScreen extends ConsumerWidget {
     final studyS = stat?.totalStudyS ?? 0;
     final goalS = goalMinutes * 60;
     final ratio = goalS == 0 ? 0.0 : (studyS / goalS).clamp(0.0, 1.0);
+    final hasActiveSession = ref.watch(showActiveSessionBannerProvider);
 
     // Yarıda kalan oturum kararı ana panelde, TEK kez sorulur (KARAR D2).
     return RecoveryGate(
@@ -70,6 +73,16 @@ class HomeScreen extends ConsumerWidget {
           key: const Key('home-body'),
           padding: const EdgeInsets.all(16),
           children: [
+            // Oturum küçültülmüşken KALICI dönüş kapısı (FAZ 1.1).
+            //
+            // Bu şerit olmadan küçültme bir çıkmaz olurdu: kullanıcı
+            // oturumdan çıkar, sayaç arka planda işlemeye devam eder ve
+            // geri dönecek hiçbir yol bulamazdı. Listenin EN ÜSTÜNDE,
+            // reklamdan da önce.
+            if (hasActiveSession) ...[
+              const _ActiveSessionBanner(),
+              const SizedBox(height: 12),
+            ],
             const BannerAdSlot(placement: AdPlacement.homeBanner),
             const SizedBox(height: 12),
             Card(
@@ -131,14 +144,28 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // **Aktif oturum varken YENİ oturum başlatılamaz.**
+            //
+            // UX incelemesinde bulundu (FAZ 1, UX_REVIEW §1.3): küçültme
+            // eklendikten sonra bu buton hâlâ etkindi. Kullanıcı dört
+            // kurulum adımını geçip BAŞLAT'a basınca `StartSessionUseCase`
+            // `SessionFailure` fırlatıyordu — veri bozulmuyordu ama
+            // kullanıcı dört ekran sonunda duvara çarpıyordu.
+            // Artık buton doğrudan oturuma döndürüyor.
             FilledButton(
               key: const Key('home-start'),
               onPressed: () {
+                if (hasActiveSession) {
+                  returnToSession(context, ref);
+                  return;
+                }
                 // Yeni akış temiz seçimle başlar (R2: eski seçim sızmasın).
                 ref.read(setupProvider.notifier).reset();
                 context.go(Routes.sessionSubject);
               },
-              child: Text(l.homeStartSession),
+              child: Text(
+                hasActiveSession ? l.runBackToSession : l.homeStartSession,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -149,6 +176,47 @@ class HomeScreen extends ConsumerWidget {
             _RecentSessions(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Küçültülmüş oturum şeridi — ana panelden geri dönüş kapısı.
+///
+/// **Kalan süreyi gösteriyor.** UX incelemesinde ilk hâli yalnızca "Sayaç
+/// işliyor" diyordu; kullanıcı 20 dakika önce küçülttüyse ne kadar kaldığını
+/// bilmeden geri dönmek zorundaydı. Süre zaten `runStateProvider`'da
+/// hesaplanıyor, göstermemek için sebep yoktu.
+class _ActiveSessionBanner extends ConsumerWidget {
+  const _ActiveSessionBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final state = ref.watch(runStateProvider);
+
+    final remaining = switch (state) {
+      SessionInBlock(:final remainingSeconds) => remainingSeconds,
+      SessionInBreak(:final remainingSeconds) => remainingSeconds,
+      _ => null,
+    };
+
+    return Card(
+      key: const Key('home-active-session'),
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: ListTile(
+        leading: Icon(
+          Icons.timer_outlined,
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
+        title: Text(l.homeActiveSessionTitle),
+        subtitle: Text(
+          remaining == null
+              ? l.homeActiveSessionBody
+              : l.homeActiveSessionRemaining(formatClock(remaining)),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => returnToSession(context, ref),
       ),
     );
   }

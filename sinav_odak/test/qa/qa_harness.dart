@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
+import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/core/theme/app_theme.dart';
 import 'package:sinav_odak/presentation/onboarding/onboarding_screen.dart';
 import 'package:sinav_odak/data/local/database.dart';
@@ -386,6 +387,22 @@ Future<ProviderContainer> pumpQaOnboardingSummary(
   await next();
 
   return container;
+}
+
+/// Aktif oturumu KÜÇÜLTÜLMÜŞ hâlde kurar (FAZ 1.1 görüntüleri için).
+///
+/// Ana paneldeki "oturuma dön" şeridi yalnızca bu durumda görünür.
+Future<ProviderContainer> pumpQaMinimizedHome(
+  WidgetTester tester,
+  AppDatabase db, {
+  Size size = const Size(430, 932),
+  Brightness brightness = Brightness.light,
+}) async {
+  final c = await pumpQaApp(tester, db, size: size, brightness: brightness);
+  c.read(sessionMinimizedProvider.notifier).minimize();
+  c.read(appRouterProvider).go(Routes.home);
+  await tester.pumpAndSettle();
+  return c;
 }
 
 /// Gezintide bulunulan yol.

@@ -33,6 +33,14 @@ class SinavOdakApp extends ConsumerWidget {
     // döngüsü gözlemcisi kaydolmaz. Bkz. HOTFIX.md.
     ref.watch(foregroundNotificationGuardProvider);
 
+    // Oturum bittiğinde küçültme bayrağı düşer (FAZ 1.1). Kalsaydı, bir
+    // sonraki oturum onay diyaloğu olmadan terk edilebilirdi.
+    ref.listen(activeSessionProvider, (previous, next) {
+      if (next.valueOrNull == null) {
+        ref.read(sessionMinimizedProvider.notifier).restore();
+      }
+    });
+
     return MaterialApp.router(
       title: 'Sınav Odak',
       debugShowCheckedModeBanner: false,

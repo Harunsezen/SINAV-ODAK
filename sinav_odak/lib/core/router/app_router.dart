@@ -71,9 +71,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (loc == Routes.onboarding) return Routes.home;
 
       // Aktif oturum koruması — run katmanındaki yollar serbest.
+      //
+      // v1.1 (FAZ 1.1): kilit artık MUTLAK değil. Kullanıcı oturumu
+      // onaylı bir diyalogla "küçültebilir" ve uygulamanın geri kalanına
+      // bakabilir. v1.0'da bu mümkün değildi ve kullanıcı aktif oturum
+      // boyunca uygulamada kilitli kalıyordu.
+      //
+      // **Kural bozulmuyor:** sayaç durmuyor, oturum arka planda sürüyor;
+      // ana panelde kalıcı bir "oturuma dön" şeridi duruyor
+      // (`showActiveSessionBannerProvider`). Kazara çıkış hâlâ imkânsız:
+      // hem sistem geri tuşu hem AppBar geri tuşu onay diyaloğundan geçer.
       final isRunLayer = loc.startsWith(Routes.run);
       final active = await db.sessionDao.findActiveSession();
-      if (active != null && !isRunLayer) return Routes.run;
+      final minimized = ref.read(sessionMinimizedProvider);
+      if (active != null && !isRunLayer && !minimized) return Routes.run;
       if (active == null && isRunLayer) {
         // Tebrik ekranı (S11) TANIM GEREĞİ aktif oturum olmadan gösterilir:
         // kayıt tamamlandığı anda `running` satır kalmaz. Bu muafiyet

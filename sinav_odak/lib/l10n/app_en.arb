@@ -689,5 +689,38 @@
   "settingsPrivacyTitle": "Gizlilik tercihleri",
   "commonSkip": "Atla",
   "planHour": "Saat",
-  "summaryQuestionCapped": "Tek oturum için en fazla 2000 soru."
+  "summaryQuestionCapped": "Tek oturum için en fazla 2000 soru.",
+  "runMinimizeTitle": "Oturum arka planda devam edecek",
+  "runMinimizeBody": "Sayaç durmaz — uygulamadan çıksan da işlemeye devam eder. Ana panele dönmek istiyor musun?",
+  "runMinimizeConfirm": "Ana panele dön",
+  "runBackToSession": "Oturuma dön",
+  "homeActiveSessionTitle": "Oturum devam ediyor",
+  "homeActiveSessionBody": "Sayaç işliyor. Dokun, kaldığın yerden devam et.",
+  "runEarlyTitle": "Hedefin altındasın",
+  "runEarlyBody": "{total} planın {done} kadarı tamamlandı. Ne yapalım?",
+  "@runEarlyBody": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "done": {
+        "type": "String"
+      }
+    }
+  },
+  "runEarlySave": "Kaydet",
+  "runEarlyDelete": "Sil",
+  "runEarlyContinue": "Devam et",
+  "runEarlyDeleteConfirmTitle": "Oturum silinsin mi?",
+  "runEarlyDeleteConfirmBody": "Bu oturumun hiçbir kaydı kalmaz. Geri alınamaz.",
+  "runEarlyDeleted": "Oturum silindi. Bir dahakine 💪",
+  "commonBack": "Geri",
+  "homeActiveSessionRemaining": "{time} kaldı — dokun, devam et",
+  "@homeActiveSessionRemaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

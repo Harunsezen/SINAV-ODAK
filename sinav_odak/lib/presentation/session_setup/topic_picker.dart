@@ -29,6 +29,16 @@ class TopicPicker extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(setup.subjectName ?? L10n.of(context).setupTopicTitle),
+        leading: IconButton(
+          key: const Key('setup-back-topic'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: L10n.of(context).commonBack,
+          // `context.go` yığını DEĞİŞTİRDİĞİ için `Navigator.canPop()`
+          // daima false ve AppBar'ın otomatik geri tuşu HİÇ çizilmiyordu
+          // (v1.0'da dört kurulum adımının hiçbirinde geri yoktu).
+          // Bu yüzden önceki adım açıkça veriliyor.
+          onPressed: () => context.go(Routes.sessionSubject),
+        ),
       ),
       body: Column(
         children: [
