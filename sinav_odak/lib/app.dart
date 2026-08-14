@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'presentation/achievements/achievement_toast.dart';
 import 'core/di/app_providers.dart';
 import 'domain/entities/enums.dart';
 
@@ -48,6 +49,10 @@ class SinavOdakApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: ref.watch(appRouterProvider),
+      // FAZ 2.1 — rozet şeridi gezinme yığınının ÜSTÜNDE.
+      // `builder` içinde: rota değişse de kart yaşar.
+      builder: (context, child) =>
+          AchievementToastLayer(child: child ?? const SizedBox.shrink()),
       // FAZ 6: metinler `lib/l10n/*.arb`'den geliyor. Şablon dil TÜRKÇE;
       // EN dosyası altyapının çalıştığını gösteren iskelet, tam çeviri
       // v1.2'ye ait (K8). Uygulama şimdilik TR'ye sabit.

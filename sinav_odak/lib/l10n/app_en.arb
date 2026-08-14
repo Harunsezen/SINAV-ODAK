@@ -722,5 +722,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "achIndustryEscapeTitle": "Sanayiden Kurtuldun",
+  "achIndustryEscapeBody": "100 saat. Artık elin yağlı değil, kalemin keskin. 🏭",
+  "achDownshiftTitle": "Şanzımanı İndir",
+  "achDownshiftBody": "Bu hafta devir düştü. Vites küçült, ama durma. 🔧",
+  "achMasterWaitsTitle": "Mehmet Usta Seni Bekliyor",
+  "achMasterWaitsBody": "5 gün tezgâhı bıraktın. Döndün ya, gerisi kolay. 🔩",
+  "achQuestions15000Title": "15.000 Soru",
+  "achQuestions15000Body": "On beş bin. Bu artık şans değil, alışkanlık. 🏆",
+  "achievementToastNew": "Yeni rozet!",
+  "settingsAchievementToast": "Rozet bildirimleri",
+  "settingsAchievementToastNote": "Rozet kazanınca ekranın üstünde kısa bir kart belirir."
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/core/router/routes.dart';
+import 'package:sinav_odak/presentation/achievements/achievement_toast.dart';
 import 'package:sinav_odak/data/local/database.dart';
 
 import '../unit/usecase_helpers.dart';
@@ -349,6 +350,57 @@ void main() {
     testWidgets('kurulum: plan ekranı geri tuşuyla', (tester) async {
       await QaSeed.activeUser(db);
       await shootRoute(tester, Routes.sessionPlan, '67_setup_plan_back');
+    });
+  });
+
+  group('FAZ 2 — gamification', () {
+    testWidgets('rozet şeridi (toast)', (tester) async {
+      await QaSeed.activeUser(db);
+      final c = await pumpQaApp(tester, db);
+      c
+          .read(achievementToastQueueProvider.notifier)
+          .enqueue(['industry_escape']);
+      await tester.pumpAndSettle();
+      await shoot(tester, '71_achievement_toast');
+      expect(find.byKey(const Key('achievement-toast')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('rozet şeridi koyu tema', (tester) async {
+      await QaSeed.activeUser(db);
+      final c = await pumpQaApp(tester, db, brightness: Brightness.dark);
+      c.read(achievementToastQueueProvider.notifier).enqueue(['master_waits']);
+      await tester.pumpAndSettle();
+      await shoot(tester, '72_achievement_toast_dark');
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('rozet şeridi dar ekran + büyük font', (tester) async {
+      await QaSeed.activeUser(db);
+      final c = await pumpQaApp(
+        tester,
+        db,
+        size: const Size(360, 800),
+        textScale: 1.5,
+      );
+      c.read(achievementToastQueueProvider.notifier).enqueue(['master_waits']);
+      await tester.pumpAndSettle();
+      await shoot(tester, '73_achievement_toast_narrow');
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('kademe çipleri (aktif oturum)', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await shootRoute(tester, Routes.run, '74_block_chips');
+    });
+
+    testWidgets('Sanayi Evreni rozetleri listede', (tester) async {
+      await QaSeed.activeUser(db);
+      await shootRoute(tester, Routes.achievements, '75_sanayi_badges');
     });
   });
 

@@ -151,6 +151,20 @@ class _AchievementTile extends StatelessWidget {
       'focus_90' => (title: l.achFocus90Title, body: l.achFocus90Body),
       'early_bird' => (title: l.achEarlyBirdTitle, body: l.achEarlyBirdBody),
       'night_owl' => (title: l.achNightOwlTitle, body: l.achNightOwlBody),
+      // --- Sanayi Evreni (FAZ 2.2) ---
+      'industry_escape' => (
+          title: l.achIndustryEscapeTitle,
+          body: l.achIndustryEscapeBody
+        ),
+      'downshift' => (title: l.achDownshiftTitle, body: l.achDownshiftBody),
+      'master_waits' => (
+          title: l.achMasterWaitsTitle,
+          body: l.achMasterWaitsBody
+        ),
+      'questions_15000' => (
+          title: l.achQuestions15000Title,
+          body: l.achQuestions15000Body
+        ),
       _ => (title: l.achUnknownTitle, body: l.achUnknownBody),
     };
 
@@ -170,5 +184,10 @@ IconData achievementIcon(String key) => switch (key) {
       'center_focus_strong' => Icons.center_focus_strong,
       'wb_twilight' => Icons.wb_twilight,
       'nightlight' => Icons.nightlight,
+      // --- Sanayi Evreni (FAZ 2.2) ---
+      'factory' => Icons.factory,
+      'build' => Icons.build,
+      'hardware' => Icons.hardware,
+      'workspace_premium' => Icons.workspace_premium,
       _ => Icons.emoji_events,
     };

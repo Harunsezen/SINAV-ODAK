@@ -36,6 +36,10 @@ class SettingsController {
   Future<void> setVibrationEnabled({required bool value}) =>
       _patch(UserSettingsCompanion(vibrationEnabled: Value(value)));
 
+  /// Rozet bildirimi şeridi (FAZ 2.1).
+  Future<void> setAchievementToastEnabled({required bool value}) =>
+      _patch(UserSettingsCompanion(achievementToastEnabled: Value(value)));
+
   Future<void> setDailyGoalMinutes(int minutes) =>
       _patch(UserSettingsCompanion(dailyGoalMinutes: Value(minutes)));
 

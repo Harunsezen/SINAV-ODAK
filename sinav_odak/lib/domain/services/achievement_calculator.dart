@@ -15,6 +15,9 @@ class AchievementMetrics {
     this.dayStudyS = 0,
     this.dayFocusScore = 0,
     this.startHour,
+    this.weekStudyS = 0,
+    this.prevWeekStudyS = 0,
+    this.daysSinceLastSession,
   });
 
   final int currentStreak;
@@ -34,6 +37,17 @@ class AchievementMetrics {
 
   /// Son biten oturumun başlangıç saati (0..23). Gece/sabah rozetleri için.
   final int? startHour;
+
+  /// Bu haftanın ve bir önceki haftanın toplam çalışma süresi.
+  /// "Şanzımanı İndir" düşüşü bu ikisinin oranından çıkıyor.
+  final int weekStudyS;
+  final int prevWeekStudyS;
+
+  /// Bu oturumdan ÖNCEKİ son çalışma gününden bu yana geçen gün sayısı.
+  ///
+  /// `null` = ilk oturum (öncesi yok). Sıfır olsaydı "5 gün ara verdin"
+  /// rozeti ilk oturumda yanlışlıkla değerlendirilirdi.
+  final int? daysSinceLastSession;
 }
 
 /// Tek bir rozetin tanımı.
@@ -133,6 +147,34 @@ abstract final class AchievementCalculator {
       iconKey: 'nightlight',
       test: _nightOwl,
     ),
+
+    // --- SANAYİ EVRENİ (v1.1 / FAZ 2.2) ---
+    //
+    // Balto'nun sesi: sanayide çırak olmakla sınava çalışmak arasındaki
+    // espri. Kodlar sabit; metinler ARB'de.
+    AchievementDef(
+      code: 'industry_escape',
+      iconKey: 'factory',
+      test: _industryEscape,
+    ),
+    AchievementDef(
+      code: 'downshift',
+      iconKey: 'build',
+      test: _downshift,
+    ),
+    AchievementDef(
+      code: 'master_waits',
+      iconKey: 'hardware',
+      test: _masterWaits,
+    ),
+    AchievementDef(
+      code: 'questions_15000',
+      // 'emoji_events' DEĞİL: o, eşleşmeyen anahtarların düştüğü
+      // VARSAYILAN. Gerçek bir rozet onu kullanırsa "ikon eşleşiyor mu"
+      // bekçisi anlamını yitirirdi.
+      iconKey: 'workspace_premium',
+      test: _questions15000,
+    ),
   ];
 
   // Testler ayrı fonksiyon: `catalog` const olabilsin diye (kapanış
@@ -168,6 +210,40 @@ abstract final class AchievementCalculator {
     final h = m.startHour;
     return h != null && h >= 0 && h < 4;
   }
+
+  // --- Sanayi Evreni ---
+
+  /// 🏭 Sanayiden Kurtuldun — toplam 100 saat.
+  ///
+  /// **DİKKAT:** `hours_100` ile AYNI eşikte. İkisi birlikte açılıyor;
+  /// bilinçli bir ürün kararı olarak bırakıldı (biri sayısal kademe, biri
+  /// Balto rozeti) ama toast sistemi ikisini üst üste gösterecek şekilde
+  /// kuyruğa alıyor. Bkz. UX_REVIEW FAZ 2 §2.2.
+  static bool _industryEscape(AchievementMetrics m) =>
+      m.totalStudyS >= 100 * 3600;
+
+  /// 🔧 Şanzımanı İndir — haftalık performans DÜŞÜŞÜ.
+  ///
+  /// Bu bir ödül değil, dostça bir dürtme. İki koruma var:
+  /// - Önceki hafta anlamlı olmalı (≥5 saat). Yoksa bir saatlik haftadan
+  ///   yarım saatlik haftaya düşen herkes rozet alırdı.
+  /// - Düşüş sert olmalı (yarıdan aşağı). Küçük dalgalanma düşüş değildir.
+  static bool _downshift(AchievementMetrics m) =>
+      m.prevWeekStudyS >= 5 * 3600 && m.weekStudyS * 2 < m.prevWeekStudyS;
+
+  /// 🔩 Mehmet Usta Seni Bekliyor — 5+ gün ara verip GERİ DÖNDÜN.
+  ///
+  /// Rozetler yalnızca oturum kaydedilirken değerlendiriliyor; yani bu
+  /// rozet "ara verdiğin an" değil, **döndüğün an** açılıyor. Mesajın
+  /// anlamı da bu: tezgâh seni bekliyordu, geldin.
+  static bool _masterWaits(AchievementMetrics m) {
+    final d = m.daysSinceLastSession;
+    return d != null && d >= 5;
+  }
+
+  /// 🏆 15.000 Soru.
+  static bool _questions15000(AchievementMetrics m) =>
+      m.totalQuestions >= 15000;
 
   /// [m] ile açılması gereken rozet kodları.
   static Set<String> earned(AchievementMetrics m) => {

@@ -220,3 +220,179 @@ niyetli çağrılar da etkilenirdi. Açık `leading` daha dar ve öngörülebili
   gerçek parmak, gerçek Android çizimi ve OEM kabukları kapsam dışı.
 - **`flutter build apk --release`.** Android SDK yok, `dl.google.com`
   kapalı. Bu kapı bu ortamda geçilemiyor (S17).
+
+
+---
+---
+
+# FAZ 2 — gamification (UX incelemesi)
+
+**Görüntüler:** `71_achievement_toast.png` · `72_achievement_toast_dark.png` ·
+`73_achievement_toast_narrow.png` · `74_block_chips.png` ·
+`75_sanayi_badges.png`
+
+## FAZ 2 — bulgu özeti
+
+| # | Sayfa | Bulgu | Durum |
+| --- | --- | --- | --- |
+| 2.1 | Ana panel | **"50/100" değeri iki satıra bölünüyordu** (360 px + textScale 1.5) | ✅ düzeltildi |
+| 2.2 | Aktif oturum | Çipler eklenince **"1. blok / 2" metni kayboldu** | ✅ düzeltildi |
+| 2.3 | Rozet kataloğu | `questions_15000` ikonu **fallback ile çakışıyordu** | ✅ düzeltildi |
+| 2.4 | QA altyapısı | **Harness üretimden sapmıştı** — toast katmanı yoktu | ✅ düzeltildi |
+| 2.5 | Rozet sistemi | `industry_escape` ve `hours_100` **aynı eşikte** | ⚠️ belgelendi |
+| 2.6 | Rozet şeridi | Kart AppBar'ı tamamen örtüyor | ⚠️ kabul edildi |
+
+**6 bulgu · 4'ü düzeltildi · 2'si gerekçeyle bırakıldı.** Dördü de ekran
+görüntüsüne veya test çıktısına bakarken bulundu.
+
+---
+
+## 1. Rozet şeridi (toast) — `71/72/73`
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Dokunma alanı | ✅ kart tamamı dokunulabilir (≫48 px), dokununca kapanıyor |
+| Metin taşması | ✅ 360 px + textScale 1.5'te `Expanded` + `ellipsis`, taşma yok |
+| Kontrast (koyu) | ✅ `inverseSurface`/`onInverseSurface` — açıkta koyu kart, koyuda açık kart |
+| Loading | — (anlık) |
+| Error | — (yerel veri) |
+| Empty | ✅ kuyruk boşken hiçbir şey çizilmiyor |
+| Erişilebilirlik | ✅ metin gerçek `Text`; ekran okuyucu okuyor |
+| Engelleme | ✅ altındaki ekran kullanılabilir kalıyor (test ile iddia edildi) |
+
+### ✗ BULUNDU 2.1 — ana paneldeki sayı ikiye bölünüyordu
+
+`73_achievement_toast_narrow.png`'in **ilk hâlinde** "Bugün" kartındaki
+soru değeri şöyle çiziliyordu:
+
+```
+50/10
+0
+   Soru
+```
+
+360 px genişlik + textScale 1.5'te `Text` sarmalanıyor ve **sayıyı
+ortasından bölüyordu**. Rakam okunaksız.
+
+Bu bulgu FAZ 2'nin konusu bile değildi — rozet şeridinin arkasındaki
+ekrana bakarken görüldü.
+
+**DÜZELTME:** `_Metric` değeri `FittedBox(fit: BoxFit.scaleDown)` +
+`maxLines: 1` + `softWrap: false`. Artık sarmak yerine küçülüyor.
+
+### ⚠️ 2.6 — kart AppBar'ı örtüyor (kabul edildi)
+
+Şerit ekranın en üstünde duruyor ve gösterildiği 4 saniye boyunca AppBar
+başlığını + seri sayacını tamamen kapatıyor.
+
+**Neden kabul edildi:** kart geçici, dokunulunca hemen kapanıyor ve
+altındaki hiçbir şey devre dışı kalmıyor. Aşağı kaydırmak (ör. AppBar'ın
+altına) sayaç ekranında içeriğin üstüne binerdi. Minecraft'taki hissin
+kaynağı da tam olarak "üstte belirip geçmesi".
+
+---
+
+## 2. Kademe çipleri — `74_block_chips.png`
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Bilgi kaybı | ✗ metin kaybolmuştu → ✅ geri kondu |
+| Taşma | ✅ `Wrap` — 10+ bloklu planda alt satıra geçiyor |
+| Kontrast | ✅ aktif `primary`, geçmiş `primary %45`, gelecek `outlineVariant` |
+| Erişilebilirlik | ✅ `Semantics(label: "1. blok / 2")` |
+
+### ✗ BULUNDU 2.2 — çipler metni yuttu
+
+İlk uygulamada "1. blok / 2" metni `Semantics` etiketine taşınmış,
+ekrandan kaldırılmıştı. Ekran okuyucu kullanan kullanıcı bilgiyi
+alıyordu ama **gören kullanıcı kaçıncı blokta olduğunu artık
+okuyamıyordu** — çipler konumu gösteriyor, sayıyı vermiyor. İki blokluk
+bir planda iki küçük nokta, "1/2" kadar bilgi taşımıyor.
+
+**DÜZELTME:** metin çiplerin üstünde duruyor; çipler onu tamamlıyor,
+yerine geçmiyor.
+
+---
+
+## 3. Sanayi Evreni rozetleri — `75_sanayi_badges.png`
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Metin taşması | ✅ "Mehmet Usta Seni Bekliyor" tek satıra sığıyor |
+| Kontrast | ✅ kilitli/açık ayrımı korunuyor |
+| İkon | ✗ çakışma vardı → ✅ düzeltildi |
+
+### ✗ BULUNDU 2.3 — ikon fallback ile çakışıyordu
+
+`questions_15000` rozetine `iconKey: 'emoji_events'` vermiştim.
+`achievementIcon` fonksiyonunda `emoji_events` **eşleşmeyen anahtarların
+düştüğü varsayılan**. Yani gerçek bir rozet varsayılanı kullanınca,
+"her ikon gerçekten eşleşiyor mu" bekçisi anlamını yitiriyordu.
+
+Bunu **mevcut bir guard test yakaladı**
+(`her katalog ikonu SABİT bir IconData ile eşleşiyor`). Test doğru
+tasarlanmış: benim hatamı ben fark etmeden yakaladı.
+
+**DÜZELTME:** `workspace_premium`. Varsayılan sentinel olarak
+`emoji_events` dokunulmadan kaldı.
+
+### ⚠️ BULUNDU 2.5 — iki rozet aynı eşikte (belgelendi, düzeltilmedi)
+
+`industry_escape` (🏭 Sanayiden Kurtuldun) ve mevcut `hours_100`
+**ikisi de 100 saatte** açılıyor. Brief bu eşiği açıkça veriyordu.
+
+**Neden düzeltmedim:** eşiği değiştirmek ürün kararı, benim kararım
+değil. Bunun yerine:
+- Toast kuyruğu ikisini **sırayla** gösteriyor (üst üste binmiyorlar) —
+  testle iddia edildi.
+- `sanayi_badges_test.dart` içinde **çakışmayı belgeleyen bir test** var:
+  eşiklerden biri değişirse test düşer ve karar yeniden gözden geçirilir.
+
+**Koordinatör kararı gerekiyor:** ya `hours_100` emekliye ayrılır, ya da
+`industry_escape` daha yukarı bir eşiğe (ör. 250 saat) taşınır.
+
+---
+
+## 4. Ayarlar — rozet bildirimi anahtarı
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Dokunma alanı | ✅ `SwitchListTile` tam satır |
+| Bağımlılık | ✅ **bildirim ayarından BAĞIMSIZ** |
+
+Anahtarı `notificationEnabled`a kapamadım: bu uygulama içi bir kart,
+sistem bildirimi değil. Kapalı olsaydı, sistem bildirimlerini kapatan
+kullanıcı rozet kutlamalarını da sessizce kaybederdi.
+
+---
+
+## 5. QA altyapısı
+
+### ✗ BULUNDU 2.4 — harness üretimden sapmıştı
+
+Rozet şeridi ekran görüntüsü testi düştü: kart bulunamıyordu. Sebep,
+`pumpQaApp`'in `MaterialApp.router`'ı **`AchievementToastLayer` olmadan**
+kurmasıydı — üretimde `app.dart` sarıyor, harness sarmıyordu.
+
+Bu, onboarding hatasının (tema verilmemesi) **aynı sınıftan** bir sapma:
+QA turu gerçek uygulamayı değil, ona benzeyen başka bir ağacı test
+ediyordu.
+
+**DÜZELTME:** harness artık üretimle aynı katmanı sarıyor; testi
+gevşetmek yerine altyapı düzeltildi.
+
+---
+
+## 6. Şema göçü (v1 → v2)
+
+Rozet bildirimi ayarı yeni bir kolon gerektirdi — projenin **ilk gerçek
+migration'ı**. v1.0 kapalı betaya çıkıyor; v1.1 onun üstüne kurulacak.
+
+`migration_v1_to_v2_test.dart` gerçek v1 tablosunu üretip (şemayı elle
+yazmıyor: gerçek tablodan kolonu **düşürüyor**), veri yazıp, yükseltmeyi
+uygulayıp **verinin sağ kaldığını** ve yeni kolonun varsayılanının **açık**
+geldiğini doğruluyor.
+
+İlk denememde şemayı elle yazmıştım ve `created_at` kolonunu unutmuştum —
+test hemen düştü. Elle yazılan taklit, gerçek şema değişince sessizce
+yanlışlaşırdı.

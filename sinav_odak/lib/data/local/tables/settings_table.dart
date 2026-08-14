@@ -29,6 +29,13 @@ class UserSettings extends Table {
       boolean().withDefault(const Constant(true))();
   BoolColumn get keepScreenOn => boolean().withDefault(const Constant(true))();
 
+  /// Rozet kazanınca ekranın üstünde kısa kart gösterilsin mi? (FAZ 2.1)
+  ///
+  /// **schemaVersion 2 ile eklendi.** v1.0 yüklü cihazlarda `onUpgrade`
+  /// bu kolonu ekliyor; varsayılan açık.
+  BoolColumn get achievementToastEnabled =>
+      boolean().withDefault(const Constant(true))();
+
   TextColumn get themeMode =>
       textEnum<ThemeModeSetting>().withDefault(const Constant('system'))();
 

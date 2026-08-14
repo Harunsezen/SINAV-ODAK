@@ -260,7 +260,16 @@ class _RunningBody extends ConsumerWidget {
     return Column(
       children: [
         const SizedBox(height: 16),
-        Text(l.runBlockOf(ordinal, schedule.studyBlockCount)),
+        // FAZ 2.4 — kademe çipleri.
+        //
+        // Eskiden düz metindi ("1. blok / 2"). Çipler ilerlemeyi bir
+        // bakışta veriyor: geçilen bloklar dolu, aktif olan vurgulu,
+        // gelecekler soluk. Metin de erişilebilirlik için duruyor.
+        _BlockChips(
+          total: schedule.studyBlockCount,
+          current: ordinal,
+          label: l.runBlockOf(ordinal, schedule.studyBlockCount),
+        ),
         const Spacer(),
         // Sayaç ekran okuyucuya "24:00" diye okutulursa anlaşılmıyor;
         // canlı bölge olarak dakika/saniye sözle veriliyor.
@@ -298,6 +307,67 @@ class _RunningBody extends ConsumerWidget {
 }
 
 /// Cihaz saati geriye alındığında gösterilir.
+/// Çalışma bloğu kademe göstergesi (FAZ 2.4).
+///
+/// `Wrap` kullanılıyor: 10+ bloklu uzun planlarda çipler alt satıra
+/// geçiyor, `Row` olsaydı taşardı.
+class _BlockChips extends StatelessWidget {
+  const _BlockChips({
+    required this.total,
+    required this.current,
+    required this.label,
+  });
+
+  final int total;
+
+  /// 1 tabanlı sıra. 0 = şu an molada.
+  final int current;
+
+  /// Ekran okuyucuya okunacak metin ("1. blok / 3").
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      label: label,
+      excludeSemantics: true,
+      child: Column(
+        children: [
+          // **Metin KALIYOR.** İlk denemede yalnızca çipler bırakılmıştı;
+          // ekran görüntüsünde görüldü ki gören kullanıcı "kaçıncı blok"
+          // bilgisini tamamen kaybediyor — çipler konumu veriyor ama
+          // sayıyı vermiyor (UX_REVIEW FAZ 2 §2.4).
+          Text(label),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 1; i <= total; i++)
+                Container(
+                  key: Key('block-chip-$i'),
+                  width: i == current ? 26 : 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: switch (i) {
+                      _ when i == current => scheme.primary,
+                      _ when i < current => scheme.primary.withOpacity(0.45),
+                      _ => scheme.outlineVariant,
+                    },
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ClockMovedBackBody extends StatelessWidget {
   const _ClockMovedBackBody();
 

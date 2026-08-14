@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/di/app_providers.dart';
+import '../achievements/achievement_toast.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -183,6 +184,10 @@ class _NewAchievementsCardState extends ConsumerState<_NewAchievementsCard> {
       // veritabanına yazmak yeniden çizim döngüsü yaratırdı.
       final codes = _shown!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // FAZ 2.1: aynı kodlar üst şeride de kuyruğa giriyor. Kullanıcı
+        // tebrik ekranından hemen çıksa bile rozeti görüyor — kart
+        // gezinme yığınının üstünde yaşıyor.
+        ref.read(achievementToastQueueProvider.notifier).enqueue(codes);
         unawaited(ref.read(hapticGatewayProvider).celebrate());
         for (final code in codes) {
           unawaited(ref.read(achievementDaoProvider).markSeen(code));

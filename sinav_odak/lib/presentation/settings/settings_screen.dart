@@ -186,6 +186,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ? (v) => _settings.setVibrationEnabled(value: v)
                     : null,
               ),
+              // FAZ 2.1 — rozet şeridi. Bildirim ayarından BAĞIMSIZ:
+              // bu uygulama içi bir kart, sistem bildirimi değil.
+              // `notificationEnabled`a kapılsaydı, bildirimleri kapatan
+              // kullanıcı rozetlerini de sessizce kaybederdi.
+              SwitchListTile(
+                key: const Key('settings-achievement-toast'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(l.settingsAchievementToast),
+                subtitle: Text(l.settingsAchievementToastNote),
+                value: settings.achievementToastEnabled,
+                onChanged: (v) =>
+                    _settings.setAchievementToastEnabled(value: v),
+              ),
             ],
           ),
 

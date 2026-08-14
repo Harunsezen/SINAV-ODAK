@@ -161,6 +161,22 @@ class SessionRepository {
         ? null
         : DateTime.fromMillisecondsSinceEpoch(daySessions.last.startedAt).hour;
 
+    // --- Sanayi Evreni ölçümleri (FAZ 2.2) ---
+    //
+    // Haftalık düşüş: bu hafta vs önceki hafta.
+    final weekStart = startOfWeek(day);
+    final prevWeekStart = weekStart.subtract(const Duration(days: 7));
+    final prevWeekEnd = weekStart.subtract(const Duration(days: 1));
+    final weekStats = await _db.statsDao.summaryFor(weekStart, day);
+    final prevWeekStats =
+        await _db.statsDao.summaryFor(prevWeekStart, prevWeekEnd);
+
+    // "Kaç gün ara verdin": `settings.lastStudyDate` KULLANILAMAZ —
+    // `recomputeStreak` bu metottan ÖNCE çalışıp onu bugüne çekiyor.
+    final prevKey = await _db.sessionDao.previousSessionDateKey(dateKey);
+    final daysSince =
+        prevKey == null ? null : day.difference(dateKeyToLocal(prevKey)).inDays;
+
     final newly = AchievementCalculator.evaluate(
       already: already,
       metrics: AchievementMetrics(
@@ -173,6 +189,9 @@ class SessionRepository {
         dayStudyS: dayStats.totalStudyS,
         dayFocusScore: dayStats.avgFocusScore,
         startHour: startHour,
+        weekStudyS: weekStats.totalStudyS,
+        prevWeekStudyS: prevWeekStats.totalStudyS,
+        daysSinceLastSession: daysSince,
       ),
     );
 

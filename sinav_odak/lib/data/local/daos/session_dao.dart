@@ -99,6 +99,25 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
         .watch();
   }
 
+  /// [beforeDateKey]'den ÖNCEKİ en son çalışma günü.
+  ///
+  /// **Neden ayrı sorgu:** `settings.lastStudyDate` bu iş için
+  /// kullanılamıyor — `save()` içinde `recomputeStreak` rozetlerden ÖNCE
+  /// çalışıyor ve o alanı bugüne çekiyor. Rozet hesabı sırasında okunsaydı
+  /// "son oturumdan bu yana kaç gün geçti" daima 0 çıkardı.
+  Future<String?> previousSessionDateKey(String beforeDateKey) async {
+    final q = selectOnly(studySessions)
+      ..addColumns([studySessions.dateKey])
+      ..where(
+        studySessions.dateKey.isSmallerThanValue(beforeDateKey) &
+            studySessions.status.equalsValue(SessionStatus.running).not(),
+      )
+      ..orderBy([OrderingTerm.desc(studySessions.dateKey)])
+      ..limit(1);
+    final row = await q.getSingleOrNull();
+    return row?.read(studySessions.dateKey);
+  }
+
   Future<List<StudySession>> rangeSessions(DateTime from, DateTime to) {
     final fromKey = dateKeyOf(from);
     final toKey = dateKeyOf(to);

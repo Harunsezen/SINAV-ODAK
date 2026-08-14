@@ -173,4 +173,9 @@ bool _hasText(String code) => const {
       'focus_90',
       'early_bird',
       'night_owl',
+      // --- Sanayi Evreni (FAZ 2.2) ---
+      'industry_escape',
+      'downshift',
+      'master_waits',
+      'questions_15000',
     }.contains(code);

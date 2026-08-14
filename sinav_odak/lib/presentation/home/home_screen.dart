@@ -237,10 +237,19 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          value,
-          key: Key('home-metric-$slug'),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        // **`FittedBox` ŞART.** UX incelemesinde (FAZ 2) 360 px +
+        // textScale 1.5'te "50/100" değeri "50/10" ve "0" diye İKİ SATIRA
+        // bölünüyordu — sayı okunaksız hâle geliyordu. Sarmak yerine
+        // küçültüyoruz: rakam bütün kalır.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            key: Key('home-metric-$slug'),
+            maxLines: 1,
+            softWrap: false,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          ),
         ),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],

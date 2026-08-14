@@ -63,7 +63,9 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.memory() => AppDatabase(openTestConnection());
 
   @override
-  int get schemaVersion => 1;
+
+  /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -91,7 +93,16 @@ class AppDatabase extends _$AppDatabase {
           await SeedData.populate(this);
         },
         onUpgrade: (m, from, to) async {
-          // v1 ilk sürüm; ileride adım adım migration buraya.
+          // **Adım adım, ATLAMADAN.** `from` hangi sürüm olursa olsun
+          // aradaki her adım sırayla uygulanmalı; tek bir `if (to == N)`
+          // yazmak, iki sürüm geriden gelen cihazı bozar.
+          if (from < 2) {
+            // FAZ 2.1 — rozet bildirimi tercihi.
+            await m.addColumn(
+              userSettings,
+              userSettings.achievementToastEnabled,
+            );
+          }
         },
         beforeOpen: (details) async {
           // Foreign key kısıtları SQLite'ta varsayılan olarak KAPALIDIR.

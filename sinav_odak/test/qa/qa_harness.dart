@@ -10,6 +10,7 @@ import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
 import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/core/theme/app_theme.dart';
+import 'package:sinav_odak/presentation/achievements/achievement_toast.dart';
 import 'package:sinav_odak/presentation/onboarding/onboarding_screen.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/presentation/settings/settings_screen.dart';
@@ -259,10 +260,17 @@ Future<ProviderContainer> pumpQaApp(
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           routerConfig: container.read(appRouterProvider),
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear(textScale)),
-            child: child!,
+          // **Üretimle AYNI olmalı.** `app.dart` burada
+          // `AchievementToastLayer` sarıyor; harness onu atlarsa QA turu
+          // gerçek uygulamayı değil, ona benzeyen başka bir ağacı test
+          // eder. Onboarding hatası tam olarak bu tür bir sapmadan
+          // (tema verilmemesinden) doğmuştu.
+          builder: (context, child) => AchievementToastLayer(
+            child: MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         ),
       ),
