@@ -15,4 +15,15 @@ abstract interface class ShareGateway {
     required String fileName,
     String? subject,
   });
+
+  /// İkili içeriği (PDF gibi) paylaşır (FAZ 3.1).
+  ///
+  /// Metin sürümünden ayrı: PDF baytları `utf8` ile yazılamaz — yazılırsa
+  /// dosya bozulur ve okuyucu açamaz.
+  Future<bool> shareBytes({
+    required List<int> bytes,
+    required String fileName,
+    required String mimeType,
+    String? subject,
+  });
 }

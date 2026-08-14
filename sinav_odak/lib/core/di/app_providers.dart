@@ -23,6 +23,7 @@ import '../../data/repositories/session_repository.dart';
 import '../../application/recovery_service.dart';
 import '../../application/schedule_writer.dart';
 import '../../application/usecases/complete_onboarding.dart';
+import '../../application/usecases/build_report.dart';
 import '../../application/usecases/discard_session.dart';
 import '../../application/usecases/extend_break.dart';
 import '../../application/usecases/finish_session.dart';
@@ -52,6 +53,7 @@ import '../../application/usecases/export_sessions.dart';
 import '../../application/usecases/recompute_nets.dart';
 import '../../domain/ports/share_gateway.dart';
 import '../../services/export/file_share_gateway.dart';
+import '../../services/report/pdf_report_builder.dart';
 
 /// Uygulama boyunca TEK veritabanı örneği.
 /// `main()` içinde `overrideWithValue` ile açılmış örnek verilir; testlerde
@@ -288,6 +290,15 @@ final finishSessionProvider = Provider<FinishSessionUseCase>(
     ref.watch(activityTrackerProvider),
   ),
 );
+
+/// Rapor verisi toplayıcı (FAZ 3.1).
+final buildReportProvider = Provider<BuildReportUseCase>(
+  (ref) => BuildReportUseCase(ref.watch(databaseProvider)),
+);
+
+/// PDF çizici. Saf biçimlendirme; ağ yok.
+final pdfReportBuilderProvider =
+    Provider<PdfReportBuilder>((ref) => const PdfReportBuilder());
 
 /// Aktif oturumu kaydetmeden siler (FAZ 1.3 — "Bitir → Sil").
 final discardSessionProvider = Provider<DiscardSessionUseCase>(
@@ -553,6 +564,29 @@ final statsBreakdownProvider =
   ref.watch(statsDailyProvider);
   final b = ref.watch(statsBoundsProvider);
   return ref.watch(statsDaoProvider).subjectBreakdown(b.from, b.to);
+});
+
+/// Gün × saat yoğunluğu (FAZ 3.2 ısı haritası).
+///
+/// `counts[gün][saat]` — gün 0=Pazartesi. Oturumun BAŞLAMA saatini
+/// sayıyor; süreyi saatlere bölmek daha doğru olurdu ama bir oturum
+/// nadiren saat sınırını aşıyor ve bölme, "hangi saatte çalışmayı
+/// seviyorum" sorusunu bulanıklaştırırdı.
+final statsHourHeatmapProvider = FutureProvider<List<List<int>>>((ref) async {
+  ref.watch(statsDailyProvider);
+  final b = ref.watch(statsBoundsProvider);
+  final sessions = await ref.watch(sessionDaoProvider).rangeSessions(
+        b.from,
+        b.to,
+      );
+
+  final grid = [for (var d = 0; d < 7; d++) List<int>.filled(24, 0)];
+  for (final s in sessions) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(s.startedAt);
+    // `DateTime.weekday` 1=Pazartesi..7=Pazar.
+    grid[dt.weekday - 1][dt.hour]++;
+  }
+  return grid;
 });
 
 /// En çok yanlış yapılan konular.

@@ -1,4 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
+import '../../core/utils/color_hex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import '../../application/usecases/export_sessions.dart';
 import '../../core/utils/date_key.dart';
 import '../../domain/entities/ad_placement.dart';
 import '../ads/banner_ad_slot.dart';
+import 'report_button.dart';
+import 'stats_charts.dart';
 
 /// İstatistik ekranı (FAZ 7A).
 ///
@@ -25,7 +28,7 @@ class StatsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.statsTitle),
-        actions: const [_ExportButton()],
+        actions: const [ReportButton(), _ExportButton()],
       ),
       body: Column(
         children: [
@@ -50,6 +53,15 @@ class StatsScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
+                    // FAZ 3.2 — üç grafik: çizgi, pasta, ısı haritası.
+                    const _TrendSection(),
+                    const SizedBox(height: 20),
+                    const _HeatmapSection(),
+                    const SizedBox(height: 20),
+                    // Pasta ve liste AYNI başlık altında: ikisi de ders
+                    // dağılımı. Ayrı başlıklarla dursalardı ekranda iki
+                    // kez "Ders dağılımı" yazardı (UX_REVIEW FAZ 3).
+                    const _PieSection(),
                     const _SubjectBreakdown(),
                     const SizedBox(height: 20),
                     const _WeakestTopics(),
@@ -486,4 +498,116 @@ String formatDuration(BuildContext context, int seconds) {
   final h = totalMinutes ~/ 60;
   final m = totalMinutes % 60;
   return h == 0 ? l.durationM(m) : l.durationHm(h, m);
+}
+
+// =====================================================================
+// FAZ 3.2 — grafikler
+// =====================================================================
+
+/// Haftalık eğilim (çizgi).
+class _TrendSection extends ConsumerWidget {
+  const _TrendSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final rows = ref.watch(statsDailyProvider).valueOrNull ?? const [];
+
+    // **HAFTALIK toplam — günlük DEĞİL.**
+    //
+    // İlk uygulamada bu grafik günlük dakikaları çiziyordu, yani hemen
+    // üstündeki çubuk grafikle AYNI veriyi gösteriyordu (UX_REVIEW FAZ 3).
+    // İki farklı biçimde aynı seri bilgi değil gürültü; brief de zaten
+    // "haftalık trend" diyordu.
+    //
+    // Hafta aralığında tek nokta çıkacağı için gizleniyor: anlamlı bir
+    // eğilim en az iki hafta ister.
+    final weeks = <String, int>{};
+    for (final r in rows) {
+      final key = dateKeyOf(startOfWeek(DateTime.parse(r.dateKey)));
+      weeks[key] = (weeks[key] ?? 0) + r.totalStudyS;
+    }
+    if (weeks.length < 2) return const SizedBox.shrink();
+
+    final keys = weeks.keys.toList()..sort();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.statsChartTrend, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        TrendLineChart(
+          minutesPerDay: [for (final k in keys) weeks[k]! ~/ 60],
+          // Haftanın başladığı gün ("04"); tam tarih dar ekranda üst üste
+          // biniyordu.
+          labels: [for (final k in keys) k.split('-').last],
+        ),
+      ],
+    );
+  }
+}
+
+/// Ders dağılımı (pasta).
+class _PieSection extends ConsumerWidget {
+  const _PieSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rows = ref.watch(statsBreakdownProvider).valueOrNull;
+    if (rows == null || rows.isEmpty) return const SizedBox.shrink();
+
+    // **Başlık YOK — hemen altındaki `_SubjectBreakdown` zaten
+    // "Ders dağılımı" diyor.** İlk uygulamada ikisinin de başlığı vardı
+    // ve ekranda aynı başlık iki kez görünüyordu; dar ekran görüntüsünde
+    // yakalandı (UX_REVIEW FAZ 3).
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SubjectPieChart(
+          slices: [
+            for (final r in rows)
+              (
+                name: r.subjectName,
+                studyS: r.studyS,
+                color: colorFromHex(
+                  r.colorHex,
+                  fallback: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Gün × saat yoğunluğu (ısı haritası).
+class _HeatmapSection extends ConsumerWidget {
+  const _HeatmapSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final grid = ref.watch(statsHourHeatmapProvider).valueOrNull;
+    if (grid == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.statsChartHeat, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        HourHeatmap(
+          counts: grid,
+          weekdayLabels: [
+            l.calendarWeekdayMon,
+            l.calendarWeekdayTue,
+            l.calendarWeekdayWed,
+            l.calendarWeekdayThu,
+            l.calendarWeekdayFri,
+            l.calendarWeekdaySat,
+            l.calendarWeekdaySun,
+          ],
+        ),
+      ],
+    );
+  }
 }

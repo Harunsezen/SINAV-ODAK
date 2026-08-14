@@ -38,6 +38,31 @@ class FileShareGateway implements ShareGateway {
       return false;
     }
   }
+
+  @override
+  Future<bool> shareBytes({
+    required List<int> bytes,
+    required String fileName,
+    required String mimeType,
+    String? subject,
+  }) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final file = File(p.join(dir.path, fileName));
+
+      // `writeAsBytes` — `writeAsString` PDF'i utf8'e çevirip BOZAR.
+      await file.writeAsBytes(bytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: mimeType)],
+        subject: subject,
+      );
+      return true;
+    } on Object catch (e) {
+      debugPrint('PDF paylaşımı başarısız: $e');
+      return false;
+    }
+  }
 }
 
 /// Paylaşımın kapalı olduğu durumlar (test, desteklenmeyen platform).
@@ -48,6 +73,15 @@ class NoopShareGateway implements ShareGateway {
   Future<bool> shareText({
     required String content,
     required String fileName,
+    String? subject,
+  }) async =>
+      false;
+
+  @override
+  Future<bool> shareBytes({
+    required List<int> bytes,
+    required String fileName,
+    required String mimeType,
     String? subject,
   }) async =>
       false;

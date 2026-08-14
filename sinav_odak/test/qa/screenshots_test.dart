@@ -404,6 +404,40 @@ void main() {
     });
   });
 
+  group('FAZ 3 — rapor ve grafikler', () {
+    testWidgets('istatistik: üç grafik (ay aralığı)', (tester) async {
+      await QaSeed.activeUser(db);
+      final c = await pumpQaApp(tester, db, size: const Size(430, 2200));
+      c.read(appRouterProviderForQa).go(Routes.stats);
+      await tester.pumpAndSettle();
+      await shoot(tester, '81_stats_charts');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('rapor hedef kitle seçimi', (tester) async {
+      await QaSeed.activeUser(db);
+      final c = await pumpQaApp(tester, db);
+      c.read(appRouterProviderForQa).go(Routes.stats);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('stats-report')));
+      await tester.pumpAndSettle();
+      await shoot(tester, '82_report_audience');
+      expect(find.byKey(const Key('report-parent')), findsOneWidget);
+      expect(find.byKey(const Key('report-teacher')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('istatistik grafikleri dar ekran', (tester) async {
+      await QaSeed.activeUser(db);
+      await QaSeed.longNames(db);
+      final c = await pumpQaApp(tester, db, size: const Size(360, 2200));
+      c.read(appRouterProviderForQa).go(Routes.stats);
+      await tester.pumpAndSettle();
+      await shoot(tester, '83_stats_charts_narrow');
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('boş durumlar', () {
     testWidgets('istatistik boş', (tester) async {
       await QaSeed.emptyUser(db);

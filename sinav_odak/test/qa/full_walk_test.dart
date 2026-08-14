@@ -152,7 +152,22 @@ void main() {
     });
     expect(find.byKey(const Key('stats-daily-chart')), findsOneWidget);
     expect(find.byKey(const Key('stats-summary')), findsOneWidget);
+    // FAZ 3.2'de üç grafik eklendi; ders dağılımı artık ilk ekranın
+    // altında kalıyor. `ListView` tembel kurduğu için görünür alana
+    // getirilmeden bulunamaz.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('stats-breakdown')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.byKey(const Key('stats-breakdown')), findsOneWidget);
+
+    // Aralık seçicisi yukarıda kaldı; sonraki adım ona dokunacak.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('stats-range')),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     await step(tester, 'İstatistik: Ay aralığı', () async {
       await tester.tap(find.text('Ay'));

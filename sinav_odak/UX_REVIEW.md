@@ -393,3 +393,146 @@ geldiğini doğruluyor.
 İlk denememde şemayı elle yazmıştım ve `created_at` kolonunu unutmuştum —
 test hemen düştü. Elle yazılan taklit, gerçek şema değişince sessizce
 yanlışlaşırdı.
+
+
+---
+---
+
+# FAZ 3 — veri ve dışa aktarım (UX incelemesi)
+
+**Görüntüler:** `81_stats_charts.png` · `82_report_audience.png` ·
+`83_stats_charts_narrow.png`
+
+## FAZ 3 — bulgu özeti
+
+| # | Sayfa | Bulgu | Durum |
+| --- | --- | --- | --- |
+| 3.1 | İstatistik | **Çizgi grafik, çubuk grafikle AYNI veriyi** çiziyordu | ✅ düzeltildi |
+| 3.2 | İstatistik | **"Ders dağılımı" başlığı ekranda İKİ KEZ** | ✅ düzeltildi |
+| 3.3 | PDF | Yerleşik font **ş/ğ/ı/İ desteklemiyor** — rapor sessizce bozuk | ✅ düzeltildi |
+| 3.4 | Bağımlılık | `fl_chart 0.71` Flutter 3.24 ile **derlenmiyor** | ✅ düzeltildi |
+| 3.5 | İstatistik | Grafikler eklenince liste alta kaydı; QA turu bulamıyordu | ✅ test güncellendi |
+| 3.6 | Rapor | Veliye zayıf konu listesi gitmemeli | ✅ tasarıma girdi |
+
+**6 bulgu · 6'sı çözüldü.** Üçü kod yazarken değil, **ekran görüntüsüne
+ve derleyici çıktısına bakarken** çıktı.
+
+---
+
+## 1. İstatistik ekranı — grafikler
+
+**Görüntü:** `81_stats_charts.png` (430 px) · `83_stats_charts_narrow.png`
+(360 px + uzun ders adı)
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Metin taşması | ✅ pasta efsanesi `ellipsis`, ısı haritası `Expanded` |
+| Kontrast (koyu) | ✅ renkler `colorScheme`'den; ısı haritası `surfaceContainerHighest`→`seed` |
+| Loading | ✅ `valueOrNull` boşken bölüm hiç çizilmiyor |
+| Empty | ✅ veri yoksa grafik yok (boş eksen gösterilmiyor) |
+| Erişilebilirlik | ⚠️ grafiklerin sözel karşılığı yok — §4 |
+
+### ✗ BULUNDU 3.1 — çizgi grafik çubuk grafiği tekrarlıyordu
+
+İlk uygulamada `TrendLineChart` **günlük dakikaları** çiziyordu. Ama
+hemen üstündeki mevcut `_DailyChart` de aynı seriyi çubuk olarak
+gösteriyor. Aynı veriyi iki farklı biçimde çizmek bilgi değil **gürültü**.
+
+Brief zaten *"Çizgi (haftalık trend)"* diyordu; ben günlük yapmıştım.
+
+**DÜZELTME:** çizgi artık **haftalık toplamları** çiziyor. Hafta
+aralığında tek nokta çıkacağı için gizleniyor — anlamlı bir eğilim en az
+iki hafta ister. `83_stats_charts_narrow.png`'de "Hafta" seçili olduğu
+için çizgi grafik **görünmüyor**; bu doğru davranış.
+
+### ✗ BULUNDU 3.2 — "Ders dağılımı" iki kez yazıyordu
+
+`83_stats_charts_narrow.png`'in ilk hâlinde ekranda **iki ayrı
+"Ders dağılımı" başlığı** vardı: biri yeni pasta grafiğin, biri mevcut
+liste bölümünün. İkisi aynı veriyi gösteriyor.
+
+Bu ancak tam sayfa görüntüsüne bakınca fark edildi — kodda iki ayrı
+widget oldukları için gözden kaçıyordu.
+
+**DÜZELTME:** pasta, liste bölümünün hemen üstüne alındı ve **kendi
+başlığı kaldırıldı**. Artık tek başlık, altında pasta + ayrıntılı liste.
+
+---
+
+## 2. PDF raporu
+
+**Görüntü:** `82_report_audience.png` (hedef kitle seçimi)
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Dokunma alanı | ✅ iki seçenek de `ListTile` (≥56 px) |
+| Loading | ✅ üretim sırasında düğmede dönen gösterge, düğme pasif |
+| Error | ✅ her hata "Rapor oluşturulamadı" — ekran çökmüyor |
+| Empty | ✅ oturum yoksa "raporlanacak oturum yok", boş PDF üretilmiyor |
+| Gizlilik | ✅ her sayfada kaşe; hiçbir bayt ağa çıkmıyor |
+
+### ✗ BULUNDU 3.3 — Türkçe harfler PDF'te bozuk çıkacaktı
+
+`pdf` paketinin yerleşik Helvetica'sı WinAnsi kodlaması kullanıyor.
+**Ölçtüm, varsaymadım:**
+
+```
+PROBE ş U+15f -> false     PROBE Ç U+c7 -> true
+PROBE ğ U+11f -> false     PROBE ç U+e7 -> true
+PROBE ı U+131 -> false
+PROBE İ U+130 -> false
+```
+
+PDF **hata vermeden** üretiliyordu — yani sessiz bir hata, üstelik
+**veliye giden belgede**. "Şanzımanı İndir", "Çalışma", "Başarı" gibi
+kelimeler bozuk çıkardı.
+
+**DÜZELTME:** Roboto Regular + Bold (`assets/fonts/`, ~340 KB) gömüldü.
+İki test bunu kilitliyor: biri yerleşik fontun desteklemediğini, diğeri
+gömülü fontun desteklediğini iddia ediyor. Biri "font gereksiz" derse
+testler nedenini gösteriyor.
+
+**Alternatif neden seçilmedi:** `printing` paketinin `PdfGoogleFonts`'u
+fontu **çalışma zamanında indiriyor**. Ağ gerektirirdi ve ürünün
+"sunucu yok, veri cihazda" sözüyle çelişirdi.
+
+### ✅ 3.6 — veliye zayıf konu listesi gitmiyor
+
+Veliye "çocuğunuzun en kötü olduğu 10 konu" göndermek uygulamanın
+amacının tersi olurdu. Bu bir **içerik** kararı, biçim değil; bu yüzden
+`BuildReportUseCase` içinde, PDF çiziminde değil. Ayrı bir testle
+iddia ediliyor.
+
+---
+
+## 3. Bağımlılık
+
+### ✗ BULUNDU 3.4 — `fl_chart 0.71` bu projede derlenmiyor
+
+`flutter pub add fl_chart` en güncel sürümü (0.71.0) getirdi.
+**`flutter analyze` temiz geçti** ama `flutter test` derleme hatası
+verdi:
+
+```
+fl_chart-0.71.0/.../axis_chart_data.dart: Error: The getter 'a' isn't
+defined for the class 'Color'.
+fl_chart-0.71.0/.../line_chart_data.dart: The method 'withValues' isn't
+defined for the class 'MaterialColor'.
+```
+
+`Color.a` ve `withValues` Flutter **3.27+** API'si; bu proje 3.24.5.
+
+**Dikkat çekici olan:** analyze bunu yakalamadı, yalnızca derleme
+yakaladı. "Analyze temiz" tek başına yeterli bir kapı değil.
+
+**DÜZELTME:** `fl_chart: ^0.69.0` (0.69.2 çözüldü).
+
+---
+
+## 4. Kapsanamayan / kabul edilen
+
+| Konu | Durum |
+| --- | --- |
+| Grafiklerin ekran okuyucu karşılığı | ⚠️ **eksik** — üç grafiğin de sözel özeti yok. Sayaç ve hedefler `Semantics` taşıyor ama grafikler taşımıyor. v1.2'ye yazılmalı. |
+| PDF'in gerçek cihazda açılması | ⚠️ doğrulanamadı — paylaşım platform kanalı, testte Noop |
+| PDF görsel denetimi | ⚠️ baytlar ve `%PDF-` imzası doğrulandı; sayfanın **görünümü** gözle kontrol edilmedi |

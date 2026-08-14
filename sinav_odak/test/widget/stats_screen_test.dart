@@ -18,6 +18,10 @@ class RecordingShareGateway implements ShareGateway {
   final List<({String content, String fileName})> shared = [];
   bool result = true;
 
+  /// Paylaşılan PDF'ler (FAZ 3.1).
+  final List<({List<int> bytes, String fileName, String mimeType})>
+      sharedFiles = [];
+
   @override
   Future<bool> shareText({
     required String content,
@@ -25,6 +29,17 @@ class RecordingShareGateway implements ShareGateway {
     String? subject,
   }) async {
     shared.add((content: content, fileName: fileName));
+    return result;
+  }
+
+  @override
+  Future<bool> shareBytes({
+    required List<int> bytes,
+    required String fileName,
+    required String mimeType,
+    String? subject,
+  }) async {
+    sharedFiles.add((bytes: bytes, fileName: fileName, mimeType: mimeType));
     return result;
   }
 }
