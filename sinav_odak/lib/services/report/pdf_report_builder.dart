@@ -27,7 +27,9 @@ class ReportStrings {
     required this.bestDay,
     required this.dailyAverage,
     required this.subjectBreakdown,
+    required this.subjectColumn,
     required this.weakTopics,
+    required this.topicColumn,
     required this.wrongCount,
     required this.dailyDetail,
     required this.day,
@@ -50,8 +52,21 @@ class ReportStrings {
   final String streak;
   final String bestDay;
   final String dailyAverage;
+
+  /// Bölüm başlığı: "Ders dağılımı".
   final String subjectBreakdown;
+
+  /// Tablodaki **sütun** başlığı: "Ders". Bölüm başlığından ayrı, çünkü
+  /// aynı metni ikisine birden koymak tabloyu kendi başlığıyla
+  /// tekrarlatıyordu.
+  final String subjectColumn;
+
+  /// Bölüm başlığı: "Gelişim gereken konular".
   final String weakTopics;
+
+  /// Tablodaki **sütun** başlığı: "Konu".
+  final String topicColumn;
+
   final String wrongCount;
   final String dailyDetail;
   final String day;
@@ -183,11 +198,12 @@ class PdfReportBuilder {
               _subjectTable(d, s),
               pw.Spacer(),
               _privacyFooter(s),
+              _pageNumber(context, s),
             ],
           ),
         ),
 
-        // Sayfa 2: zayıf konular + günlük döküm
+        // Sayfa 2+: zayıf konular + günlük döküm
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           footer: (context) => _pageFooter(context, s),
@@ -201,7 +217,7 @@ class PdfReportBuilder {
               pw.Text('—')
             else
               pw.TableHelper.fromTextArray(
-                headers: [s.weakTopics, s.wrongCount],
+                headers: [s.topicColumn, s.wrongCount],
                 data: [
                   for (final w in d.weakTopics)
                     ['${w.subjectName} · ${w.topicName}', '${w.wrongCount}'],
@@ -224,8 +240,6 @@ class PdfReportBuilder {
               headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               cellAlignments: {1: pw.Alignment.centerRight},
             ),
-            pw.SizedBox(height: 24),
-            _privacyFooter(s),
           ],
         ),
       ];
@@ -290,6 +304,11 @@ class PdfReportBuilder {
   pw.Widget _statGrid(ReportData d, ReportStrings s) =>
       pw.TableHelper.fromTextArray(
         headers: null,
+        // `headerCount` varsayılanı **1**: `headers: null` verilince ilk
+        // VERİ satırı başlık sanılıp ortalanmış/vurgulu çiziliyordu —
+        // "Toplam çalışma" satırı tablonun başlığı gibi görünüyordu.
+        // Bu ızgarada başlık satırı yok; hepsi veri.
+        headerCount: 0,
         data: [
           [s.totalStudy, _hm(d.totalStudyS)],
           [s.sessions, '${d.sessionCount}'],
@@ -299,7 +318,12 @@ class PdfReportBuilder {
           [s.focus, d.avgFocusScore.round().toString()],
           [s.streak, '${d.currentStreak} / ${d.longestStreak}'],
           [s.dailyAverage, _hm(d.avgStudyPerActiveDayS)],
-          [s.bestDay, _hm(d.bestDayS)],
+          // "En iyi gün" etiketi bir GÜN vaat ediyor; yalnızca süre
+          // basmak okuyanı hangi gün olduğunu bilemez halde bırakıyordu.
+          [
+            s.bestDay,
+            d.bestDayKey == null ? '—' : '${d.bestDayKey} · ${_hm(d.bestDayS)}',
+          ],
           [s.achievements, '${d.achievementCount}'],
         ],
         cellAlignments: {1: pw.Alignment.centerRight},
@@ -308,7 +332,7 @@ class PdfReportBuilder {
   pw.Widget _subjectTable(ReportData d, ReportStrings s) {
     if (d.subjects.isEmpty) return pw.Text('—');
     return pw.TableHelper.fromTextArray(
-      headers: [s.subjectBreakdown, s.duration, s.questions, s.net],
+      headers: [s.subjectColumn, s.duration, s.questions, s.net],
       data: [
         for (final sub in d.subjects)
           [
@@ -344,11 +368,30 @@ class PdfReportBuilder {
         ),
       );
 
-  pw.Widget _pageFooter(pw.Context c, ReportStrings s) => pw.Align(
-        alignment: pw.Alignment.centerRight,
-        child: pw.Text(
-          '${s.page} ${c.pageNumber}/${c.pagesCount}',
-          style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+  /// `MultiPage`'in **her sayfasına** çizilen alt bilgi.
+  ///
+  /// **Neden kaşe burada, akışın sonunda değil:** kaşe eskiden `build`
+  /// listesinin son elemanıydı. `MultiPage` çocukları sayfalara akıtıyor,
+  /// dolayısıyla kaşe yalnızca *son* sayfaya düşüyordu. 80 günlük bir
+  /// aralıkla ölçüldü: rapor 5 sayfa, kaşe yalnızca 1. ve 5. sayfada,
+  /// aradaki 3 sayfa kaşesiz. `footer` ise her sayfa için çağrılıyor.
+  pw.Widget _pageFooter(pw.Context c, ReportStrings s) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        mainAxisSize: pw.MainAxisSize.min,
+        children: [
+          _privacyFooter(s),
+          _pageNumber(c, s),
+        ],
+      );
+
+  pw.Widget _pageNumber(pw.Context c, ReportStrings s) => pw.Padding(
+        padding: const pw.EdgeInsets.only(top: 4),
+        child: pw.Align(
+          alignment: pw.Alignment.centerRight,
+          child: pw.Text(
+            '${s.page} ${c.pageNumber}/${c.pagesCount}',
+            style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+          ),
         ),
       );
 

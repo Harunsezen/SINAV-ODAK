@@ -131,4 +131,19 @@ class ReportData {
   int get bestDayS => days.isEmpty
       ? 0
       : days.map((d) => d.studyS).reduce((a, b) => a > b ? a : b);
+
+  /// En uzun çalışılan **günün kendisi**; hiç çalışma yoksa `null`.
+  ///
+  /// **Neden gerekli:** rapordaki etiket "En iyi gün" diyor ama yalnızca
+  /// [bestDayS] basılırsa okuyan bir süre görüyor, gün göremiyor —
+  /// "1 sa 30 dk" hangi gündü? Eğitimci o günü takvimle eşleştiremiyor.
+  /// Eşitlikte ilk gün kazanır (aralık zaten kronolojik).
+  String? get bestDayKey {
+    ReportDayLine? best;
+    for (final d in days) {
+      if (d.studyS <= 0) continue;
+      if (best == null || d.studyS > best.studyS) best = d;
+    }
+    return best?.dateKey;
+  }
 }

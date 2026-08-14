@@ -46,12 +46,14 @@ void main() {
     bestDay: 'En iyi gün',
     dailyAverage: 'Günlük ortalama',
     subjectBreakdown: 'Ders dağılımı',
+    subjectColumn: 'Ders',
     weakTopics: 'Gelişim gereken konular',
+    topicColumn: 'Konu',
     wrongCount: 'Yanlış',
     dailyDetail: 'Günlük döküm',
     day: 'Gün',
     duration: 'Süre',
-    privacyStamp: '🔒 Veriler yalnızca cihazda işlendi. Satılmadı, '
+    privacyStamp: 'Veriler yalnızca cihazda işlendi. Satılmadı, '
         'paylaşılmadı. — Balto, Sınav Odak',
     achievements: 'Rozet',
     page: 'Sayfa',

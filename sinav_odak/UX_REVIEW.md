@@ -683,3 +683,31 @@ ağacı `RepaintBoundary(key: qaRepaintKey)` ile sarmıyordu, `shoot()` de
 görüntüyü o sınırdan alıyor.
 
 FAZ 2'deki toast katmanı sapmasıyla **aynı sınıf**. Harness düzeltildi.
+
+---
+
+# PDF GÖRSEL DENETİMİ — rapor sayfaları
+
+Ekran görüntüsü pasının PDF karşılığı. Kural aynı: sayfayı **aç, bak**.
+Ayrıntılı döküm `PDF_DENETIM.md`'de; buraya bulgu özeti.
+
+| # | Sayfa | Bulgu | Sonuç |
+| --- | --- | --- | --- |
+| 1 | Eğitimci (çok sayfa) | Gizlilik kaşesi `MultiPage` akışının son çocuğuydu → **80 günlük raporun 5 sayfasının 3'ünde kaşe yok** | ✅ `footer`'a taşındı + regresyon testi |
+| 2 | Her ikisi | Kaşedeki `🔒` Roboto'da yok → **tofu kutusu (▯)**; üretim ARB'sinde olduğu için gerçek kullanıcı PDF'lerinde de | ✅ emoji kaldırıldı (emoji fontu ~1 MB, bütçe dışı) |
+| 3 | Eğitimci s.1 | "En iyi gün" **gün göstermiyor**, yalnızca süre | ✅ `bestDayKey` → "2025-08-03 · 1 sa 30 dk" |
+| 4 | Her ikisi | Tablo sütun başlığı **bölüm başlığını tekrarlıyor** ("Ders dağılımı" iki kere) | ✅ `subjectColumn` / `topicColumn` |
+| 5 | Eğitimci s.1 | Özet ızgarasının ilk **veri** satırı başlık gibi çiziliyor (`headerCount` varsayılanı 1) | ✅ `headerCount: 0` |
+| 6 | Eğitimci s.2 | Yanlış defteri (`wrong_items`) rapora **hiç yansımıyor**; "gelişim gereken konular" yalnızca oturum sayaçlarından besleniyor | 🟡 raporlandı — ürün kararı sizde |
+| 7 | Her ikisi | Brief 7 harf istedi; **büyük İ raporun hiçbir yerinde basılmıyordu** | ✅ `İntegral` konulu oturum eklendi |
+
+**Erişilebilirlik / okunabilirlik notları (bulgu değil):**
+kontrast siyah-üstü-beyaz, gövde 9–11 pt, başlık 14–22 pt; tablolar
+kenarlıklı ve sayısal sütunlar sağa dayalı. Veli sayfasının alt yarısı
+boş — tek sayfa/büyük sayı tercihi bilinçli, dolduracak içerik veliye
+uygun değil (zayıf konu listesi oraya **girmeyecek**).
+
+**Ders:** yedi bulgunun yedisi de **yeşil testin altında** duruyordu.
+İlk koşuda 4 test yeşildi ve PDF'ler üretilmişti; hiçbiri bunları
+yakalamadı. Ayrıca 7 oturumluk "gerçekçi" tohum, 1 numaralı hatanın
+görünmediği tam boyuttaydı — uzun aralığı ayrıca denemek gerekti.
