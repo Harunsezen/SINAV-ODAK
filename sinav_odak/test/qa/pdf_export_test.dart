@@ -274,116 +274,96 @@ void main() {
     );
   });
 
-  test('FONT BEKÇİSİ: veli PDF byte\'ında ş/ğ/ı/İ + yerleşik font YOK',
-      () async {
-    // **Regresyon bekçisi.** İki şablon tek `ReportFonts` kaynağından
-    // besleniyor; bu test üçüncü bir font girişinin geri sızmasını
-    // yakalıyor.
+  test('FONT BEKÇİSİ: veli PDF byte\'larında Türkçe metin ÇÖZÜLÜYOR', () async {
+    // **Byte seviyesinde probe — görsel doğrulamaya güvenmiyor.**
     //
-    // Neden yerleşik font tehlikeli: `ThemeData.withFont` yalnızca
-    // base+bold verilince italik girişlerini boş bırakıyor ve
-    // `TextStyle.defaultStyle()` Helvetica'yı koyuyor
-    // (pdf-3.11.3/.../text_style.dart:165). Helvetica WinAnsi ve
-    // ş/ğ/ı/İ TAŞIMIYOR — o harfler hata vermeden düşerdi.
+    // NEDEN DÜZ ARAMA İŞE YARAMIYOR: gömülü font Identity-H kodlamasıyla
+    // yazılıyor; içerik akışında harfler değil **2 baytlık glif
+    // indeksleri** duruyor:
     //
-    // Ölçüm yolu: metin Identity-H ile glif indeksine dönüştüğü için
-    // harfler byte'ta doğrudan aranamıyor. Bunun yerine gömülü fontun
-    // **ToUnicode CMap**'i çözülüyor: bir glif ancak GERÇEKTEN
-    // çizildiyse CMap'e giriyor, dolayısıyla CMap "bu harf bu belgede
-    // Roboto ile basıldı" demenin doğrudan kanıtı.
+    //     BT /F5 21 Tf ... [<0001000200030004000500060002>]TJ ET
+    //                        Ç   a   l   ı   ş   m   a
+    //
+    // Bu yüzden "Çalışma" dizesi DOĞRU üretilmiş bir PDF'te bile ham
+    // baytlarda ARANMAZ — ölçüldü: iki raporda da düz arama 0 sonuç
+    // veriyor, eğitimci raporunda da. Düz arama iyi ile bozuğu
+    // ayırt edemiyor.
+    //
+    // Doğrusu: her fontun kendi `ToUnicode` CMap'i çözülüp glif
+    // indeksleri metne geri çevriliyor, sonra dize aranıyor. Bir glif
+    // ancak GERÇEKTEN çizildiyse akışta bulunuyor, dolayısıyla bu
+    // "şu metin bu belgede gömülü Roboto ile basıldı"nın doğrudan
+    // kanıtı.
     await seedRealistic();
     final data = await build(ReportAudience.parent);
 
-    // Veli raporu normalde İ içermiyor (İntegral eğitimciye ait).
-    // Şablonun İ'yi BASABİLDİĞİNİ kanıtlamak için yedi harfi de
-    // Balto notundan geçiriyoruz — tasarım ve üretim metni değişmiyor,
-    // yalnızca bu ölçümde farklı bir dize veriliyor.
-    const probe = ReportStrings(
-      appName: 'Sınav Odak',
-      parentTitle: 'Çalışma Karnesi',
-      teacherTitle: 'Çalışma Analiz Raporu',
-      rangeLabel: 'Dönem',
-      totalStudy: 'Toplam çalışma',
-      sessions: 'Oturum',
-      questions: 'Soru',
-      net: 'Net',
-      focus: 'Ortalama odak',
-      successRate: 'Başarı oranı',
-      streak: 'Seri',
-      bestDay: 'En iyi gün',
-      dailyAverage: 'Günlük ortalama',
-      subjectBreakdown: 'Ders dağılımı',
-      subjectColumn: 'Ders',
-      weakTopics: 'Gelişim gereken konular',
-      topicColumn: 'Konu',
-      wrongCount: 'Yanlış',
-      dailyDetail: 'Günlük döküm',
-      day: 'Gün',
-      duration: 'Süre',
-      privacyStamp: 'Veriler yalnızca cihazda işlendi. Satılmadı, '
-          'paylaşılmadı. — Balto, Sınav Odak',
-      achievements: 'Rozet',
-      page: 'Sayfa',
-      parentNote: 'İşte şu ğ ı İ ç ö ü prova satırı — Balto',
-      coachNote: 'Koç notu',
-    );
-
     final bytes = await const PdfReportBuilder().build(
       data,
-      probe,
+      strings,
       regular: regular,
       bold: bold,
     );
+    final pdf = _decodePdfText(bytes);
 
-    // 1) Yerleşik font HİÇBİR yoldan girmemiş olmalı.
+    // 1) Koordinatörün istediği üç dize — üretim metniyle.
+    for (final needle in ['Çalışma', 'gönderilmedi', 'Satılmadı']) {
+      expect(
+        pdf.text,
+        contains(needle),
+        reason: 'veli PDF\'inde "$needle" çözülemedi — Türkçe düşüyor',
+      );
+    }
+
+    // 2) Hiçbir glif eşlenemeden kalmamalı.
+    expect(
+      pdf.unmapped,
+      0,
+      reason: '${pdf.unmapped} glif ToUnicode ile eşlenemedi',
+    );
+
+    // 3) Ayrı font yolu/nesnesi KALMAMALI: belgede yalnızca iki
+    //    gömülü Roboto olabilir.
+    expect(
+      pdf.baseFonts,
+      {'Roboto-Bold', 'Roboto-Regular'},
+      reason: 'veli şablonunda beklenmedik font kaynağı var',
+    );
     final raw = String.fromCharCodes(bytes.map((b) => b & 0xff));
     for (final builtin in ['Helvetica', 'Times-', 'Courier']) {
       expect(
         raw,
         isNot(contains(builtin)),
-        reason: 'veli PDF\'ine yerleşik font $builtin sızmış — '
-            'Türkçe harfler sessizce düşer',
+        reason: 'yerleşik font $builtin sızmış — Türkçe sessizce düşer',
       );
     }
+  });
 
-    // 2) Gömülü font YALNIZCA Roboto olmalı.
-    final baseFonts = RegExp(r'/BaseFont\s*/([A-Za-z0-9\-+,]+)')
-        .allMatches(raw)
-        .map((m) => m.group(1)!)
-        .toSet();
-    expect(baseFonts, isNotEmpty, reason: 'hiç font gömülmemiş');
-    for (final f in baseFonts) {
-      expect(f, contains('Roboto'), reason: 'beklenmedik font: $f');
-    }
+  test('FONT BEKÇİSİ: veli şablonu YEDİ Türkçe harfi de basabiliyor', () async {
+    // Veli raporu normalde İ içermiyor (İntegral eğitimciye ait). Şablonun
+    // İ'yi basabildiğini kanıtlamak için yedi harf Balto notundan
+    // geçiriliyor — üretim metni değişmiyor, yalnızca bu ölçümde farklı
+    // bir dize veriliyor.
+    await seedRealistic();
+    final data = await build(ReportAudience.parent);
 
-    // 3) Yedi Türkçe harfin hepsi ToUnicode CMap'inde.
-    final cmaps = _inflatedStreams(bytes)
-        .where((s) => s.contains('beginbfchar') || s.contains('beginbfrange'))
-        .join('\n')
-        .toUpperCase();
-    expect(cmaps, isNotEmpty, reason: 'ToUnicode CMap bulunamadı');
-
-    const turkish = {
-      'ş': 0x015F,
-      'ğ': 0x011F,
-      'ı': 0x0131,
-      'İ': 0x0130,
-      'ç': 0x00E7,
-      'ö': 0x00F6,
-      'ü': 0x00FC,
-    };
-    final missing = [
-      for (final e in turkish.entries)
-        if (!cmaps
-            .contains(e.value.toRadixString(16).padLeft(4, '0').toUpperCase()))
-          e.key,
-    ];
-    expect(
-      missing,
-      isEmpty,
-      reason: 'veli PDF\'inde şu harfler Roboto ile basılmamış: '
-          '${missing.join(" ")}',
+    const probe = 'İşte şu ğ ı İ ç ö ü prova satırı';
+    final bytes = await const PdfReportBuilder().build(
+      data,
+      _withParentNote(strings, probe),
+      regular: regular,
+      bold: bold,
     );
+    final pdf = _decodePdfText(bytes);
+
+    expect(pdf.text, contains(probe), reason: 'prova satırı çözülemedi');
+    for (final ch in ['ş', 'ğ', 'ı', 'İ', 'ç', 'ö', 'ü']) {
+      expect(
+        pdf.text,
+        contains(ch),
+        reason: '"$ch" veli PDF\'inde Roboto ile basılmamış',
+      );
+    }
+    expect(pdf.unmapped, 0);
   });
 
   test('BOŞ veri: bölüm başlıkları hiç ÇİZİLMİYOR', () async {
@@ -599,4 +579,170 @@ List<String> _inflatedStreams(List<int> bytes) {
     i = e + end.length;
   }
   return out;
+}
+
+/// [ReportStrings]'i yalnızca Balto notu değiştirilmiş hâlde kopyalar.
+ReportStrings _withParentNote(ReportStrings s, String note) => ReportStrings(
+      appName: s.appName,
+      parentTitle: s.parentTitle,
+      teacherTitle: s.teacherTitle,
+      rangeLabel: s.rangeLabel,
+      totalStudy: s.totalStudy,
+      sessions: s.sessions,
+      questions: s.questions,
+      net: s.net,
+      focus: s.focus,
+      successRate: s.successRate,
+      streak: s.streak,
+      bestDay: s.bestDay,
+      dailyAverage: s.dailyAverage,
+      subjectBreakdown: s.subjectBreakdown,
+      subjectColumn: s.subjectColumn,
+      weakTopics: s.weakTopics,
+      topicColumn: s.topicColumn,
+      wrongCount: s.wrongCount,
+      dailyDetail: s.dailyDetail,
+      day: s.day,
+      duration: s.duration,
+      privacyStamp: s.privacyStamp,
+      achievements: s.achievements,
+      page: s.page,
+      parentNote: note,
+      coachNote: s.coachNote,
+    );
+
+/// PDF'ten çözülen görünür metin.
+class _PdfText {
+  const _PdfText(this.text, this.baseFonts, this.unmapped);
+
+  /// Çizilen tüm metin koşuları (aralarında boşlukla).
+  final String text;
+
+  /// Belgede geçen gömülü font adları.
+  final Set<String> baseFonts;
+
+  /// `ToUnicode` ile eşlenemeyen glif sayısı. Sıfır olmalı.
+  final int unmapped;
+}
+
+/// PDF baytlarından **görünür metni** geri çözer.
+///
+/// Identity-H kodlamasında içerik akışında harf yok, 2 baytlık glif
+/// indeksi var. Her fontun kendi `ToUnicode` CMap'i o indeksleri Unicode'a
+/// geri çeviriyor. Doğru fontu seçmek şart: Regular ve Bold'un glif
+/// numaraları çakışıyor, yanlış CMap ile çözülen metin çöp çıkıyor
+/// (ölçüldü — "ilk uyan CMap" sezgisi yanlış sonuç veriyordu).
+_PdfText _decodePdfText(List<int> bytes) {
+  final raw = String.fromCharCodes(bytes.map((b) => b & 0xff));
+
+  // 1) Nesne numarası -> açılmış akış.
+  final streams = <int, String>{};
+  final objs = RegExp(r'(\d+)\s+0\s+obj').allMatches(raw).toList();
+  for (var i = 0; i < objs.length; i++) {
+    final n = int.parse(objs[i].group(1)!);
+    final limit = i + 1 < objs.length ? objs[i + 1].start : raw.length;
+    final sm =
+        RegExp(r'stream\r?\n').firstMatch(raw.substring(objs[i].end, limit));
+    if (sm == null) continue;
+    final from = objs[i].end + sm.end;
+    final to = raw.indexOf('endstream', from);
+    if (to < 0) continue;
+    try {
+      streams[n] = String.fromCharCodes(
+        ZLibDecoder().convert(bytes.sublist(from, to)),
+      );
+    } on FormatException {
+      // Sıkıştırılmamış akış — atla.
+    } on ArgumentError {
+      // Aynı sebep.
+    }
+  }
+
+  // 2) /Fn -> ToUnicode nesnesi, ve gömülü font adları.
+  final fontToCmapObj = <String, int>{};
+  final baseFonts = <String>{};
+  for (var i = 0; i < objs.length; i++) {
+    final limit = i + 1 < objs.length ? objs[i + 1].start : raw.length;
+    final body = raw.substring(objs[i].end, limit);
+    if (!body.contains('/Type0')) continue;
+    final name = RegExp(r'/Name\s*/(F\d+)').firstMatch(body);
+    final tou = RegExp(r'/ToUnicode\s+(\d+)\s+0\s+R').firstMatch(body);
+    final base = RegExp(r'/BaseFont\s*/([A-Za-z0-9\-+,]+)').firstMatch(body);
+    if (base != null) baseFonts.add(base.group(1)!);
+    if (name != null && tou != null) {
+      fontToCmapObj[name.group(1)!] = int.parse(tou.group(1)!);
+    }
+  }
+
+  // 3) CMap'leri ayrıştır.
+  final cmaps = <String, Map<int, String>>{};
+  fontToCmapObj.forEach((font, obj) {
+    final src = streams[obj];
+    if (src == null) return;
+    final map = <int, String>{};
+    for (final blk
+        in RegExp(r'beginbfchar(.*?)endbfchar', dotAll: true).allMatches(src)) {
+      for (final m in RegExp(r'<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>')
+          .allMatches(blk.group(1)!)) {
+        map[int.parse(m.group(1)!, radix: 16)] = _utf16be(m.group(2)!);
+      }
+    }
+    for (final blk in RegExp(r'beginbfrange(.*?)endbfrange', dotAll: true)
+        .allMatches(src)) {
+      for (final m in RegExp(
+        r'<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>',
+      ).allMatches(blk.group(1)!)) {
+        final a = int.parse(m.group(1)!, radix: 16);
+        final b = int.parse(m.group(2)!, radix: 16);
+        final d = int.parse(m.group(3)!, radix: 16);
+        for (var k = a; k <= b; k++) {
+          map[k] = String.fromCharCode(d + k - a);
+        }
+      }
+    }
+    cmaps[font] = map;
+  });
+
+  // 4) İçerik akışlarını yürü: `Tf` ile fontu izle, `TJ` dizilerini çöz.
+  final out = <String>[];
+  var unmapped = 0;
+  final token = RegExp(r'/(F\d+)\s+[\d.]+\s+Tf|\[(.*?)\]\s*TJ', dotAll: true);
+  final hex = RegExp('<([0-9A-Fa-f]+)>');
+
+  for (final src in streams.values) {
+    if (!src.contains('TJ')) continue;
+    String? current;
+    for (final m in token.allMatches(src)) {
+      if (m.group(1) != null) {
+        current = m.group(1);
+        continue;
+      }
+      final map = cmaps[current];
+      if (map == null) continue;
+      final buf = StringBuffer();
+      for (final h in hex.allMatches(m.group(2)!)) {
+        final digits = h.group(1)!;
+        for (var i = 0; i + 4 <= digits.length; i += 4) {
+          final gid = int.parse(digits.substring(i, i + 4), radix: 16);
+          final ch = map[gid];
+          if (ch == null) {
+            unmapped++;
+          } else {
+            buf.write(ch);
+          }
+        }
+      }
+      if (buf.isNotEmpty) out.add(buf.toString());
+    }
+  }
+
+  return _PdfText(out.join(' '), baseFonts, unmapped);
+}
+
+String _utf16be(String hexDigits) {
+  final units = <int>[];
+  for (var i = 0; i + 4 <= hexDigits.length; i += 4) {
+    units.add(int.parse(hexDigits.substring(i, i + 4), radix: 16));
+  }
+  return String.fromCharCodes(units);
 }

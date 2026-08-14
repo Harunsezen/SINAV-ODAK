@@ -264,3 +264,117 @@ $ flutter test    → +867: All tests passed!
 $ flutter analyze → No issues found!
 $ dart format .   → 209 files (0 changed)
 ```
+
+---
+
+# EK 2 — VELİ FONT REGRESYONU, 2. TUR
+
+## Sonuç önce
+
+`rapor_veli.pdf` Türkçe **düşürmüyor**. Üç dizeyi de byte seviyesinde
+çözüp doğruladım. Ama istenen probe yöntemi çalışmıyordu — nedeni ve
+doğrusu aşağıda.
+
+## Düz byte araması neden ayırt edemiyor
+
+İstenen probe: *"veli PDF byte'larında `Çalışma`, `gönderilmedi`,
+`Satılmadı` aranır"*. Uygulandı — **iki dosyada da 0 sonuç**:
+
+```
+rapor_veli.pdf          rapor_egitimci.pdf
+  Çalışma       0          Çalışma       0
+  gönderilmedi  0          gönderilmedi  0
+  Satılmadı     0          Satılmadı     0
+```
+
+Temiz olduğu söylenen eğitimci raporunda da sıfır. Sebep: gömülü font
+**Identity-H** kodlamasıyla yazılıyor; içerik akışında harf değil
+**2 baytlık glif indeksi** duruyor. Ham akıştan:
+
+```
+BT /F5 21 Tf ... [<0001000200030004000500060002>]TJ ET
+                   Ç   a   l   ı   ş   m   a
+```
+
+`Ç`=0001 `a`=0002 `l`=0003 `ı`=0004 `ş`=0005 `m`=0006 `a`=0002 —
+son `0002` ilk `a` ile aynı, yani dize gerçekten "Çalışma". Doğru
+üretilmiş bir PDF'te bu dize ham baytlarda **bulunmaz**; o probe
+kurulsaydı sağlam dosyada da düşerdi.
+
+## Doğrusu: glif indekslerini geri çöz
+
+Her fontun kendi `ToUnicode` CMap'i çözülüp glif indeksleri metne geri
+çevriliyor, sonra dize aranıyor.
+
+**Kritik ayrıntı:** Regular ve Bold'un glif numaraları çakışıyor.
+"Glifleri kapsayan ilk CMap'i kullan" sezgisiyle yazdığım ilk çözücü
+tutarsız sonuç verdi (velide `Başarı` bulunamadı, eğitimcide `Çalışma`
+bulunamadı — ikisi de yanlıştı). Doğru yol `/Fn` → font nesnesi →
+`/ToUnicode` bağını gerçekten kurmak.
+
+### Ölçüm (üretim metniyle, `qa_pdf/rapor_veli.pdf`)
+
+| Aranan | Veli | Eğitimci |
+| --- | --- | --- |
+| `Çalışma` | **VAR** | VAR |
+| `gönderilmedi` | **VAR** | yok — Balto notu veliye özel |
+| `Satılmadı` | **VAR** | VAR |
+| `paylaşılmadı` · `Başarı` · `dağılımı` · `Coğrafya` · `Dönem` | **VAR** | VAR |
+| eşlenemeyen glif | **0** | 0 |
+
+## Ayrı font yolu kaldı mı — denetim
+
+```
+font NESNESİ oluşturan tek yer : PdfReportBuilder.loadFonts (satır 130-133)
+iki şablon da aynı örneği alır : ReportFonts (satır 147 → 152, 154)
+
+veli şablonundaki pw.Text     : 28
+  açıkça `font: bold`         : 13  → ReportFonts.bold    (Roboto-Bold)
+  temadan miras               : 15  → theme.defaultTextStyle (Roboto-Regular)
+
+üretilen PDF'te font kaynağı  : 2 — Roboto-Bold, Roboto-Regular
+```
+
+İki dosyada da toplam **iki** font kaynağı var. Üçüncü bir font girişi
+yok; olsaydı bekçi düşerdi.
+
+## Bekçi testleri ve ısırdıklarının kanıtı
+
+İki test eklendi (`test/qa/pdf_export_test.dart`):
+
+1. `FONT BEKÇİSİ: veli PDF byte'larında Türkçe metin ÇÖZÜLÜYOR` —
+   üretim metniyle üç dizeyi arar, eşlenemeyen glif sayar, font
+   kümesinin tam olarak `{Roboto-Bold, Roboto-Regular}` olduğunu ve
+   `Helvetica`/`Times-`/`Courier` geçmediğini doğrular.
+2. `FONT BEKÇİSİ: veli şablonu YEDİ Türkçe harfi de basabiliyor` —
+   Balto notu yerine yedi harfi taşıyan prova dizesi verilip
+   ş ğ ı İ ç ö ü aranır. (Üretim metni değişmiyor.)
+
+**Negatif kontrol.** `ReportFonts` yerleşik Helvetica'ya bağlanınca
+bekçi düşüyor ve çözülen metin tam olarak bildirilen belirtiyi
+gösteriyor — açık `font:` verilen metinler kalıyor, **temadan miras
+alan etiketler yok oluyor**:
+
+```
+Expected: contains 'Satılmadı'
+  Actual: 'Çalışma Karnesi  Sınav Odak  7 sa 25 dk  315  221,5  %80  6  7
+           Ders dağılımı  Matematik  133,3 ...'
+          ^ "Toplam çalışma", "Soru", "Net", "Başarı oranı", kaşe — hepsi düştü
+```
+
+Düzeltme yerine konunca ikisi de geçiyor.
+
+## Elimdeki dosyada belirti yok
+
+Dört bağımsız yol aynı sonucu veriyor: sayfa görüntüsü · `pdftotext` ·
+`pdffonts` · ToUnicode çözümü. Sizde hâlâ görünüyorsa fark dosyada
+değil, dosyayı açan tarafta. Yardımcı olacak bilgi: **hangi okuyucu**
+(Acrobat / Chrome / Preview / WhatsApp önizleme / Drive önizleme) ve
+ekran görüntüsü. Ekteki dosyayı yeniden indirip bakın — bu pasta
+dosya dört kez yeniden üretildi, elinizdeki eski kopya olabilir.
+
+```
+$ flutter test    → +868: All tests passed!
+$ flutter analyze → No issues found!
+$ dart format .   → 209 files (0 changed)
+```
