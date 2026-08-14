@@ -67,7 +67,7 @@ void main() {
     appName: 'Sınav Odak',
     parentTitle: 'Çalışma Karnesi',
     teacherTitle: 'Çalışma Analiz Raporu',
-    rangeLabel: 'Aralık',
+    rangeLabel: 'Dönem',
     totalStudy: 'Toplam çalışma',
     sessions: 'Oturum',
     questions: 'Soru',
@@ -90,6 +90,9 @@ void main() {
         'paylaşılmadı. — Balto, Sınav Odak',
     achievements: 'Rozet',
     page: 'Sayfa',
+    parentNote:
+        'Bu karne cihazında üretildi; hiçbir yere gönderilmedi. — Balto',
+    coachNote: 'Koç notu',
   );
 
   /// 7 oturum · 3 ders · 2 konu · yanlışlar · rozet · seri.
@@ -271,6 +274,61 @@ void main() {
     );
   });
 
+  test('BOŞ veri: bölüm başlıkları hiç ÇİZİLMİYOR', () async {
+    // Kırmızı çizgi: "boş veri bölümü çizilmez". Kullanıcı ilk gün rapor
+    // almayı deneyebilir; boş başlıklarla dolu bir belge hem çirkin hem
+    // "bir şeyler bozuk" hissi verir.
+    //
+    // Ölçüm: dosya boyutu kıyaslaması denendi ve İŞE YARAMADI — gömülü
+    // font baytları farkı bastırıyor (boş 14 KB, dolu 17,6 KB). Bunun
+    // yerine Helvetica + ASCII metinle üretip sayfa içerik akışlarında
+    // başlıkları ARIYORUZ.
+    const marker = 'PRIVACYSTAMP';
+    final helvetica = pw.Font.helvetica();
+
+    Future<String> render(ReportAudience audience) async {
+      final data = await build(audience);
+      final bytes = await const PdfReportBuilder().build(
+        data,
+        _asciiStrings(marker),
+        regular: helvetica,
+        bold: pw.Font.helveticaBold(),
+      );
+      expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+      return _inflatedStreams(bytes).join('\n');
+    }
+
+    await db.settingsDao.ensure();
+    for (final audience in ReportAudience.values) {
+      final drawn = await render(audience);
+      expect(
+        drawn,
+        allOf([
+          isNot(contains('Subjects')), // ders dağılımı
+          isNot(contains('WeakTopics')), // gelişim gereken konular
+          isNot(contains('Daily')), // günlük döküm
+        ]),
+        reason: '$audience: veri yokken bölüm başlığı çizilmemeli',
+      );
+      expect(drawn, contains(marker), reason: 'kaşe her koşulda kalır');
+    }
+
+    // KARŞIT KONTROL: veri varken başlıklar gerçekten çiziliyor.
+    // Bu olmadan yukarıdaki iddia "hiçbir şey bulamayan bozuk bir
+    // arama" ile de geçerdi.
+    await seedRealistic();
+    final full = await render(ReportAudience.teacher);
+    expect(
+      full,
+      allOf([
+        contains('Subjects'),
+        contains('WeakTopics'),
+        contains('Daily'),
+      ]),
+      reason: 'arama yöntemi başlıkları bulabiliyor olmalı',
+    );
+  });
+
   test('gizlilik kaşesi SPILL eden raporda da her sayfada', () async {
     // **Regresyon.** Kaşe eskiden `MultiPage.build` listesinin son
     // elemanıydı; `MultiPage` çocukları akıttığı için kaşe yalnızca son
@@ -280,7 +338,12 @@ void main() {
     // Ölçüm yolu: yerleşik Helvetica ile üretip (gömülü fontta metin
     // subset glif indeksine dönüşüyor, aranamıyor) sayfa içerik
     // akışlarını zlib'den çözüp işareti sayıyoruz.
-    for (var i = 0; i < 80; i++) {
+    //
+    // **İkinci iş:** bu test aynı zamanda uzun raporun ÜRETİLEBİLDİĞİNİ
+    // kanıtlıyor. Kartlar `Container`; `MultiPage` onları bölemiyor.
+    // Günlük liste parçalanmasaydı 8 aylık rapor sayfadan uzun tek bir
+    // kart üretip `TooManyPagesException` fırlatırdı.
+    for (var i = 0; i < 250; i++) {
       final d = DateTime(2025, 1, 1).add(Duration(days: i));
       final key = '${d.year}-${_two(d.month)}-${_two(d.day)}';
       await db.into(db.studySessions).insert(
@@ -307,7 +370,7 @@ void main() {
     final data = await BuildReportUseCase(db)(
       audience: ReportAudience.teacher,
       from: DateTime(2025, 1, 1),
-      to: DateTime(2025, 3, 21),
+      to: DateTime(2025, 9, 30),
     );
 
     const marker = 'PRIVACYSTAMP';
@@ -385,6 +448,8 @@ ReportStrings _asciiStrings(String marker) => ReportStrings(
       privacyStamp: marker,
       achievements: 'Badges',
       page: 'Page',
+      parentNote: 'Note',
+      coachNote: 'Coach',
     );
 
 /// PDF içindeki zlib akışlarını çözüp metin olarak döndürür.

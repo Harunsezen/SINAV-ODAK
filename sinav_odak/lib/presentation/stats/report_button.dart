@@ -46,6 +46,8 @@ class _ReportButtonState extends ConsumerState<ReportButton> {
         privacyStamp: l.reportPrivacyStamp,
         achievements: l.reportAchievements,
         page: l.reportPage,
+        parentNote: l.reportParentStamp,
+        coachNote: l.reportCoachNote,
       );
 
   Future<void> _run(ReportAudience audience) async {

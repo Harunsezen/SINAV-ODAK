@@ -57,6 +57,9 @@ void main() {
         'paylaşılmadı. — Balto, Sınav Odak',
     achievements: 'Rozet',
     page: 'Sayfa',
+    parentNote:
+        'Bu karne cihazında üretildi; hiçbir yere gönderilmedi. — Balto',
+    coachNote: 'Koç notu',
   );
 
   ReportData data(ReportAudience audience) => ReportData(
