@@ -186,12 +186,11 @@ void main() {
       );
 
   Future<void> write(String name, ReportData data) async {
-    final bytes = await const PdfReportBuilder().build(
-      data,
-      strings,
-      regular: regular,
-      bold: bold,
-    );
+    // **Font ENJEKTE EDİLMİYOR.** Teslim edilen dosya, uygulamanın
+    // kullandığı yoldan (`loadFonts()` → `rootBundle`) geçsin diye
+    // parametre verilmiyor. Enjekte etseydim teslim ettiğim dosya ile
+    // kullanıcının ürettiği dosya farklı kod yolundan çıkardı.
+    final bytes = await const PdfReportBuilder().build(data, strings);
     expect(
       String.fromCharCodes(bytes.take(5)),
       '%PDF-',
@@ -364,6 +363,53 @@ void main() {
       );
     }
     expect(pdf.unmapped, 0);
+  });
+
+  test('ÜRETİM YOLU: rootBundle fontlarıyla iki rapor da AYNI font kaynağı',
+      () async {
+    // **Bu teste kadar ölçülmemiş boşluk.** Diğer testler fontları
+    // `regular:`/`bold:` ile ENJEKTE ediyor; uygulamanın gerçek yolu
+    // `loadFonts()` → `rootBundle.load('assets/fonts/...')`. İki yol
+    // ayrışsaydı teslim ettiğim dosya ile kullanıcının ürettiği dosya
+    // farklı olurdu ve bunu hiçbir test yakalamazdı.
+    //
+    // Burada font PARAMETRESİ VERİLMİYOR: üretimdeki kod yolu koşuyor.
+    await seedRealistic();
+
+    final decoded = <ReportAudience, _PdfText>{};
+    for (final audience in ReportAudience.values) {
+      final data = await build(audience);
+      final bytes = await const PdfReportBuilder().build(data, strings);
+      decoded[audience] = _decodePdfText(bytes);
+    }
+
+    // İki rapor da TAM OLARAK aynı iki gömülü fontu kullanmalı.
+    for (final e in decoded.entries) {
+      expect(
+        e.value.baseFonts,
+        {'Roboto-Bold', 'Roboto-Regular'},
+        reason: '${e.key.name}: font kaynağı ayrışmış',
+      );
+      expect(
+        e.value.unmapped,
+        0,
+        reason: '${e.key.name}: eşlenemeyen glif var',
+      );
+    }
+    expect(
+      decoded[ReportAudience.parent]!.baseFonts,
+      decoded[ReportAudience.teacher]!.baseFonts,
+      reason: 'veli ve eğitimci farklı font kümesi kullanıyor',
+    );
+
+    // Veli raporunda üç dize de çözülmeli — üretim yolunda.
+    for (final needle in ['Çalışma', 'gönderilmedi', 'Satılmadı']) {
+      expect(
+        decoded[ReportAudience.parent]!.text,
+        contains(needle),
+        reason: 'ÜRETİM yolunda veli PDF\'inde "$needle" çözülemedi',
+      );
+    }
   });
 
   test('BOŞ veri: bölüm başlıkları hiç ÇİZİLMİYOR', () async {
