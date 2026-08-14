@@ -320,13 +320,18 @@ Future<ProviderContainer> pumpQaSettings(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        locale: const Locale('tr'),
-        localizationsDelegates: L10n.localizationsDelegates,
-        supportedLocales: L10n.supportedLocales,
-        home: const SettingsScreen(),
+      // `RepaintBoundary` ŞART: `shoot()` görüntüyü bu sınırdan alıyor.
+      // Olmadan ekran görüntüsü testi `StateError` ile düşüyor.
+      child: RepaintBoundary(
+        key: qaRepaintKey,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          locale: const Locale('tr'),
+          localizationsDelegates: L10n.localizationsDelegates,
+          supportedLocales: L10n.supportedLocales,
+          home: const SettingsScreen(),
+        ),
       ),
     ),
   );

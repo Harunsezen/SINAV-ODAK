@@ -257,6 +257,7 @@ class _AchievementCard extends StatelessWidget {
         'downshift' => 'build',
         'master_waits' => 'hardware',
         'questions_15000' => 'workspace_premium',
+        'balto_friend' => 'volunteer_activism',
         _ => 'emoji_events',
       };
 }

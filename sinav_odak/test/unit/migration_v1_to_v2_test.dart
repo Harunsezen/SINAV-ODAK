@@ -61,9 +61,42 @@ void main() {
     await raw.close();
   });
 
-  test('schemaVersion 2', () async {
+  test('schemaVersion 3', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    expect(db.schemaVersion, 2);
+    expect(db.schemaVersion, 3);
+    await db.close();
+  });
+
+  test('v2 -> v3: banner_position ekleniyor, VERİ KAYBOLMUYOR', () async {
+    // FAZ 4.4. Aynı desen: gerçek tablodan kolonu düşürüp v2 hâlini
+    // üretiyoruz, sonra `onUpgrade`in yaptığını uyguluyoruz.
+    final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+      'ALTER TABLE user_settings DROP COLUMN banner_position',
+    );
+    await db.customStatement(
+      'UPDATE user_settings SET current_streak = 12',
+    );
+
+    final before =
+        await db.customSelect("PRAGMA table_info('user_settings')").get();
+    expect(
+      before.any((r) => r.read<String>('name') == 'banner_position'),
+      isFalse,
+    );
+
+    await db.customStatement(
+      'ALTER TABLE user_settings '
+      "ADD COLUMN banner_position TEXT NOT NULL DEFAULT 'bottom'",
+    );
+
+    final s = await db.settingsDao.ensure();
+    expect(s.currentStreak, 12, reason: 'v2 verisi korunmalı');
+    expect(
+      s.bannerPosition.name,
+      'bottom',
+      reason: 'varsayılan v1.0 davranışı (alt) olmalı',
+    );
     await db.close();
   });
 

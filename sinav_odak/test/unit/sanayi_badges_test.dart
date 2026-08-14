@@ -131,10 +131,11 @@ void main() {
     });
   });
 
-  test('rozet kodları BENZERSİZ ve katalog 15 rozet', () {
+  test('rozet kodları BENZERSİZ ve katalog 16 rozet', () {
     final codes = [for (final d in AchievementCalculator.catalog) d.code];
     expect(codes.toSet().length, codes.length, reason: 'kod tekrarı var');
-    expect(codes.length, 15);
+    // 11 (v1.0) + 4 (Sanayi Evreni) + 1 (balto_friend, FAZ 4.3).
+    expect(codes.length, 16);
   });
 
   test('açılmış rozet TEKRAR açılmıyor', () {

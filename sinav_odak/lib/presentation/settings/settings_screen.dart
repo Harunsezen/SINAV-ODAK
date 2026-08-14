@@ -12,6 +12,7 @@ import '../../domain/entities/enums.dart';
 import '../ads/rewarded_controller.dart';
 import 'widgets/net_coefficient_tile.dart';
 import 'widgets/reset_data_tile.dart';
+import '../achievements/achievement_toast.dart';
 
 /// Ayarlar ekranı (FAZ 7A — tamamlandı).
 ///
@@ -49,15 +50,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _support() async {
     setState(() => _busy = true);
     final earned = await ref.read(rewardedControllerProvider).maybeShow();
+
+    // **Rozet ödül GERÇEKTEN kazanılınca açılıyor.** Reklam yüklenmediyse
+    // veya kullanıcı yarıda bıraktıysa `earned` false gelir ve rozet
+    // verilmez — bedava rozet, rozetin değerini düşürürdü (FAZ 4.3).
+    if (earned) {
+      await ref.read(achievementDaoProvider).unlock(
+            code: 'balto_friend',
+            unlockedAtMs: ref.read(clockProvider)(),
+          );
+      ref.read(achievementToastQueueProvider.notifier).enqueue(
+        const ['balto_friend'],
+      );
+    }
+
     if (!mounted) return;
     setState(() => _busy = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        key: const Key('support-result'),
         content: Text(
           earned
               ? L10n.of(context).supportThanks
-              : L10n.of(context).supportNoAd,
+              // Reklam gelmediğinde suçlu kullanıcı değil; ton da öyle.
+              : L10n.of(context).supportNoAdBalto,
         ),
       ),
     );
@@ -190,6 +207,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // bu uygulama içi bir kart, sistem bildirimi değil.
               // `notificationEnabled`a kapılsaydı, bildirimleri kapatan
               // kullanıcı rozetlerini de sessizce kaybederdi.
+              // FAZ 4.4 — banner konum denemesi.
+              //
+              // `ListTile(trailing: SegmentedButton)` DEĞİL: üç segment dar
+              // ekranda satırı doldurup "Trailing widget consumes entire
+              // tile width" ile çökertiyordu (bkz. QA_RAPORU A2).
+              Padding(
+                key: const Key('settings-banner-position'),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.settingsBannerPosition),
+                    Text(
+                      l.settingsBannerPositionNote,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<BannerPosition>(
+                      segments: [
+                        ButtonSegment(
+                          value: BannerPosition.bottom,
+                          label: Text(l.bannerPositionBottom),
+                        ),
+                        ButtonSegment(
+                          value: BannerPosition.top,
+                          label: Text(l.bannerPositionTop),
+                        ),
+                        ButtonSegment(
+                          value: BannerPosition.sideLandscape,
+                          label: Text(l.bannerPositionSideLandscape),
+                        ),
+                      ],
+                      selected: {settings.bannerPosition},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (s) =>
+                          _settings.setBannerPosition(s.first),
+                    ),
+                  ],
+                ),
+              ),
               SwitchListTile(
                 key: const Key('settings-achievement-toast'),
                 contentPadding: EdgeInsets.zero,

@@ -161,6 +161,10 @@ class _AchievementTile extends StatelessWidget {
           title: l.achMasterWaitsTitle,
           body: l.achMasterWaitsBody
         ),
+      'balto_friend' => (
+          title: l.achBaltoFriendTitle,
+          body: l.achBaltoFriendBody
+        ),
       'questions_15000' => (
           title: l.achQuestions15000Title,
           body: l.achQuestions15000Body
@@ -189,5 +193,6 @@ IconData achievementIcon(String key) => switch (key) {
       'build' => Icons.build,
       'hardware' => Icons.hardware,
       'workspace_premium' => Icons.workspace_premium,
+      'volunteer_activism' => Icons.volunteer_activism,
       _ => Icons.emoji_events,
     };

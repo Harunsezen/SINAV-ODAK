@@ -536,3 +536,150 @@ yakaladı. "Analyze temiz" tek başına yeterli bir kapı değil.
 | Grafiklerin ekran okuyucu karşılığı | ⚠️ **eksik** — üç grafiğin de sözel özeti yok. Sayaç ve hedefler `Semantics` taşıyor ama grafikler taşımıyor. v1.2'ye yazılmalı. |
 | PDF'in gerçek cihazda açılması | ⚠️ doğrulanamadı — paylaşım platform kanalı, testte Noop |
 | PDF görsel denetimi | ⚠️ baytlar ve `%PDF-` imzası doğrulandı; sayfanın **görünümü** gözle kontrol edilmedi |
+
+
+---
+---
+
+# FAZ 4 — marka ve gelir (UX incelemesi)
+
+**Görüntüler:** `91_run_landscape.png` · `92_run_landscape_dark.png` ·
+`93_settings_banner_position.png` · `94_stats_empty_balto.png`
+
+## FAZ 4 — bulgu özeti
+
+| # | Sayfa | Bulgu | Durum |
+| --- | --- | --- | --- |
+| 4.1 | Ayarlar | **Banner konumu ayarı hiçbir yerde OKUNMUYORDU** | ✅ düzeltildi |
+| 4.2 | Reklam yuvası | Reklam gelmeyince boş gri kutu kalıyordu | ✅ düzeltildi |
+| 4.3 | QA altyapısı | `pumpQaSettings`'te `RepaintBoundary` yoktu | ✅ düzeltildi |
+| 4.4 | Yatay mod | Yatayda banner hiç gösterilmiyordu | ✅ düzeltildi |
+| 4.5 | Rozet | Destek rozeti ölçümle de açılabilirdi | ✅ engellendi |
+| 4.6 | Yatay mod | Sayaç tam ortada değil (2:1 bölme) | ⚠️ kabul edildi |
+
+**6 bulgu · 5'i düzeltildi · 1'i gerekçeyle bırakıldı.**
+
+---
+
+## 1. ✗ BULUNDU 4.1 — ÖLÜ AYAR (bu projenin klasik hatası)
+
+Banner konumu ayarını ekledim: kolon, migration, `SettingsController`
+metodu, Ayarlar ekranında üç segmentli seçici. Kullanıcı seçebiliyordu.
+
+**Ama hiçbir yerde okunmuyordu.** Seçim veritabanına yazılıyor, ekranda
+hiçbir şey değişmiyordu.
+
+Bu, bu projede **defalarca** tekrarlanan hata sınıfı:
+`keepScreenOn` (FAZ 8'de bulundu), `daily_stats`, `streak`,
+`goals.currentValue`, `achievements` — hepsi "şemada var, yazan/okuyan
+kod yok" idi.
+
+Yatay mod ekran görüntüsünü incelerken fark ettim: **banner hiç yoktu**,
+ve "yanda" seçeneğinin ne yaptığını soramadım çünkü hiçbir şey yapmıyordu.
+
+**DÜZELTME:** `bannerPositionProvider` eklendi ve çalışma ekranında
+uygulandı — dikeyde üst/alt, yatayda sol sütun.
+
+**Üç test ayarın GERÇEKTEN etki ettiğini iddia ediyor** — koordinat
+karşılaştırmasıyla, metinle değil:
+
+```dart
+expect(bannerX, lessThan(counterX));   // yanda: banner sayacın solunda
+expect(bannerY, lessThan(counterY));   // üst:   banner sayacın üstünde
+expect(bannerY, greaterThan(counterY));// alt:   banner sayacın altında
+```
+
+---
+
+## 2. ✗ BULUNDU 4.2 — boş gri kutu
+
+Reklam yüklenemediğinde (en yaygın sebebi **internet yok**) yuva boş bir
+gri dikdörtgen olarak kalıyordu. Kullanıcı "burada bir şey bozuldu"
+diye düşünür.
+
+**DÜZELTME:** Balto konuşuyor —
+*"İnternet yok, reklam yok — Balto da tatilde 🌴"*
+
+**Bağlantı paketi EKLEMEDİM.** `connectivity_plus` yeni bir bağımlılık ve
+izin getirirdi; oysa `AdGateway.loadBanner` zaten `null` dönüyor. Sonuç
+kullanıcı açısından aynı: reklam yok.
+
+**Yükseklik değişmiyor** — ayrı bir test bunu iddia ediyor. Değişseydi
+çalışma ekranında sayaç aşağı yukarı zıplardı.
+
+---
+
+## 3. Yatay odak modu — `91` / `92`
+
+| Kontrol | Sonuç |
+| --- | --- |
+| Sayaç okunabilirliği | ✅ 72 pt sayaç yatayda da tam görünüyor |
+| Dokunma alanı | ✅ sağ sütundaki butonlar tam genişlik |
+| Kontrast (koyu) | ✅ `92_run_landscape_dark.png` |
+| Geri tuşu | ✅ yatayda da AppBar'da |
+| Kademe çipleri | ✅ sayacın üstünde |
+
+### ✗ BULUNDU 4.4 — yatayda banner yoktu
+
+İlk uygulamada yatay düzene banner hiç koymamıştım; brief ise
+*"sol %25 native + orta sayaç + sağ butonlar"* diyordu. Yatay moda geçen
+kullanıcı reklamsız kalıyordu — gelir tarafında sessiz bir kayıp.
+
+**DÜZELTME:** "Yatayda yan" seçiliyken sol sütunda banner.
+
+> **Not:** brief "native" diyor, ben **banner** koydum. Native kart
+> yatayda 120 px sütuna sığmaz ve `AdPolicyEngine` native'i yalnızca
+> **mola** ekranına izin veriyor (çalışma ekranında yalnızca ince banner —
+> G7). Kuralı bozmamak için banner seçtim.
+
+### ⚠️ 4.6 — sayaç tam ortada değil (kabul edildi)
+
+Yatayda ekran 2:1 bölünüyor; sayaç sol bloğun ortasında, ekranın tam
+ortasında değil. Ortalamak için kontrolleri daraltmak gerekirdi ve
+butonlar sıkışırdı. Odak sayaçta kalıyor, sorun oluşturmuyor.
+
+---
+
+## 4. Marka sesi — `94_stats_empty_balto.png`
+
+| Yer | Metin |
+| --- | --- |
+| Boş istatistik | "Henüz veri yok — ya dahisin ya da daha başlamadın 😏" |
+| Zincir uyarısı | "Zincir buzda kanka 🧊" |
+| Oturum sonrası | "Beyin: 'ter attım' 💪" |
+| Gece Kuşu rozeti | "Uyku efsanesi varmış, duydun mu? 🦉" |
+| Reklam gelmezse | "İnternet yok, reklam yok — Balto da tatilde 🌴" |
+| Ödül gelmezse | "Reklam gelmedi. Niyetin yeter, sağ ol 🤝" |
+
+Son metin bilinçli: reklam yüklenmemesi **kullanıcının suçu değil**;
+eski metin ("Şu an gösterilecek reklam yok") kullanıcıyı boşa kürek
+çekmiş gibi bırakıyordu.
+
+---
+
+## 5. ✗ BULUNDU 4.5 — rozet bedavaya açılabilirdi
+
+"Balto'nun Dostu" rozeti **eylemle** kazanılıyor, ölçümle değil. Rozet
+kataloğuna eklerken bir `test` fonksiyonu vermek zorunludur; yanlış bir
+koşul yazsaydım rozet ölçümle de açılırdı.
+
+`test: _never` ile ölçüm yolu kapatıldı ve bir test bunu **en uç
+ölçümlerle** doğruluyor (1000 saat, 999999 soru, 365 gün seri):
+
+```dart
+expect(earned, isNot(contains('balto_friend')));
+```
+
+Ayrıca rozet **yalnızca ödül gerçekten kazanılınca** açılıyor: reklam
+yüklenmezse veya kullanıcı yarıda bırakırsa `earned == false` gelir ve
+rozet verilmez.
+
+---
+
+## 6. ✗ BULUNDU 4.3 — harness yine üretimden sapmıştı
+
+Ayarlar ekran görüntüsü `StateError` ile düştü: `pumpQaSettings`
+ağacı `RepaintBoundary(key: qaRepaintKey)` ile sarmıyordu, `shoot()` de
+görüntüyü o sınırdan alıyor.
+
+FAZ 2'deki toast katmanı sapmasıyla **aynı sınıf**. Harness düzeltildi.

@@ -9,6 +9,7 @@ import '../../domain/ports/consent_gateway.dart';
 import '../../services/ads/noop_ad_gateway.dart';
 import '../../services/ads/noop_consent_gateway.dart';
 import 'app_providers.dart';
+import '../../domain/entities/enums.dart';
 
 /// Reklam katmanının DI'ı.
 ///
@@ -85,6 +86,27 @@ final adGatewayProvider = Provider<AdGateway>((ref) => const NoopAdGateway());
 /// Ara reklam (interstitial) bu ailede DEĞİL: frekans kapısı için veritabanı
 /// okuması gerekiyor, o yüzden `InterstitialController` üzerinden asenkron
 /// sorulur.
+/// Kullanıcının seçtiği banner konumu (FAZ 4.4).
+final bannerPositionProvider = Provider<BannerPosition>((ref) {
+  return ref.watch(settingsStreamProvider).valueOrNull?.bannerPosition ??
+      BannerPosition.bottom;
+});
+
+/// Banner gerçekten yüklendi mi? (FAZ 4.2)
+///
+/// `null` dönen bir yükleme "reklam yok" demek — en yaygın sebebi
+/// **internet olmaması**, ikincisi doluluk oranı. Ayırt etmek için
+/// bağlantı paketi eklemedim: kullanıcı için sonuç aynı ve ek bir
+/// bağımlılık + izin getirmeye değmez.
+///
+/// Yüklenmezse yuva boş gri kutu olarak kalmıyor; Balto konuşuyor.
+final bannerLoadedProvider =
+    FutureProvider.family<bool, AdPlacement>((ref, placement) async {
+  if (!ref.watch(adAllowedProvider(placement))) return false;
+  final handle = await ref.watch(adGatewayProvider).loadBanner(placement);
+  return handle != null;
+});
+
 final adAllowedProvider = Provider.family<bool, AdPlacement>((ref, placement) {
   final state = ref.watch(runStateProvider);
   return AdPolicyEngine.allows(

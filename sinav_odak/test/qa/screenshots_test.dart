@@ -438,6 +438,48 @@ void main() {
     });
   });
 
+  group('FAZ 4 — marka ve gelir', () {
+    testWidgets('yatay odak modu', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      // Yatay: genişlik > yükseklik.
+      await shootRoute(
+        tester,
+        Routes.run,
+        '91_run_landscape',
+        size: const Size(915, 412),
+      );
+    });
+
+    testWidgets('yatay odak modu koyu', (tester) async {
+      await QaSeed.activeUser(db);
+      await seedRunningSession(db, id: 'shot', sch: schedule());
+      await shootRoute(
+        tester,
+        Routes.run,
+        '92_run_landscape_dark',
+        size: const Size(915, 412),
+        brightness: Brightness.dark,
+      );
+    });
+
+    testWidgets('ayarlar: banner konumu + rozet anahtarı', (tester) async {
+      await QaSeed.activeUser(db);
+      await pumpQaSettings(tester, db, size: const Size(430, 2400));
+      await shoot(tester, '93_settings_banner_position');
+      expect(
+        find.byKey(const Key('settings-banner-position')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('boş istatistik — Balto sesi', (tester) async {
+      await QaSeed.emptyUser(db);
+      await shootRoute(tester, Routes.stats, '94_stats_empty_balto');
+    });
+  });
+
   group('boş durumlar', () {
     testWidgets('istatistik boş', (tester) async {
       await QaSeed.emptyUser(db);

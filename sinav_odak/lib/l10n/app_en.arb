@@ -187,7 +187,7 @@
     }
   },
   "statsEmpty": "Bu aralıkta kayıtlı oturum yok.",
-  "statsEmptyHint": "İlk oturumunu tamamladığında grafikler burada belirir.",
+  "statsEmptyHint": "Henüz veri yok — ya dahisin ya da daha başlamadın 😏",
   "statsExport": "CSV olarak dışa aktar",
   "statsExportSubject": "Sınav Odak — çalışma kayıtları",
   "statsExportDone": "Dosya paylaşıma hazır.",
@@ -338,7 +338,7 @@
   "achEarlyBirdTitle": "Erken Kuş",
   "achEarlyBirdBody": "Sabah 06:00-08:00 arasında oturum başlattın.",
   "achNightOwlTitle": "Gece Kuşu",
-  "achNightOwlBody": "Gece 00:00-04:00 arasında oturum başlattın.",
+  "achNightOwlBody": "Uyku efsanesi varmış, duydun mu? 🦉",
   "achUnknownTitle": "Bilinmeyen rozet",
   "achUnknownBody": "",
   "a11yRemaining": "{minutes} dakika {seconds} saniye kaldı",
@@ -759,5 +759,17 @@
   "statsChartPie": "Ders dağılımı",
   "statsChartHeat": "Gün × saat yoğunluğu",
   "statsChartNoData": "Grafik için yeterli veri yok.",
-  "reportStreak": "Seri (güncel / en uzun)"
+  "reportStreak": "Seri (güncel / en uzun)",
+  "homeStreakBroken": "Zincir buzda kanka 🧊",
+  "doneBrainSweat": "Beyin: \"ter attım\" 💪",
+  "adOffline": "İnternet yok, reklam yok — Balto da tatilde 🌴",
+  "achBaltoFriendTitle": "Balto'nun Dostu 🤝",
+  "achBaltoFriendBody": "30 saniyeni verdin, uygulama ücretsiz kaldı.",
+  "supportNoAdBalto": "Reklam gelmedi. Niyetin yeter, sağ ol 🤝",
+  "settingsBannerPosition": "Reklam konumu",
+  "settingsBannerPositionNote": "Banner'ın ekranda durduğu yer.",
+  "bannerPositionBottom": "Alt",
+  "bannerPositionTop": "Üst",
+  "bannerPositionSideLandscape": "Yatayda yan",
+  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda."
 }

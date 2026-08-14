@@ -36,6 +36,10 @@ class UserSettings extends Table {
   BoolColumn get achievementToastEnabled =>
       boolean().withDefault(const Constant(true))();
 
+  /// Banner konumu (FAZ 4.4). **schemaVersion 3 ile eklendi.**
+  TextColumn get bannerPosition =>
+      textEnum<BannerPosition>().withDefault(const Constant('bottom'))();
+
   TextColumn get themeMode =>
       textEnum<ThemeModeSetting>().withDefault(const Constant('system'))();
 

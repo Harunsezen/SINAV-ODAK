@@ -65,7 +65,8 @@ class AppDatabase extends _$AppDatabase {
   @override
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
-  int get schemaVersion => 2;
+  /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -102,6 +103,10 @@ class AppDatabase extends _$AppDatabase {
               userSettings,
               userSettings.achievementToastEnabled,
             );
+          }
+          if (from < 3) {
+            // FAZ 4.4 — banner konumu tercihi.
+            await m.addColumn(userSettings, userSettings.bannerPosition);
           }
         },
         beforeOpen: (details) async {

@@ -40,6 +40,10 @@ class SettingsController {
   Future<void> setAchievementToastEnabled({required bool value}) =>
       _patch(UserSettingsCompanion(achievementToastEnabled: Value(value)));
 
+  /// Banner konumu (FAZ 4.4).
+  Future<void> setBannerPosition(BannerPosition p) =>
+      _patch(UserSettingsCompanion(bannerPosition: Value(p)));
+
   Future<void> setDailyGoalMinutes(int minutes) =>
       _patch(UserSettingsCompanion(dailyGoalMinutes: Value(minutes)));
 

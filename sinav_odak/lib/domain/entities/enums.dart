@@ -58,3 +58,15 @@ enum WrongItemSource {
 enum ThemeModeSetting { system, light, dark }
 
 enum AdKind { banner, native, interstitial, rewarded }
+
+/// Banner'ın ekranda durduğu yer (FAZ 4.4).
+///
+/// Deneme amaçlı: hangi konumun daha az rahatsız ettiğini beta geri
+/// bildirimiyle öğreneceğiz. Varsayılan **alt** — v1.0 davranışı.
+enum BannerPosition {
+  bottom,
+  top,
+
+  /// Yalnızca YATAY modda sol yarıya alınır; dikeyde alta düşer.
+  sideLandscape,
+}

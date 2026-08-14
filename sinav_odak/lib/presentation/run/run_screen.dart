@@ -10,10 +10,12 @@ import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../domain/entities/ad_placement.dart';
+import '../../domain/entities/enums.dart';
 import '../../domain/entities/session_state.dart';
 import '../ads/banner_ad_slot.dart';
 import 'minimize_session.dart';
 import 'pending_finish_controller.dart';
+import '../../core/di/ad_providers.dart';
 
 /// "Bitir" diyaloğunun üç yolu (FAZ 1.3).
 ///
@@ -110,11 +112,22 @@ class _RunScreenState extends ConsumerState<RunScreen> {
           ),
         ),
         body: SafeArea(
-          child: switch (state) {
-            SessionInBlock() => _RunningBody(state: state),
-            SessionClockMovedBack() => const _ClockMovedBackBody(),
-            _ => const Center(child: CircularProgressIndicator()),
-          },
+          // FAZ 4.5 — yatay odak modu.
+          //
+          // Dikeyde sayaç ortada, kontroller altta. Yatayda ekran alçalıp
+          // genişliyor: aynı düzen sayacı kontrollerin üstüne sıkıştırıp
+          // okunmaz hâle getiriyordu. Yatayda sayaç ortada kalıyor,
+          // kontroller SAĞA geçiyor.
+          child: OrientationBuilder(
+            builder: (context, orientation) => switch (state) {
+              SessionInBlock() => _RunningBody(
+                  state: state,
+                  landscape: orientation == Orientation.landscape,
+                ),
+              SessionClockMovedBack() => const _ClockMovedBackBody(),
+              _ => const Center(child: CircularProgressIndicator()),
+            },
+          ),
         ),
       ),
     );
@@ -122,9 +135,12 @@ class _RunScreenState extends ConsumerState<RunScreen> {
 }
 
 class _RunningBody extends ConsumerWidget {
-  const _RunningBody({required this.state});
+  const _RunningBody({required this.state, this.landscape = false});
 
   final SessionInBlock state;
+
+  /// Yatay mod: sayaç ortada, kontroller sağda (FAZ 4.5).
+  final bool landscape;
 
   /// Erken bitirme onayı. Ürün kuralı: tek tıkla oturum kapanmaz.
   ///
@@ -257,8 +273,90 @@ class _RunningBody extends ConsumerWidget {
     final ordinal = schedule.studyOrdinalOf(state.blockIndex);
     final isLastBlock = state.blockIndex == schedule.blockCount - 1;
 
+    // --- YATAY: sayaç ortada, kontroller sağ sütunda ---
+    if (landscape) {
+      final bannerPos = ref.watch(bannerPositionProvider);
+
+      return Row(
+        key: const Key('run-landscape'),
+        children: [
+          // FAZ 4.4 — "Yatayda yan" seçiliyse banner SOL sütunda.
+          // Ayarın gerçekten bir etkisi olması şart: hiçbir yerde
+          // okunmayan bir ayar, bu projede defalarca sessiz hataya yol
+          // açtı (keepScreenOn, daily_stats, achievements...).
+          if (bannerPos == BannerPosition.sideLandscape)
+            const SizedBox(
+              width: 120,
+              child: Center(
+                child: BannerAdSlot(placement: AdPlacement.runBanner),
+              ),
+            ),
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _BlockChips(
+                  total: schedule.studyBlockCount,
+                  current: ordinal,
+                  label: l.runBlockOf(ordinal, schedule.studyBlockCount),
+                ),
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  label: l.a11yRemaining(
+                    state.remainingSeconds ~/ 60,
+                    state.remainingSeconds % 60,
+                  ),
+                  excludeSemantics: true,
+                  child: Text(
+                    formatClock(state.remainingSeconds),
+                    style: AppTheme.counterStyle,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(l.runRemaining),
+              ],
+            ),
+          ),
+          // Kontroller sağ sütunda, dikey yığın.
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    isLastBlock ? l.runLastBlock : l.runNextBreak,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmAndStartSummary(context, ref),
+                    icon: const Icon(Icons.stop),
+                    label: Text(l.runFinish),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: null,
+                    child: Text(l.runSkipBreak),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // --- DİKEY: v1.0 düzeni ---
     return Column(
       children: [
+        if (ref.watch(bannerPositionProvider) == BannerPosition.top) ...[
+          const BannerAdSlot(placement: AdPlacement.runBanner),
+          const SizedBox(height: 8),
+        ],
         const SizedBox(height: 16),
         // FAZ 2.4 — kademe çipleri.
         //
@@ -297,8 +395,11 @@ class _RunningBody extends ConsumerWidget {
         // Bu ekranda YALNIZCA ince banner olabilir. Tam ekran reklam burada
         // ASLA gösterilmez; kontrol AdPolicyEngine ve AdGateway içinde
         // `isInStudyBlock` ile zorlanıyor, çağıran katmanda değil.
-        const BannerAdSlot(placement: AdPlacement.runBanner),
-        const SizedBox(height: 16),
+        // Konum "üst" ise banner yukarıda çizildi; burada tekrar yok.
+        if (ref.watch(bannerPositionProvider) != BannerPosition.top) ...[
+          const BannerAdSlot(placement: AdPlacement.runBanner),
+          const SizedBox(height: 16),
+        ],
 
         _ControlBar(onFinish: () => _confirmAndStartSummary(context, ref)),
       ],

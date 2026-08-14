@@ -178,4 +178,6 @@ bool _hasText(String code) => const {
       'downshift',
       'master_waits',
       'questions_15000',
+      // FAZ 4.3 — eylemle kazanılan rozet.
+      'balto_friend',
     }.contains(code);

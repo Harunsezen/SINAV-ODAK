@@ -171,7 +171,8 @@ void main() {
     await tapSupport(tester);
 
     expect(
-      find.textContaining('Şu an gösterilecek reklam yok'),
+      // FAZ 4.3: ton Balto'ya çevrildi — suçlu kullanıcı değil.
+      find.textContaining('Niyetin yeter'),
       findsOneWidget,
     );
   });

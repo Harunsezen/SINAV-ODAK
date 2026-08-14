@@ -167,6 +167,14 @@ abstract final class AchievementCalculator {
       iconKey: 'hardware',
       test: _masterWaits,
     ),
+    // Kullanıcının EYLEMİYLE açılan tek rozet: ölçümle değil, "Destek Ol"
+    // ile kazanılıyor. Bu yüzden `test` daima false — hesap yolu onu asla
+    // açmaz, yalnızca `RewardedController` doğrudan `unlock` eder.
+    AchievementDef(
+      code: 'balto_friend',
+      iconKey: 'volunteer_activism',
+      test: _never,
+    ),
     AchievementDef(
       code: 'questions_15000',
       // 'emoji_events' DEĞİL: o, eşleşmeyen anahtarların düştüğü
@@ -241,6 +249,9 @@ abstract final class AchievementCalculator {
     final d = m.daysSinceLastSession;
     return d != null && d >= 5;
   }
+
+  /// Ölçümle asla açılmaz — bkz. `balto_friend`.
+  static bool _never(AchievementMetrics m) => false;
 
   /// 🏆 15.000 Soru.
   static bool _questions15000(AchievementMetrics m) =>

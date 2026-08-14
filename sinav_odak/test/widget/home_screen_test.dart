@@ -204,7 +204,10 @@ void main() {
     await pumpHome(tester);
 
     expect(find.byKey(const Key('banner-slot-homeBanner')), findsOneWidget);
-    expect(find.text('Sponsorlu'), findsOneWidget);
+    // FAZ 4.2: etiket reklamın yüklenip yüklenmediğine bağlı (Noop kapı
+    // hiç reklam döndürmüyor). Korunan değişmez yuvanın ayrılması;
+    // etiketin iki hâli `faz4_test.dart`'ta iddia ediliyor.
+    expect(find.byKey(const Key('banner-label-homeBanner')), findsOneWidget);
   });
 
   testWidgets(

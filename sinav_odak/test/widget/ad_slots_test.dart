@@ -99,7 +99,12 @@ void main() {
     );
   });
 
-  testWidgets('banner: rıza varsa kutu ve "Sponsorlu" etiketi çıkıyor',
+  // FAZ 4.2: etiket artık reklamın YÜKLENİP yüklenmediğine bağlı.
+  // Testteki `NoopAdGateway` hiç reklam döndürmediği için offline metni
+  // çıkıyor. Korunan değişmez: **rıza varsa yuva ayrılır**, yoksa hiç yer
+  // ayrılmaz. Etiket metninin iki hâli `faz4_test.dart`'ta iddia ediliyor.
+  testWidgets(
+      'banner: rıza varsa yuva ayrılıyor (etiket yükleme durumuna bağlı)',
       (tester) async {
     await setAds(consent: true);
     await pumpSlot(
@@ -108,7 +113,7 @@ void main() {
     );
 
     expect(find.byKey(const Key('banner-slot-homeBanner')), findsOneWidget);
-    expect(find.text('Sponsorlu'), findsOneWidget);
+    expect(find.byKey(const Key('banner-label-homeBanner')), findsOneWidget);
     expect(
       tester.getSize(find.byType(BannerAdSlot)).height,
       BannerAdSlot.height,
@@ -178,7 +183,7 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 2));
     expect(find.byKey(const Key('native-slot-breakNative')), findsOneWidget);
-    expect(find.text('Sponsorlu'), findsOneWidget);
+    expect(find.textContaining('Sponsorlu'), findsWidgets);
   });
 
   testWidgets('native: butonlardan en az 48dp uzakta', (tester) async {

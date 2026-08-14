@@ -28,6 +28,11 @@ class BannerAdSlot extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    // Reklam yüklenemediyse (çoğunlukla internet yok) yuva boş gri kutu
+    // olarak kalmıyor — Balto konuşuyor. Kullanıcı "burada bir şey
+    // bozuldu" diye düşünmesin (FAZ 4.2).
+    final loaded = ref.watch(bannerLoadedProvider(placement)).valueOrNull;
+
     return Container(
       key: Key('banner-slot-${placement.name}'),
       height: height,
@@ -35,7 +40,12 @@ class BannerAdSlot extends ConsumerWidget {
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Text(
         // Her reklam alanının üstünde etiket ZORUNLU.
-        L10n.of(context).adSponsored,
+        loaded == false
+            ? L10n.of(context).adOffline
+            : L10n.of(context).adSponsored,
+        key: Key('banner-label-${placement.name}'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontSize: 11),
       ),
     );
