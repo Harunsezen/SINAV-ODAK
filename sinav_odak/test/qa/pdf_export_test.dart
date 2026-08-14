@@ -412,6 +412,54 @@ void main() {
     }
   });
 
+  test('FARK TESTİ: aynı metin iki şablondan da AYNI çıkıyor', () async {
+    // **Hipotez:** veli şablonunda metni ASCII'ye indiren bir
+    // sanitize/transliterate adımı var, eğitimcide yok.
+    //
+    // Bu test o hipotezi DOĞRUDAN sınıyor. Gizlilik kaşesi her iki
+    // şablonda da basılıyor; içine yedi Türkçe harfi taşıyan ayırt edici
+    // bir prova dizesi konup iki rapor da üretiliyor ve çözülen metinler
+    // karşılaştırılıyor.
+    //
+    // Veliye özel bir metin işleme olsaydı aynı girdi iki belgede FARKLI
+    // çıkardı ve bu test düşerdi. Kod taraması "yok" diyor; bu test onu
+    // kalıcı olarak kilitliyor — ileride biri eklerse yakalanır.
+    await seedRealistic();
+
+    const probe = 'PROVA İşte ş ğ ı İ ç ö ü Çalışma gönderilmedi Satılmadı';
+    final decoded = <ReportAudience, String>{};
+
+    for (final audience in ReportAudience.values) {
+      final data = await build(audience);
+      final bytes = await const PdfReportBuilder().build(
+        data,
+        _withPrivacyStamp(strings, probe),
+        regular: regular,
+        bold: bold,
+      );
+      decoded[audience] = _decodePdfText(bytes).text;
+    }
+
+    for (final e in decoded.entries) {
+      expect(
+        e.value,
+        contains(probe),
+        reason: '${e.key.name}: prova dizesi bozulmuş — '
+            'metin işleme adımı var',
+      );
+    }
+
+    // Harf harf aynı mı: birinde ş, diğerinde s olsaydı yukarıdaki
+    // `contains` zaten düşerdi; bu iddia farkı OKUNUR kılıyor.
+    final inParent = _slice(decoded[ReportAudience.parent]!, probe);
+    final inTeacher = _slice(decoded[ReportAudience.teacher]!, probe);
+    expect(
+      inParent,
+      inTeacher,
+      reason: 'aynı girdi iki şablonda farklı basılıyor',
+    );
+  });
+
   test('BOŞ veri: bölüm başlıkları hiç ÇİZİLMİYOR', () async {
     // Kırmızı çizgi: "boş veri bölümü çizilmez". Kullanıcı ilk gün rapor
     // almayı deneyebilir; boş başlıklarla dolu bir belge hem çirkin hem
@@ -791,4 +839,41 @@ String _utf16be(String hexDigits) {
     units.add(int.parse(hexDigits.substring(i, i + 4), radix: 16));
   }
   return String.fromCharCodes(units);
+}
+
+/// [ReportStrings]'i yalnızca gizlilik kaşesi değiştirilmiş hâlde kopyalar.
+/// Kaşe HER İKİ şablonda da basıldığı için fark testinin taşıyıcısı.
+ReportStrings _withPrivacyStamp(ReportStrings s, String stamp) => ReportStrings(
+      appName: s.appName,
+      parentTitle: s.parentTitle,
+      teacherTitle: s.teacherTitle,
+      rangeLabel: s.rangeLabel,
+      totalStudy: s.totalStudy,
+      sessions: s.sessions,
+      questions: s.questions,
+      net: s.net,
+      focus: s.focus,
+      successRate: s.successRate,
+      streak: s.streak,
+      bestDay: s.bestDay,
+      dailyAverage: s.dailyAverage,
+      subjectBreakdown: s.subjectBreakdown,
+      subjectColumn: s.subjectColumn,
+      weakTopics: s.weakTopics,
+      topicColumn: s.topicColumn,
+      wrongCount: s.wrongCount,
+      dailyDetail: s.dailyDetail,
+      day: s.day,
+      duration: s.duration,
+      privacyStamp: stamp,
+      achievements: s.achievements,
+      page: s.page,
+      parentNote: s.parentNote,
+      coachNote: s.coachNote,
+    );
+
+/// [haystack] içinde [needle] uzunluğundaki eşleşmeyi döndürür; yoksa boş.
+String _slice(String haystack, String needle) {
+  final i = haystack.indexOf(needle);
+  return i < 0 ? '' : haystack.substring(i, i + needle.length);
 }

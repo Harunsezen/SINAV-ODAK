@@ -378,3 +378,115 @@ $ flutter test    → +868: All tests passed!
 $ flutter analyze → No issues found!
 $ dart format .   → 209 files (0 changed)
 ```
+
+---
+
+# EK 3 — SANITIZE HİPOTEZİ: ARANDI, YOK
+
+Teşhis: *"veli şablonunda metni ASCII'ye çeviren bir sanitize/
+transliterate adımı var (emoji koruması diye eklenmiş)."*
+
+Hipotez **yanlışlanabilir**, o yüzden sınandı.
+
+## 1. Kod taraması
+
+```
+$ grep -rniE "sanitiz|translit|asciif|toAscii|deaccent|diacrit|unaccent|
+              normaliz|stripEmoji|emojiSafe|removeEmoji|latinize|slugify" lib/
+  → yalnızca "denormalize" (veritabanı terimi, 7 yer) — alakasız
+
+$ grep -rnE "replaceAll\(.*['\"](ş|ğ|ı|İ|ç|ö|ü|Ş|Ğ|Ç|Ö|Ü)" lib/
+  → eşleşme YOK
+
+$ grep -rnE "x00-\\x7[fF]|runes\.where|0x7F" lib/
+  → yalnızca notification_planner'daki iki hash sabiti — alakasız
+```
+
+## 2. Rapor katmanındaki **tüm** string dönüşümleri
+
+Dört tane var, hepsi bu:
+
+| Yer | İşlem | Etkilediği |
+| --- | --- | --- |
+| `report_theme.dart:123` | `replaceAll('.', ',')` | yalnızca rakam — TR ondalık (madde 4) |
+| `report_theme.dart:139` | `split('-')` | tarih `2025-08-01` — ASCII |
+| `report_theme.dart:146` | `split('-')` | aynı |
+| `pdf_report_builder.dart:600` | `toLowerCase()` | **eğitimci**: "Yanlış"→"yanlış" |
+
+Harf dönüştüren tek çağrı **eğitimci** şablonunda. Asimetri, varsa,
+hipotezin tam tersi yönde.
+
+## 3. Fark testi — hipotezi doğrudan sınıyor
+
+`FARK TESTİ: aynı metin iki şablondan da AYNI çıkıyor`
+
+Gizlilik kaşesi her iki şablonda da basılıyor. İçine yedi Türkçe harf
+taşıyan ayırt edici bir prova dizesi konup iki rapor da üretiliyor,
+çözülen metinler karşılaştırılıyor. Veliye özel bir metin işleme olsaydı
+aynı girdi iki belgede farklı çıkardı.
+
+**Gerçek kodda geçiyor.**
+
+### Negatif kontrol — bekçinin ısırdığının kanıtı
+
+Veli şablonuna **bilerek** bir ASCII-fold adımı enjekte edildi
+(`ş→s, ğ→g, ı→i, İ→I, ç→c, ö→o, ü→u`), yalnızca veli tarafında:
+
+```
+Expected: contains 'PROVA İşte ş ğ ı İ ç ö ü Çalışma gönderilmedi Satılmadı'
+  Actual: '... PROVA Iste s g i I c o u Calisma gonderilmedi Satilmadi'
+        → parent: prova dizesi bozulmuş — metin işleme adımı var
+```
+
+Bu, bildirilen belirtinin **birebir aynısı**: `Çalışma→Calisma`,
+`gönderilmedi→gonderilmedi`, `Satılmadı→Satilmadi`.
+
+Byte bekçisi de aynı enjeksiyonu yakaladı:
+
+```
+Expected: contains 'Satılmadı'
+  Actual: '... Veriler yalnizca cihazda islendi. Satilmadi, paylasilmadi.'
+        → veli PDF'inde "Satılmadı" çözülemedi — Türkçe düşüyor
+```
+
+Enjeksiyon geri alındı; ikisi de yeşile döndü.
+
+**Sonuç:** böyle bir adım olsaydı iki bekçi de yakalardı. Gerçek kodda
+ikisi de geçiyor ⇒ o adım kodda **yok**.
+
+## 4. Ekteki dosyanın probe çıktısı
+
+```
+sha256       : 5718876e8dc982cefc9a5758021c8f9af4026a7e5f7f39d68e01b0b55664d2c7
+gömülü font  : ['Roboto-Bold', 'Roboto-Regular']
+eşlenemeyen  : 0
+Çalışma      : BULUNDU
+gönderilmedi : BULUNDU
+Satılmadı    : BULUNDU
+
+çözülen metin:
+Çalışma Karnesi  Dönem: 01.08.2025 — 07.08.2025  Sınav Odak
+7 sa 25 dk  Toplam çalışma  315  Soru  221,5  Net  %80  Başarı oranı
+6  Seri (güncel / en uzun)  7  Oturum  Ders dağılımı
+Matematik 4 sa 55 dk 195 133,3  Türkçe 1 sa 50 dk 90 65,3
+Coğrafya 40 dk 30 23,0  Süre Soru Net  1 Rozet  Günlük döküm  01.08 07.08
+Bu karne cihazında üretildi; hiçbir yere gönderilmedi. — Balto
+Veriler yalnızca cihazda işlendi. Satılmadı, paylaşılmadı. — Balto, Sınav Odak
+```
+
+## 5. Bu turda eklenen bekçiler (toplam)
+
+| Test | Ne iddia ediyor |
+| --- | --- |
+| `FONT BEKÇİSİ: veli PDF byte'larında Türkçe metin ÇÖZÜLÜYOR` | üç dize + eşlenemeyen glif 0 + yalnızca Roboto + yerleşik font yok |
+| `FONT BEKÇİSİ: veli şablonu YEDİ Türkçe harfi de basabiliyor` | ş ğ ı İ ç ö ü |
+| `ÜRETİM YOLU: rootBundle fontlarıyla iki rapor da AYNI font kaynağı` | enjekte edilmiş değil, gerçek kod yolu |
+| `FARK TESTİ: aynı metin iki şablondan da AYNI çıkıyor` | veliye özel metin işleme yok |
+
+Dördü de negatif kontrolle sınandı.
+
+```
+$ flutter test    → +870: All tests passed!
+$ flutter analyze → No issues found!
+$ dart format .   → 209 files (0 changed)
+```
