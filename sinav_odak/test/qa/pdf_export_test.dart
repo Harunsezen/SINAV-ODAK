@@ -274,6 +274,118 @@ void main() {
     );
   });
 
+  test('FONT BEKÇİSİ: veli PDF byte\'ında ş/ğ/ı/İ + yerleşik font YOK',
+      () async {
+    // **Regresyon bekçisi.** İki şablon tek `ReportFonts` kaynağından
+    // besleniyor; bu test üçüncü bir font girişinin geri sızmasını
+    // yakalıyor.
+    //
+    // Neden yerleşik font tehlikeli: `ThemeData.withFont` yalnızca
+    // base+bold verilince italik girişlerini boş bırakıyor ve
+    // `TextStyle.defaultStyle()` Helvetica'yı koyuyor
+    // (pdf-3.11.3/.../text_style.dart:165). Helvetica WinAnsi ve
+    // ş/ğ/ı/İ TAŞIMIYOR — o harfler hata vermeden düşerdi.
+    //
+    // Ölçüm yolu: metin Identity-H ile glif indeksine dönüştüğü için
+    // harfler byte'ta doğrudan aranamıyor. Bunun yerine gömülü fontun
+    // **ToUnicode CMap**'i çözülüyor: bir glif ancak GERÇEKTEN
+    // çizildiyse CMap'e giriyor, dolayısıyla CMap "bu harf bu belgede
+    // Roboto ile basıldı" demenin doğrudan kanıtı.
+    await seedRealistic();
+    final data = await build(ReportAudience.parent);
+
+    // Veli raporu normalde İ içermiyor (İntegral eğitimciye ait).
+    // Şablonun İ'yi BASABİLDİĞİNİ kanıtlamak için yedi harfi de
+    // Balto notundan geçiriyoruz — tasarım ve üretim metni değişmiyor,
+    // yalnızca bu ölçümde farklı bir dize veriliyor.
+    const probe = ReportStrings(
+      appName: 'Sınav Odak',
+      parentTitle: 'Çalışma Karnesi',
+      teacherTitle: 'Çalışma Analiz Raporu',
+      rangeLabel: 'Dönem',
+      totalStudy: 'Toplam çalışma',
+      sessions: 'Oturum',
+      questions: 'Soru',
+      net: 'Net',
+      focus: 'Ortalama odak',
+      successRate: 'Başarı oranı',
+      streak: 'Seri',
+      bestDay: 'En iyi gün',
+      dailyAverage: 'Günlük ortalama',
+      subjectBreakdown: 'Ders dağılımı',
+      subjectColumn: 'Ders',
+      weakTopics: 'Gelişim gereken konular',
+      topicColumn: 'Konu',
+      wrongCount: 'Yanlış',
+      dailyDetail: 'Günlük döküm',
+      day: 'Gün',
+      duration: 'Süre',
+      privacyStamp: 'Veriler yalnızca cihazda işlendi. Satılmadı, '
+          'paylaşılmadı. — Balto, Sınav Odak',
+      achievements: 'Rozet',
+      page: 'Sayfa',
+      parentNote: 'İşte şu ğ ı İ ç ö ü prova satırı — Balto',
+      coachNote: 'Koç notu',
+    );
+
+    final bytes = await const PdfReportBuilder().build(
+      data,
+      probe,
+      regular: regular,
+      bold: bold,
+    );
+
+    // 1) Yerleşik font HİÇBİR yoldan girmemiş olmalı.
+    final raw = String.fromCharCodes(bytes.map((b) => b & 0xff));
+    for (final builtin in ['Helvetica', 'Times-', 'Courier']) {
+      expect(
+        raw,
+        isNot(contains(builtin)),
+        reason: 'veli PDF\'ine yerleşik font $builtin sızmış — '
+            'Türkçe harfler sessizce düşer',
+      );
+    }
+
+    // 2) Gömülü font YALNIZCA Roboto olmalı.
+    final baseFonts = RegExp(r'/BaseFont\s*/([A-Za-z0-9\-+,]+)')
+        .allMatches(raw)
+        .map((m) => m.group(1)!)
+        .toSet();
+    expect(baseFonts, isNotEmpty, reason: 'hiç font gömülmemiş');
+    for (final f in baseFonts) {
+      expect(f, contains('Roboto'), reason: 'beklenmedik font: $f');
+    }
+
+    // 3) Yedi Türkçe harfin hepsi ToUnicode CMap'inde.
+    final cmaps = _inflatedStreams(bytes)
+        .where((s) => s.contains('beginbfchar') || s.contains('beginbfrange'))
+        .join('\n')
+        .toUpperCase();
+    expect(cmaps, isNotEmpty, reason: 'ToUnicode CMap bulunamadı');
+
+    const turkish = {
+      'ş': 0x015F,
+      'ğ': 0x011F,
+      'ı': 0x0131,
+      'İ': 0x0130,
+      'ç': 0x00E7,
+      'ö': 0x00F6,
+      'ü': 0x00FC,
+    };
+    final missing = [
+      for (final e in turkish.entries)
+        if (!cmaps
+            .contains(e.value.toRadixString(16).padLeft(4, '0').toUpperCase()))
+          e.key,
+    ];
+    expect(
+      missing,
+      isEmpty,
+      reason: 'veli PDF\'inde şu harfler Roboto ile basılmamış: '
+          '${missing.join(" ")}',
+    );
+  });
+
   test('BOŞ veri: bölüm başlıkları hiç ÇİZİLMİYOR', () async {
     // Kırmızı çizgi: "boş veri bölümü çizilmez". Kullanıcı ilk gün rapor
     // almayı deneyebilir; boş başlıklarla dolu bir belge hem çirkin hem

@@ -186,3 +186,81 @@ test/qa/pdf_export_test.dart                  boş-veri testi + 250 günlük spi
 test/unit/pdf_report_test.dart                ReportStrings güncellendi
 qa_pdf/*.pdf                                  yeniden üretildi
 ```
+
+---
+
+# EK — FONT KAYNAĞI SERTLEŞTİRME (mikro hotfix)
+
+## Bildirilen belirti üretilemedi
+
+Veli PDF'inde Türkçe karakter düşmesi bildirildi
+(`Çalışma→Calisma`, `hiçbir→hibir`, `üretildi→retildi`). Teslim edilen
+dosyada bu **ölçülemedi** — dört ayrı yoldan bakıldı:
+
+| Kontrol | Veli | Eğitimci |
+| --- | --- | --- |
+| Sayfa görüntüsü (`pdftoppm`) | Türkçe doğru | Türkçe doğru |
+| Metin katmanı (`pdftotext`) | `Çalışma Karnesi` · `Başarı oranı` | doğru |
+| Gömülü font (`pdffonts`) | Roboto-Regular + Bold, Identity-H, `uni yes` | aynı |
+| ToUnicode CMap | ş ğ ı ç ö ü | ş ğ ı **İ** ç ö ü |
+
+İki belge **font açısından birebir aynı**. Veli CMap'inde İ yok çünkü
+veli raporu hiç İ **basmıyor** (İntegral zayıf konular listesinde, o da
+eğitimciye ait) — eksik font değil, eksik harf.
+
+**Bakılabilecek yerler:** (a) elde eski bir kopya olması — bu pasta
+dosya üç kez yeniden üretildi; (b) PDF okuyucunun kendi yazı tipi
+değiştirme/erişilebilirlik ayarı; (c) metnin okuyucudan kopyalanıp
+başka bir yere yapıştırılmış olması. Sizde hâlâ görünüyorsa hangi
+okuyucu olduğunu yazın, o okuyucuya göre bakayım.
+
+## Ama işaret edilen delik GERÇEKTİ
+
+`ThemeData.withFont` yalnızca `base` + `bold` ile çağrılıyordu. Italik
+girişleri boş kalınca `TextStyle.defaultStyle()` devreye giriyor:
+
+```dart
+// pdf-3.11.3/lib/src/widgets/text_style.dart:165
+fontNormal: Font.helvetica(),
+fontItalic: Font.helveticaOblique(),
+```
+
+Helvetica WinAnsi ve **ş/ğ/ı/İ taşımıyor**. Bugün italik kullanılmadığı
+için patlamıyordu; **tek bir `fontStyle: italic` eklemek** tam olarak
+bildirilen belirtiyi üretirdi — üstelik *hata vermeden*.
+
+## Yapılan
+
+1. **Tek font kaynağı:** `ReportFonts` (`report_theme.dart`). İki şablon
+   da bundan besleniyor; `pdf_report_builder.dart` içinde başka hiçbir
+   yerde font kurulmuyor.
+2. **Dört girişin dördü de Roboto:** `base` · `bold` · `italic` ·
+   `boldItalic`. Yerleşik font hiçbir yoldan giremiyor.
+3. **Tasarım ve Balto cümlesi aynen korundu.**
+
+## Bekçi testi — ve yalancı olmadığının kanıtı
+
+`FONT BEKÇİSİ: veli PDF byte'ında ş/ğ/ı/İ + yerleşik font YOK` üç şeyi
+iddia ediyor: yerleşik font geçmiyor · gömülü font yalnızca Roboto ·
+yedi Türkçe harf ToUnicode CMap'inde.
+
+Yedi harfin hepsini bastırmak için ölçümde Balto notu yerine prova
+dizesi veriliyor (üretim metni değişmiyor) — böylece "şablon İ'yi
+basabiliyor mu" sorusu da yanıtlanıyor.
+
+**Negatif kontrol** (bekçinin gerçekten ısırdığı ölçüldü):
+
+| `ReportFonts.theme` | italik metin | Bekçi |
+| --- | --- | --- |
+| italik boş (düzeltme öncesi) | var | ❌ *"yerleşik font Helvetica sızmış"* |
+| italik = Roboto (düzeltme) | var | ✅ geçiyor |
+| italik = Roboto (düzeltme) | yok (üretim hâli) | ✅ geçiyor |
+
+Ortadaki satır önemli: düzeltme, italik **kullanılsa bile** belgeyi
+güvende tutuyor.
+
+```
+$ flutter test    → +867: All tests passed!
+$ flutter analyze → No issues found!
+$ dart format .   → 209 files (0 changed)
+```

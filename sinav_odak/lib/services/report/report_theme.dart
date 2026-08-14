@@ -65,6 +65,52 @@ class ReportPalette {
   static PdfColor accentSoft(int i) => cycleSoft[i % cycleSoft.length];
 }
 
+/// Raporun **TEK** font kaynağı.
+///
+/// ## Neden tek giriş noktası
+///
+/// Veli ve eğitimci şablonları ayrı ayrı font aldığında ikisinin
+/// yapılandırması sessizce ayrışabiliyor. Her iki şablon da artık
+/// buradan besleniyor; `pdf_report_builder.dart` içinde başka hiçbir
+/// yerde font kurulmuyor.
+///
+/// ## Neden italik de Roboto
+///
+/// `ThemeData.withFont` yalnızca `base` ve `bold` verilince italik
+/// girişlerini boş bırakıyor ve `TextStyle.defaultStyle()` devreye
+/// giriyor:
+///
+/// ```dart
+/// // pdf-3.11.3/lib/src/widgets/text_style.dart:165
+/// fontNormal: Font.helvetica(),
+/// fontItalic: Font.helveticaOblique(),
+/// ```
+///
+/// Helvetica WinAnsi kodlaması kullanıyor ve **ş/ğ/ı/İ harflerini
+/// taşımıyor**; italik bir metin eklendiği anda o harfler *hata
+/// vermeden* düşerdi. Bugün italik kullanılmıyor — ama bu, tek satırlık
+/// bir değişiklikle patlayacak bir mayın. Dört girişin dördü de Roboto'ya
+/// sabitlendi: yerleşik font bu belgelere **hiçbir yoldan** giremiyor.
+class ReportFonts {
+  const ReportFonts({required this.regular, required this.bold});
+
+  final pw.Font regular;
+  final pw.Font bold;
+
+  pw.ThemeData get theme => pw.ThemeData.withFont(
+        base: regular,
+        bold: bold,
+        italic: regular,
+        boldItalic: bold,
+      ).copyWith(
+        defaultTextStyle: pw.TextStyle(
+          font: regular,
+          fontSize: 10,
+          color: ReportPalette.ink,
+        ),
+      );
+}
+
 /// Türkçe sayı ve tarih biçimi.
 ///
 /// `intl` kullanmıyoruz: bu dosya `pdf` katmanında ve tek ihtiyaç ondalık

@@ -142,20 +142,16 @@ class PdfReportBuilder {
     final (r, b) =
         (regular != null && bold != null) ? (regular, bold) : await loadFonts();
 
-    final theme = pw.ThemeData.withFont(base: r, bold: b).copyWith(
-      defaultTextStyle: pw.TextStyle(
-        font: r,
-        fontSize: 10,
-        color: ReportPalette.ink,
-      ),
-    );
-    final doc = pw.Document(theme: theme);
+    // **Tek font kaynağı.** İki şablon da bunu alıyor; başka hiçbir
+    // yerde font kurulmuyor (bkz. `ReportFonts`).
+    final fonts = ReportFonts(regular: r, bold: b);
+    final doc = pw.Document(theme: fonts.theme);
 
     switch (data.audience) {
       case ReportAudience.parent:
-        doc.addPage(_parentPage(data, s, theme, b));
+        doc.addPage(_parentPage(data, s, fonts));
       case ReportAudience.teacher:
-        for (final page in _teacherPages(data, s, theme, b)) {
+        for (final page in _teacherPages(data, s, fonts)) {
           doc.addPage(page);
         }
     }
@@ -165,9 +161,9 @@ class PdfReportBuilder {
 
   /// Sayfa zeminini boyar. `PageTheme.buildBackground` her sayfa için
   /// çağrılıyor; renk tek bir yerden geliyor.
-  pw.PageTheme _pageTheme(pw.ThemeData theme, PdfColor bg) => pw.PageTheme(
+  pw.PageTheme _pageTheme(ReportFonts fonts, PdfColor bg) => pw.PageTheme(
         pageFormat: PdfPageFormat.a4,
-        theme: theme,
+        theme: fonts.theme,
         margin: const pw.EdgeInsets.all(_margin),
         buildBackground: (context) => pw.FullPage(
           ignoreMargins: true,
@@ -179,94 +175,91 @@ class PdfReportBuilder {
   // VELİ RAPORU — tek sayfa, karne
   // ------------------------------------------------------------------
 
-  pw.Page _parentPage(
-    ReportData d,
-    ReportStrings s,
-    pw.ThemeData theme,
-    pw.Font bold,
-  ) =>
-      pw.Page(
-        pageTheme: _pageTheme(theme, ReportPalette.cream),
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-          children: [
-            _titleBand(s.parentTitle, s, d, bold, ReportPalette.indigo),
-            pw.SizedBox(height: 18),
+  pw.Page _parentPage(ReportData d, ReportStrings s, ReportFonts fonts) {
+    final bold = fonts.bold;
+    return pw.Page(
+      pageTheme: _pageTheme(fonts, ReportPalette.cream),
+      build: (context) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        children: [
+          _titleBand(s.parentTitle, s, d, bold, ReportPalette.indigo),
+          pw.SizedBox(height: 18),
 
-            // Kahraman kartlar: üç büyük sayı, her biri kendi renginde.
-            //
-            // `stretch` YOK — bkz. `_heroCard`'daki sabit yükseklik notu.
-            pw.Row(
-              children: [
-                pw.Expanded(
-                  child: _heroCard(
-                    ReportFormat.hm(d.totalStudyS),
-                    s.totalStudy,
-                    ReportIcon.clock,
-                    ReportPalette.indigo,
-                    ReportPalette.indigoSoft,
-                    bold,
-                  ),
+          // Kahraman kartlar: üç büyük sayı, her biri kendi renginde.
+          //
+          // `stretch` YOK — bkz. `_heroCard`'daki sabit yükseklik notu.
+          pw.Row(
+            children: [
+              pw.Expanded(
+                child: _heroCard(
+                  ReportFormat.hm(d.totalStudyS),
+                  s.totalStudy,
+                  ReportIcon.clock,
+                  ReportPalette.indigo,
+                  ReportPalette.indigoSoft,
+                  bold,
                 ),
-                pw.SizedBox(width: 10),
-                pw.Expanded(
-                  child: _heroCard(
-                    '${d.questionCount}',
-                    s.questions,
-                    ReportIcon.questions,
-                    ReportPalette.teal,
-                    ReportPalette.tealSoft,
-                    bold,
-                  ),
+              ),
+              pw.SizedBox(width: 10),
+              pw.Expanded(
+                child: _heroCard(
+                  '${d.questionCount}',
+                  s.questions,
+                  ReportIcon.questions,
+                  ReportPalette.teal,
+                  ReportPalette.tealSoft,
+                  bold,
                 ),
-                pw.SizedBox(width: 10),
-                pw.Expanded(
-                  child: _heroCard(
-                    ReportFormat.decimal(d.net),
-                    s.net,
-                    ReportIcon.target,
-                    ReportPalette.amber,
-                    ReportPalette.amberSoft,
-                    bold,
-                  ),
+              ),
+              pw.SizedBox(width: 10),
+              pw.Expanded(
+                child: _heroCard(
+                  ReportFormat.decimal(d.net),
+                  s.net,
+                  ReportIcon.target,
+                  ReportPalette.amber,
+                  ReportPalette.amberSoft,
+                  bold,
                 ),
-              ],
-            ),
-            pw.SizedBox(height: 10),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 10),
 
-            // İkinci sıra: halka + iki küçük ölçüm.
-            _parentSecondRow(d, s, bold),
+          // İkinci sıra: halka + iki küçük ölçüm.
+          _parentSecondRow(d, s, bold),
+          pw.SizedBox(height: 16),
+
+          // Boş bölüm çizilmez.
+          if (d.subjects.isNotEmpty) ...[
+            _sectionTitle(s.subjectBreakdown, bold),
+            pw.SizedBox(height: 8),
+            _subjectBars(d, s, bold, dense: false),
             pw.SizedBox(height: 16),
-
-            // Boş bölüm çizilmez.
-            if (d.subjects.isNotEmpty) ...[
-              _sectionTitle(s.subjectBreakdown, bold),
-              pw.SizedBox(height: 8),
-              _subjectBars(d, s, bold, dense: false),
-              pw.SizedBox(height: 16),
-            ],
-
-            if (d.achievementCount > 0) ...[
-              _medalRow(d, s, bold),
-              pw.SizedBox(height: 16),
-            ],
-
-            // Günlük ritim veliye de gösteriliyor: "kaç gün çalıştı"
-            // gurur veren bir bilgi ve zayıf konu listesi DEĞİL.
-            if (d.days.any((x) => x.studyS > 0)) ...[
-              _sectionTitle(s.dailyDetail, bold),
-              pw.SizedBox(height: 8),
-              _dailyChart(d),
-              pw.SizedBox(height: 16),
-            ],
-
-            _baltoNote(s, bold),
-
-            pw.Spacer(),
-            _privacyFooter(s),
           ],
-        ),
-      );
+
+          if (d.achievementCount > 0) ...[
+            _medalRow(d, s, bold),
+            pw.SizedBox(height: 16),
+          ],
+
+          // Günlük ritim veliye de gösteriliyor: "kaç gün çalıştı"
+          // gurur veren bir bilgi ve zayıf konu listesi DEĞİL.
+          if (d.days.any((x) => x.studyS > 0)) ...[
+            _sectionTitle(s.dailyDetail, bold),
+            pw.SizedBox(height: 8),
+            _dailyChart(d),
+            pw.SizedBox(height: 16),
+          ],
+
+          _baltoNote(s, bold),
+
+          pw.Spacer(),
+          _privacyFooter(s),
+        ],
+      ),
+    );
+  }
 
   /// Başarı halkası + seri + oturum. Üçü tek kartta, ortada ayraçlarla.
   pw.Widget _parentSecondRow(ReportData d, ReportStrings s, pw.Font bold) =>
@@ -445,47 +438,48 @@ class PdfReportBuilder {
   List<pw.Page> _teacherPages(
     ReportData d,
     ReportStrings s,
-    pw.ThemeData theme,
-    pw.Font bold,
-  ) =>
-      [
-        pw.MultiPage(
-          pageTheme: _pageTheme(theme, ReportPalette.mist),
-          footer: (context) => _pageFooter(context, s),
-          build: (context) => [
-            _titleBand(s.teacherTitle, s, d, bold, ReportPalette.violet),
+    ReportFonts fonts,
+  ) {
+    final bold = fonts.bold;
+    return [
+      pw.MultiPage(
+        pageTheme: _pageTheme(fonts, ReportPalette.mist),
+        footer: (context) => _pageFooter(context, s),
+        build: (context) => [
+          _titleBand(s.teacherTitle, s, d, bold, ReportPalette.violet),
+          pw.SizedBox(height: 16),
+
+          _measureGrid(d, s, bold),
+          pw.SizedBox(height: 16),
+
+          if (d.subjects.isNotEmpty) ...[
+            _sectionTitle(s.subjectBreakdown, bold),
+            pw.SizedBox(height: 8),
+            _subjectBars(d, s, bold, dense: true),
             pw.SizedBox(height: 16),
-
-            _measureGrid(d, s, bold),
-            pw.SizedBox(height: 16),
-
-            if (d.subjects.isNotEmpty) ...[
-              _sectionTitle(s.subjectBreakdown, bold),
-              pw.SizedBox(height: 8),
-              _subjectBars(d, s, bold, dense: true),
-              pw.SizedBox(height: 16),
-            ],
-
-            // Zayıf konular YALNIZCA eğitimci raporunda ve yalnızca
-            // veri varsa.
-            if (d.weakTopics.isNotEmpty) ...[
-              _sectionTitle(s.weakTopics, bold),
-              pw.SizedBox(height: 8),
-              _weakTopicList(d, s, bold),
-              pw.SizedBox(height: 16),
-            ],
-
-            if (d.days.any((x) => x.studyS > 0)) ...[
-              _sectionTitle(s.dailyDetail, bold),
-              pw.SizedBox(height: 8),
-              ..._dailyBlocks(d, s, bold),
-              pw.SizedBox(height: 12),
-            ],
-
-            _coachNote(s, bold),
           ],
-        ),
-      ];
+
+          // Zayıf konular YALNIZCA eğitimci raporunda ve yalnızca
+          // veri varsa.
+          if (d.weakTopics.isNotEmpty) ...[
+            _sectionTitle(s.weakTopics, bold),
+            pw.SizedBox(height: 8),
+            _weakTopicList(d, s, bold),
+            pw.SizedBox(height: 16),
+          ],
+
+          if (d.days.any((x) => x.studyS > 0)) ...[
+            _sectionTitle(s.dailyDetail, bold),
+            pw.SizedBox(height: 8),
+            ..._dailyBlocks(d, s, bold),
+            pw.SizedBox(height: 12),
+          ],
+
+          _coachNote(s, bold),
+        ],
+      ),
+    ];
+  }
 
   /// On ölçüm, beşerli iki sıra. Tablo yerine kart ızgarası: eğitimci
   /// aradığı sayıyı taramadan buluyor.
