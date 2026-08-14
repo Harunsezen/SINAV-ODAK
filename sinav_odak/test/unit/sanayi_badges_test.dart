@@ -22,24 +22,32 @@ void main() {
       );
 
   group('🏭 Sanayiden Kurtuldun', () {
-    test('100 saatte açılıyor, 99 saatte açılmıyor', () {
+    test('150 saatte açılıyor, 149 saatte açılmıyor', () {
       expect(
-        AchievementCalculator.earned(m(totalStudyS: 100 * 3600)),
+        AchievementCalculator.earned(m(totalStudyS: 150 * 3600)),
         contains('industry_escape'),
       );
       expect(
-        AchievementCalculator.earned(m(totalStudyS: 99 * 3600 + 3599)),
+        AchievementCalculator.earned(m(totalStudyS: 149 * 3600 + 3599)),
         isNot(contains('industry_escape')),
       );
     });
 
-    test('BİLİNEN ÇAKIŞMA: hours_100 ile aynı anda açılıyor', () {
-      // Ürün kararı gereği ikisi de 100 saatte açılıyor. Toast kuyruğu
-      // ikisini üst üste değil SIRAYLA gösteriyor; bu test çakışmanın
-      // farkında olduğumuzu belgeliyor. Eşiklerden biri değişirse burası
-      // düşer ve karar yeniden gözden geçirilir.
-      final earned = AchievementCalculator.earned(m(totalStudyS: 100 * 3600));
-      expect(earned, containsAll(['hours_100', 'industry_escape']));
+    test('MERDİVEN: 100 saatte yalnızca hours_100, 150 saatte ikisi de', () {
+      // Koordinatör kararı: önce teknik kademe, sonra hikâye rozeti.
+      // İlk sürümde ikisi de 100 saatteydi ve aynı anda patlıyordu.
+      // Bu test merdiveni KİLİTLİYOR — eşiklerden biri diğerine kayarsa
+      // düşer.
+      final at100 = AchievementCalculator.earned(m(totalStudyS: 100 * 3600));
+      expect(at100, contains('hours_100'));
+      expect(
+        at100,
+        isNot(contains('industry_escape')),
+        reason: '100 saatte hikâye rozeti HENÜZ açılmamalı',
+      );
+
+      final at150 = AchievementCalculator.earned(m(totalStudyS: 150 * 3600));
+      expect(at150, containsAll(['hours_100', 'industry_escape']));
     });
   });
 

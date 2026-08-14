@@ -71,8 +71,8 @@ void main() {
   });
 
   testWidgets('birden fazla rozet SIRAYLA gösteriliyor', (tester) async {
-    // Tek kayıt birden fazla rozet açabiliyor (hours_100 + industry_escape
-    // AYNI eşikte). Üst üste binmemeli.
+    // Tek kayıt birden fazla rozet açabiliyor (ör. uzun aradan dönüş +
+    // seri rozeti). Üst üste binmemeli.
     final c = await pump(tester);
 
     c.read(achievementToastQueueProvider.notifier).enqueue(

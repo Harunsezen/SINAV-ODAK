@@ -9,9 +9,10 @@ import 'achievements_screen.dart' show achievementIcon, achievementText;
 
 /// Kuyruğa alınmış rozet bildirimi.
 ///
-/// **Neden kuyruk:** tek bir oturum kaydı birden fazla rozet açabiliyor
-/// (örn. `hours_100` ve `industry_escape` AYNI eşikte). Hepsi aynı anda
-/// gösterilseydi üst üste biner, biri okunmazdı.
+/// **Neden kuyruk:** tek bir oturum kaydı birden fazla rozet açabiliyor —
+/// uzun bir aradan sonra dönen kullanıcı aynı kayıtta hem `master_waits`
+/// hem bir seri rozeti alabilir. Hepsi aynı anda gösterilseydi üst üste
+/// biner, biri okunmazdı.
 class AchievementToastQueue extends Notifier<List<String>> {
   @override
   List<String> build() => const [];

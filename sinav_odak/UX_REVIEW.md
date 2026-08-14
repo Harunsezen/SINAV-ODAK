@@ -239,10 +239,10 @@ niyetli çağrılar da etkilenirdi. Açık `leading` daha dar ve öngörülebili
 | 2.2 | Aktif oturum | Çipler eklenince **"1. blok / 2" metni kayboldu** | ✅ düzeltildi |
 | 2.3 | Rozet kataloğu | `questions_15000` ikonu **fallback ile çakışıyordu** | ✅ düzeltildi |
 | 2.4 | QA altyapısı | **Harness üretimden sapmıştı** — toast katmanı yoktu | ✅ düzeltildi |
-| 2.5 | Rozet sistemi | `industry_escape` ve `hours_100` **aynı eşikte** | ⚠️ belgelendi |
+| 2.5 | Rozet sistemi | `industry_escape` ve `hours_100` aynı eşikteydi | ✅ **kapandı** (150 sa) |
 | 2.6 | Rozet şeridi | Kart AppBar'ı tamamen örtüyor | ⚠️ kabul edildi |
 
-**6 bulgu · 4'ü düzeltildi · 2'si gerekçeyle bırakıldı.** Dördü de ekran
+**6 bulgu · 5'i düzeltildi · 1'i gerekçeyle bırakıldı.** Dördü de ekran
 görüntüsüne veya test çıktısına bakarken bulundu.
 
 ---
@@ -336,20 +336,17 @@ tasarlanmış: benim hatamı ben fark etmeden yakaladı.
 **DÜZELTME:** `workspace_premium`. Varsayılan sentinel olarak
 `emoji_events` dokunulmadan kaldı.
 
-### ⚠️ BULUNDU 2.5 — iki rozet aynı eşikte (belgelendi, düzeltilmedi)
+### ✅ BULUNDU 2.5 — iki rozet aynı eşikteydi (KAPANDI)
 
-`industry_escape` (🏭 Sanayiden Kurtuldun) ve mevcut `hours_100`
-**ikisi de 100 saatte** açılıyor. Brief bu eşiği açıkça veriyordu.
+`industry_escape` (🏭) ve `hours_100` ikisi de 100 saatte açılıyordu.
+Eşik değiştirmek ürün kararı olduğu için kendi başıma dokunmadım;
+çakışmayı belgeleyip koordinatöre taşıdım.
 
-**Neden düzeltmedim:** eşiği değiştirmek ürün kararı, benim kararım
-değil. Bunun yerine:
-- Toast kuyruğu ikisini **sırayla** gösteriyor (üst üste binmiyorlar) —
-  testle iddia edildi.
-- `sanayi_badges_test.dart` içinde **çakışmayı belgeleyen bir test** var:
-  eşiklerden biri değişirse test düşer ve karar yeniden gözden geçirilir.
+**Karar:** `hours_100` 100 saatte kalıyor, `industry_escape` **150
+saate** çıkıyor — *"önce teknik başarı, sonra hikâye"*.
 
-**Koordinatör kararı gerekiyor:** ya `hours_100` emekliye ayrılır, ya da
-`industry_escape` daha yukarı bir eşiğe (ör. 250 saat) taşınır.
+Çakışmayı belgeleyen test, merdiveni **kilitleyen** teste dönüştürüldü.
+ARB metni de düzeltildi: rozet artık "150 saat" diyor.
 
 ---
 

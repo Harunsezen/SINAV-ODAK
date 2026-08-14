@@ -2,6 +2,9 @@
 
 **Dal:** `claude/sinav-odak-v1.1` · **Test:** 803 → **828**
 
+> **Güncelleme:** rozet eşiği kararı sonrası `industry_escape` 100 → **150 saat**
+> (merdiven: önce teknik kademe, sonra hikâye). §2'ye bakın.
+
 ---
 
 ## 0. ÖZET
@@ -12,7 +15,7 @@
 | 2.2 Sanayi Evreni (4 rozet) | ✅ 11 → **15 rozet** |
 | 2.3 Mola atlama butonu | ✅ **zaten vardı** — doğrulandı + test eklendi |
 | 2.4 Kademe çipleri | ✅ |
-| UX incelemesi | ✅ `UX_REVIEW.md` FAZ 2 — **6 bulgu, 4'ü düzeltildi** |
+| UX incelemesi | ✅ `UX_REVIEW.md` FAZ 2 — **6 bulgu, 5'i düzeltildi** |
 | `flutter test` | **828** ✅ |
 | `flutter analyze` | **0 issue** ✅ |
 | `dart format .` | **0 changed** ✅ |
@@ -29,9 +32,9 @@ dokununca hemen kapanır.
 
 ### Kuyruk neden gerekli
 
-Tek bir oturum kaydı **birden fazla** rozet açabiliyor — `hours_100` ve
-`industry_escape` tam olarak aynı eşikte. Hepsi aynı anda gösterilseydi
-üst üste binerdi. `AchievementToastQueue` bunları sıraya alıyor; test
+Tek bir oturum kaydı **birden fazla** rozet açabiliyor — uzun bir aradan
+sonra dönen kullanıcı aynı kayıtta hem `master_waits` hem bir seri rozeti
+alabilir. Hepsi aynı anda gösterilseydi üst üste binerdi. `AchievementToastQueue` bunları sıraya alıyor; test
 bunu açıkça iddia ediyor (*"aynı anda YALNIZCA bir kart"*).
 
 ### `Overlay` değil, ağaç içinde katman
@@ -62,7 +65,7 @@ dosyası APK'yı büyütür; ayrıca sessize alınmış telefonda anlamsız.
 
 | Rozet | Kod | Koşul | Balto metni |
 | --- | --- | --- | --- |
-| 🏭 Sanayiden Kurtuldun | `industry_escape` | toplam ≥100 sa | "100 saat. Artık elin yağlı değil, kalemin keskin." |
+| 🏭 Sanayiden Kurtuldun | `industry_escape` | toplam **≥150 sa** | "150 saat. Artık elin yağlı değil, kalemin keskin." |
 | 🔧 Şanzımanı İndir | `downshift` | haftalık sert düşüş | "Bu hafta devir düştü. Vites küçült, ama durma." |
 | 🔩 Mehmet Usta Seni Bekliyor | `master_waits` | 5+ gün ara → dönüş | "5 gün tezgâhı bıraktın. Döndün ya, gerisi kolay." |
 | 🏆 15.000 Soru | `questions_15000` | toplam ≥15000 soru | "On beş bin. Bu artık şans değil, alışkanlık." |
@@ -87,18 +90,25 @@ da bu: tezgâh seni bekliyordu, geldin.
 çalışıp o alanı bugüne çekiyor. Okunsaydı fark daima 0 çıkardı. Bunun
 için `SessionDao.previousSessionDateKey()` eklendi.
 
-### ⚠️ Bilinen çakışma — koordinatör kararı gerekiyor
+### ✅ Çakışma KAPANDI — merdiven (koordinatör kararı)
 
-`industry_escape` ve mevcut `hours_100` **ikisi de 100 saatte** açılıyor
-(brief bu eşiği açıkça veriyordu). Eşiği değiştirmek ürün kararı olduğu
-için dokunmadım; bunun yerine:
+İlk uygulamada `industry_escape` ve `hours_100` **ikisi de 100 saatteydi**
+(brief bu eşiği veriyordu) ve aynı anda patlıyorlardı. Çakışmayı
+belgeleyip koordinatöre taşıdım; karar geldi:
 
-- Toast kuyruğu ikisini **sırayla** gösteriyor.
-- `sanayi_badges_test.dart` çakışmayı **belgeleyen bir test** içeriyor:
-  eşiklerden biri değişirse test düşer.
+| Rozet | Eşik |
+| --- | --- |
+| 🏆 `hours_100` (teknik kademe) | 100 saat — **değişmedi** |
+| 🏭 `industry_escape` (hikâye) | **150 saat** (100 → 150) |
 
-**Öneri:** ya `hours_100` emekliye ayrılsın, ya `industry_escape` daha
-yukarı bir eşiğe taşınsın (ör. 250 saat).
+Mantık: **önce teknik başarı, sonra hikâye.** Aradaki 50 saat, iki
+rozetin de kendi anını yaşaması için.
+
+Çakışmayı belgeleyen test artık **merdiveni kilitleyen** teste dönüştü:
+100 saatte yalnızca `hours_100`, 150 saatte ikisi de. Eşiklerden biri
+diğerine kayarsa test düşer.
+
+ARB metni de güncellendi — "100 saat" artık yanlış olurdu.
 
 ---
 
@@ -167,7 +177,7 @@ Ayrıntı: `UX_REVIEW.md` → FAZ 2.
 | 2.2 | Çipler eklenince "1. blok / 2" metni kayboldu | **ben** (ekran görüntüsü) |
 | 2.3 | `questions_15000` ikonu fallback ile çakışıyordu | **mevcut guard test** |
 | 2.4 | QA harness üretimden sapmıştı (toast katmanı yok) | **ben** (test düşünce) |
-| 2.5 | İki rozet aynı eşikte | **ben** — belgelendi |
+| 2.5 | İki rozet aynı eşikteydi | **ben** — koordinatöre taşındı, **kapandı** |
 | 2.6 | Kart AppBar'ı örtüyor | **ben** — kabul edildi |
 
 **2.1 FAZ 2'nin konusu bile değildi:** rozet şeridinin arkasındaki ana

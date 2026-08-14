@@ -213,14 +213,15 @@ abstract final class AchievementCalculator {
 
   // --- Sanayi Evreni ---
 
-  /// 🏭 Sanayiden Kurtuldun — toplam 100 saat.
+  /// 🏭 Sanayiden Kurtuldun — toplam 150 saat.
   ///
-  /// **DİKKAT:** `hours_100` ile AYNI eşikte. İkisi birlikte açılıyor;
-  /// bilinçli bir ürün kararı olarak bırakıldı (biri sayısal kademe, biri
-  /// Balto rozeti) ama toast sistemi ikisini üst üste gösterecek şekilde
-  /// kuyruğa alıyor. Bkz. UX_REVIEW FAZ 2 §2.2.
+  /// **MERDİVEN (koordinatör kararı):** önce teknik kademe `hours_100`
+  /// (100 sa), sonra hikâye rozeti (150 sa). İlk sürümde ikisi de 100
+  /// saatteydi ve aynı anda açılıyordu; iki rozetin tek anda patlaması
+  /// ikisinin de anlamını zayıflatıyordu. Aradaki 50 saat, kullanıcının
+  /// "teknik başarı"dan "hikâye"ye geçtiği mesafe.
   static bool _industryEscape(AchievementMetrics m) =>
-      m.totalStudyS >= 100 * 3600;
+      m.totalStudyS >= 150 * 3600;
 
   /// 🔧 Şanzımanı İndir — haftalık performans DÜŞÜŞÜ.
   ///
