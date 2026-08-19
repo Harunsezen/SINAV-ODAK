@@ -168,13 +168,23 @@ class _GoalCard extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${l.goalsProgress(_fmt(current), _fmt(target))} $unit',
-                  key: Key('goal-value-$id'),
-                  style: const TextStyle(fontSize: 12),
+                // **`Expanded` şart.** İki metin de kendi doğal genişliğini
+                // isteyince 320 px'lik ekranda satır 14 px taşıyordu
+                // ("120 / 240 dakika" + "%50"). Ölçüldü: `responsive_test`
+                // yalnızca bu kombinasyonda düşüyordu.
+                //
+                // Sol taraf esner ve gerekirse kısalır; yüzde/"Ulaşıldı"
+                // hiçbir zaman kırpılmaz — asıl bilgi o.
+                Expanded(
+                  child: Text(
+                    '${l.goalsProgress(_fmt(current), _fmt(target))} $unit',
+                    key: Key('goal-value-$id'),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   isCompleted ? l.goalsReached : '%${(ratio * 100).round()}',
                   style: TextStyle(

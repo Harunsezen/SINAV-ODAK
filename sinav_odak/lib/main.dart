@@ -23,8 +23,22 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Edge-to-edge: alt kontrol çubuğu ve banner reklam safe-area'ya oturacak.
+  //
+  // Android 15+ zaten edge-to-edge'i zorunlu kılıyor; burada açıkça
+  // istemek davranışı eski sürümlerde de aynı yapıyor. Sistem çubuğu
+  // taşmasına karşı koruma `SafeArea` ile ekranlarda.
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // **Yönelim kilidi YOK.**
+  //
+  // Burada `portraitUp` kilidi vardı. Sonucu: tablet, Chromebook, katlanır
+  // ve masaüstü/XR pencerelerinde uygulama yan çevrilemiyordu — Play'in
+  // "büyük ekran" kalite ölçütlerinin de karşısında. Manifest'te kilit
+  // zaten yoktu; tek engel bu satırdı.
+  //
+  // Kaldırmak yalnızca güvenli olduğu ÖLÇÜLDÜĞÜ için yapıldı:
+  // `responsive_test.dart` yedi ekranı sekiz boyutta, dikey ve yatay
+  // olarak kuruyor ve taşma olmadığını doğruluyor.
 
   final db = AppDatabase();
   // Ayar satırını ve seed'i garanti et, eski reklam loglarını temizle.

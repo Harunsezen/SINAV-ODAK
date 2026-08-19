@@ -24,14 +24,18 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "com.harunsezen.sinav_odak"
-    // `flutter.compileSdkVersion` DEĞİL, sabit 35: bağımlılıkların bir
-    // bölümü (google_mobile_ads / AndroidX) API 35'e karşı derlenmiş
-    // durumda ve daha düşük bir compileSdk "compiled against a newer
-    // version" hatasıyla derlemeyi durduruyor.
+    // `flutter.compileSdkVersion` DEĞİL (Flutter 3.24.5'te 34), sabit 36.
     //
-    // Bu yalnızca DERLEME hedefi; uygulamanın çalışma davranışını
-    // `minSdk`/`targetSdk` belirliyor (21 / 34, aşağıda).
-    compileSdk = 35
+    // Bağımlılıkların bir bölümü (google_mobile_ads / AndroidX) daha yeni
+    // API'lere karşı derlenmiş durumda; düşük bir compileSdk
+    // "compiled against a newer version" hatasıyla derlemeyi durdurur.
+    //
+    // 36 = Android 16. Bu yalnızca DERLEME hedefi; çalışma davranışını
+    // `minSdk`/`targetSdk` belirliyor (21 / 36, aşağıda).
+    //
+    // compileSdk 36 **AGP 8.9+** gerektiriyor; settings.gradle ve Gradle
+    // wrapper bu yüzden birlikte yükseltildi.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -53,14 +57,20 @@ android {
         applicationId = "com.harunsezen.sinav_odak"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Bildirimler exact alarm kullanıyor; java.time desugaring de
-        // minSdk 21'den itibaren destekleniyor.
+        // **minSdk 21 KALIYOR.** Galaxy J7 Prime sınıfı cihazlar hâlâ
+        // öğrencinin cebinde; 21'i terk etmek onları dışarıda bırakır.
+        // `java.time` desugaring 21'den itibaren destekleniyor, yani
+        // bildirimler için engel değil.
         minSdk = 21
+
+        // **targetSdk 36 (Android 16).** `flutter.targetSdkVersion`
+        // Flutter 3.24.5'te 34'te sabit; Play 31.08.2026'dan itibaren
+        // yeni sürümlerde API 36 istiyor. Flutter'ın varsayılanına
+        // bırakmak uygulamayı güncellenemez hale getirirdi.
+        targetSdk = 36
 
         // AdMob uygulama kimliği manifest'e BURADAN enjekte edilir.
         // Varsayılan Google TEST kimliği; production kimliği
