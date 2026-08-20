@@ -52,6 +52,20 @@ void main() {
 
   Future<Subject?> subject(String id) => db.subjectDao.findSubject(id);
 
+  /// Görünür alana getirip dokunur.
+  ///
+  /// v1.2'de müfredat tohumlandı: bir ders açıldığında altında 80'e yakın
+  /// konu var ve düzenle/arşivle düğmeleri test yüzeyinin ALTINA taşıyor.
+  /// Doğrudan `tap` "would not hit test" ile düşüyordu. İddia aynı —
+  /// yalnızca düğmeye ulaşma biçimi değişti.
+  Future<void> tapKey(WidgetTester tester, String key) async {
+    final finder = find.byKey(Key(key));
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+  }
+
   // -------------------------------------------------------------------
 
   testWidgets('seed dersleri listeleniyor', (tester) async {
@@ -133,9 +147,7 @@ void main() {
       await tester.tap(find.byKey(const Key('catalog-subject-$subjectId')));
       await tester.pumpAndSettle();
 
-      await tester
-          .tap(find.byKey(const Key('catalog-subject-edit-$subjectId')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'catalog-subject-edit-$subjectId');
       await tester.enterText(
         find.byKey(const Key('catalog-name-field')),
         'Matematik II',
@@ -152,9 +164,7 @@ void main() {
       await tester.tap(find.byKey(const Key('catalog-subject-$subjectId')));
       await tester.pumpAndSettle();
 
-      await tester
-          .tap(find.byKey(const Key('catalog-subject-archive-$subjectId')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'catalog-subject-archive-$subjectId');
 
       final s = await subject(subjectId);
       expect(s, isNotNull, reason: 'kayıt DURUYOR');
@@ -188,8 +198,7 @@ void main() {
       await tester.tap(find.byKey(const Key('catalog-subject-$subjectId')));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('catalog-add-topic-$subjectId')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'catalog-add-topic-$subjectId');
       await tester.enterText(
         find.byKey(const Key('catalog-name-field')),
         'Limit',
@@ -209,8 +218,7 @@ void main() {
       await tester.tap(find.byKey(const Key('catalog-subject-$subjectId')));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('catalog-topic-archive-$topicId')));
-      await tester.pumpAndSettle();
+      await tapKey(tester, 'catalog-topic-archive-$topicId');
 
       final t = await db.subjectDao.findTopic(topicId);
       expect(t, isNotNull);

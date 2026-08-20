@@ -302,6 +302,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push(Routes.manage),
               ),
+              ListTile(
+                key: const Key('settings-curriculum'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(l.curriculumTitle),
+                subtitle: Text(l.curriculumSubtitle),
+                titleTextStyle: Theme.of(context).textTheme.bodyMedium,
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.curriculum),
+              ),
             ],
           ),
 
@@ -472,10 +481,10 @@ class _DailyGoalTile extends ConsumerStatefulWidget {
   static const int min = 0;
   static const int max = 720;
 
-  /// Tek dokunuş adımı. 30 dk'dan **5 dk'ya** indirildi (v1.2): 30'luk
+  /// Tek dokunuş adımı **30 dk** (koordinatör kararı: testçi geri
   /// adım "biraz artır"ı imkânsız kılıyordu. Uzak değer için artık
-  /// basılı tutma ve klavye var.
-  static const int step = 5;
+  /// klavye var.
+  static const int step = 30;
 
   @override
   ConsumerState<_DailyGoalTile> createState() => _DailyGoalTileState();

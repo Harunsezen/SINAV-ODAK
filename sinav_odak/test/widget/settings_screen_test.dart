@@ -133,14 +133,14 @@ void main() {
   });
 
   group('günlük hedef', () {
-    testWidgets('tek dokunuş 5 dk adımla yazıyor', (tester) async {
+    testWidgets('tek dokunuş 30 dk adımla yazıyor', (tester) async {
       await pumpSettings(tester);
       expect((await settings()).dailyGoalMinutes, 240);
 
       await tester.tap(find.byKey(const Key('settings-goal-plus')));
       await tester.pumpAndSettle();
 
-      expect((await settings()).dailyGoalMinutes, 245);
+      expect((await settings()).dailyGoalMinutes, 270);
     });
 
     testWidgets('azaltma çalışıyor', (tester) async {
@@ -149,7 +149,7 @@ void main() {
       await tester.tap(find.byKey(const Key('settings-goal-minus')));
       await tester.pumpAndSettle();
 
-      expect((await settings()).dailyGoalMinutes, 235);
+      expect((await settings()).dailyGoalMinutes, 210);
     });
 
     // ---- v1.2: elle giriş (Zehra'nın geri bildirimi) ------------------
@@ -192,10 +192,10 @@ void main() {
       await tester.pumpAndSettle();
       expect((await settings()).dailyGoalMinutes, 180);
 
-      // …sonra stepper'la ince ayar (tek dokunuş = 5 dk).
+      // …sonra stepper'la ince ayar (tek dokunuş = 30 dk).
       await tester.tap(find.byKey(const Key('settings-goal-plus')));
       await tester.pumpAndSettle();
-      expect((await settings()).dailyGoalMinutes, 185);
+      expect((await settings()).dailyGoalMinutes, 210);
     });
 
     testWidgets('GEÇERSİZ: 13 saat → eski değer KORUNUYOR, diyalog açık',

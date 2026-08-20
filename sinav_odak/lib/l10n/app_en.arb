@@ -785,5 +785,55 @@
   "bannerPositionBottom": "Alt",
   "bannerPositionTop": "Üst",
   "bannerPositionSideLandscape": "Yatayda yan",
-  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda."
+  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda.",
+  "curriculumTitle": "Curriculum",
+  "curriculumSubtitle": "Subjects, topics and sub-topics",
+  "curriculumSearchHint": "Search topics or sub-topics…",
+  "curriculumSearchClear": "Clear search",
+  "curriculumLevelAll": "All",
+  "curriculumLevelGrade": "Grade {grade}",
+  "@curriculumLevelGrade": {
+    "placeholders": {
+      "grade": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumLevelTyt": "TYT",
+  "curriculumLevelAyt": "AYT",
+  "curriculumNoMatch": "No results for \"{query}\".",
+  "@curriculumNoMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "curriculumEmptyLevel": "No topics at this level.",
+  "curriculumEmptySubject": "This subject has no topics yet.",
+  "curriculumSubBranches": "{count} sub-topics",
+  "@curriculumSubBranches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumTopicSummary": "{topics} topics · {branches} sub-topics",
+  "@curriculumTopicSummary": {
+    "placeholders": {
+      "topics": {
+        "type": "int"
+      },
+      "branches": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumExpand": "Show sub-topics",
+  "curriculumCollapse": "Hide sub-topics",
+  "curriculumMarkStudied": "Mark as studied",
+  "curriculumMarkNotStudied": "Remove studied mark",
+  "curriculumStudied": "Studied",
+  "curriculumPickSubject": "Pick a subject"
 }

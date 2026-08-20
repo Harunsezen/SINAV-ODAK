@@ -20,8 +20,16 @@ void main() {
     expect(acts.length, 11, reason: 'spec bölüm 8: 11 çalışma türü');
 
     final yks = await db.subjectDao.watchSubjects(ExamType.yks).first;
-    expect(yks.length, 15);
+    expect(yks.length, 16, reason: 'v1.2: Edebiyat eklendi');
     expect(yks.first.name, 'Türkçe');
+
+    // Edebiyat KİMLİK olarak sona, GÖRÜNTÜDE Türkçe'nin altına eklendi.
+    // Araya eklemek `sub_yks_7` = Coğrafya kimliğini kaydırır ve geçmiş
+    // oturumları yanlış derse bağlardı.
+    final edebiyat = yks.firstWhere((s) => s.name == 'Edebiyat');
+    expect(edebiyat.id, 'sub_yks_15');
+    expect(yks[1].name, 'Edebiyat');
+    expect(yks[2].name, 'Matematik');
 
     final lgs = await db.subjectDao.watchSubjects(ExamType.lgs).first;
     expect(lgs.length, 8);

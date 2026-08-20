@@ -23,6 +23,10 @@ abstract final class Routes {
 
   static const onboarding = '/onboarding';
   static const manage = '/manage';
+
+  /// Müfredat ağacı (Ayarlar > Müfredat). Shell DIŞINDA: gezinme
+  /// çubuğu, arama kutusu açıkken klavyeyle yer paylaşıyordu.
+  static const curriculum = '/curriculum';
   static const goals = '/goals';
   static const achievements = '/achievements';
 }

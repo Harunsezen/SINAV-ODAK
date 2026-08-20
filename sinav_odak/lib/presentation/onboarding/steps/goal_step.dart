@@ -28,11 +28,11 @@ class GoalStep extends StatelessWidget {
 
   static const minMinutes = 60;
   static const maxMinutes = 480;
-  static const stepMinutes = 5;
+  static const stepMinutes = 30;
 
   static const minQuestions = 20;
   static const maxQuestions = 500;
-  static const stepQuestions = 5;
+  static const stepQuestions = 10;
 
   @override
   Widget build(BuildContext context) {

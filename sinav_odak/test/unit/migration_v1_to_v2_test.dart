@@ -61,9 +61,53 @@ void main() {
     await raw.close();
   });
 
-  test('schemaVersion 3', () async {
+  test('schemaVersion 4', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    expect(db.schemaVersion, 3);
+    expect(db.schemaVersion, 4);
+    await db.close();
+  });
+
+  test('v3 -> v4: konu kolonları ekleniyor, VERİ KAYBOLMUYOR', () async {
+    // v1.2. Aynı desen: gerçek tablodan üç kolonu düşürüp v3 hâlini
+    // üretiyoruz, sonra `onUpgrade`in yaptığını uyguluyoruz.
+    //
+    // Bu testin koruduğu şey: v1.1 kullanıcısının konu satırı ve ona bağlı
+    // geçmişi yükseltmede yerinde kalmalı. Kolon eklerken satırın
+    // kopyalanması veya kimliğinin değişmesi, oturum geçmişini konusuz
+    // bırakırdı.
+    final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('ALTER TABLE topics DROP COLUMN parent_id');
+    await db.customStatement('ALTER TABLE topics DROP COLUMN grade');
+    await db.customStatement('ALTER TABLE topics DROP COLUMN exam_tag');
+
+    final before = await db.customSelect("PRAGMA table_info('topics')").get();
+    final beforeCols = before.map((r) => r.read<String>('name')).toSet();
+    expect(
+      beforeCols.intersection({'parent_id', 'grade', 'exam_tag'}),
+      isEmpty,
+      reason: 'kolonlar düşürülemediyse bu test v3 durumunu test etmiyor',
+    );
+
+    // v3 kullanıcısının konusu ve kimliği.
+    final v3Rows = await db
+        .customSelect(
+          "SELECT id, name FROM topics WHERE id = 'top_sub_yks_1_22'",
+        )
+        .get();
+    expect(v3Rows, hasLength(1));
+    expect(v3Rows.single.read<String>('name'), 'Türev');
+
+    await db.customStatement('ALTER TABLE topics ADD COLUMN parent_id TEXT');
+    await db.customStatement('ALTER TABLE topics ADD COLUMN grade INTEGER');
+    await db.customStatement('ALTER TABLE topics ADD COLUMN exam_tag TEXT');
+
+    final t = await db.subjectDao.findTopic('top_sub_yks_1_22');
+    expect(t, isNotNull, reason: 'v3 satırı yükseltmede kaybolamaz');
+    expect(t!.name, 'Türev');
+    expect(t.parentId, isNull, reason: 'yeni kolon varsayılanı boş');
+    expect(t.grade, isNull);
+    expect(t.examTag, isNull);
+
     await db.close();
   });
 

@@ -19,6 +19,7 @@ import '../../presentation/shell/db_health_page.dart';
 import '../../presentation/achievements/achievements_screen.dart';
 import '../../presentation/calendar/calendar_screen.dart';
 import '../../presentation/goals/goals_screen.dart';
+import '../../presentation/curriculum/curriculum_screen.dart';
 import '../../presentation/settings/catalog_screen.dart';
 import '../../presentation/settings/settings_screen.dart';
 import '../../presentation/stats/stats_screen.dart';
@@ -184,6 +185,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: Routes.manage,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const CatalogScreen(),
+      ),
+
+      // --- Müfredat ağacı (Ayarlar > Müfredat) ---
+      GoRoute(
+        path: Routes.curriculum,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const CurriculumScreen(),
       ),
 
       // --- 5 sekmeli shell ---

@@ -32,6 +32,30 @@ class Topics extends Table {
   IntColumn get targetQuestionCount => integer().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 
+  /// **Alt dal bağı** (v1.2). `null` → bu satır bir KONU; dolu → o
+  /// konunun alt dalı.
+  ///
+  /// Ayrı bir `SubTopics` tablosu yerine kendine referans veren tek tablo:
+  /// arama, arşivleme, "çalışıldı" işaretleme ve oturum bağlantısı iki
+  /// seviyede de aynı kodla çalışıyor. İki tablo olsaydı her sorgunun
+  /// iki kopyası olurdu.
+  ///
+  /// `references` YOK — Drift kendine referansı şema üretiminde
+  /// döngüsel bağımlılık sayıyor. Bütünlük uygulama katmanında korunuyor
+  /// (alt dal yalnızca var olan bir konuya tohumlanıyor).
+  TextColumn get parentId => text().nullable()();
+
+  /// Sınıf düzeyi 5–12 (v1.2). `null` → sınıfa bağlı değil
+  /// (deneme, genel tekrar…).
+  IntColumn get grade => integer().nullable()();
+
+  /// `tyt`, `ayt` veya `tyt,ayt`. Seviye sekmeleri bunu süzüyor.
+  ///
+  /// Virgülle ayrılmış metin, ayrı bir tablo değil: bir konu en fazla iki
+  /// etikete sahip ve etiketle sorgulama `LIKE` ile yeterli. İlişki
+  /// tablosu bu boyutta gereksiz karmaşa olurdu.
+  TextColumn get examTag => text().nullable()();
+
   /// Dersler gibi konular da SİLİNMEZ, arşivlenir.
   /// Hard delete, konuya bağlı oturum veya yanlış kaydı varsa
   /// SQLITE_CONSTRAINT_FOREIGNKEY fırlatıyordu.

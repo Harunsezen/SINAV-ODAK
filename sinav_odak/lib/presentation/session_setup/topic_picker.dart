@@ -5,12 +5,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
+import '../curriculum/topic_tree_view.dart';
 import 'setup_controller.dart';
 
 /// S05 — Konu Seç.
 ///
 /// **Atlanabilir:** "Konu seçmeden devam et" ile `topicId` null kalır.
 /// Oturum konusuz da kaydedilebilir; şema bunu destekliyor.
+///
+/// v1.2'de düz liste yerine **üç seviyeli ağaç**: müfredat tohumlandıktan
+/// sonra bir derste 80'e yakın konu var ve düz liste okunamaz hâle geldi.
+/// Arama ve seviye sekmeleri [TopicTreeView] içinde.
 class TopicPicker extends ConsumerWidget {
   const TopicPicker({super.key});
 
@@ -47,37 +52,20 @@ class TopicPicker extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) =>
                   Center(child: Text(L10n.of(context).setupTopicsFailed('$e'))),
-              data: (list) {
-                if (list.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        L10n.of(context).setupNoTopics,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (context, i) {
-                    final t = list[i];
-                    return ListTile(
-                      title: Text(t.name),
-                      trailing: t.isCompleted
-                          ? const Icon(Icons.check_circle, size: 20)
-                          : null,
-                      onTap: () {
-                        ref
-                            .read(setupProvider.notifier)
-                            .selectTopic(id: t.id, name: t.name);
-                        context.go(Routes.sessionType);
-                      },
-                    );
-                  },
-                );
-              },
+              data: (list) => TopicTreeView(
+                topics: list,
+                selectedId: setup.topicId,
+                emptyMessage: L10n.of(context).setupNoTopics,
+                onTapTopic: (t) {
+                  // Alt dal da seçilebiliyor: "Mitoz" çalışan kullanıcı
+                  // oturumu "Hücre Bölünmeleri" diye kaydetmek zorunda
+                  // kalmamalı. Şema açısından ikisi de bir konu satırı.
+                  ref
+                      .read(setupProvider.notifier)
+                      .selectTopic(id: t.id, name: t.name);
+                  context.go(Routes.sessionType);
+                },
+              ),
             ),
           ),
           SafeArea(

@@ -49,6 +49,9 @@ void main() {
     ('rozetler', Routes.achievements),
     ('hedefler', Routes.goals),
     ('calisma', Routes.run),
+    // v1.2: ders çubuğu + seviye sekmeleri + ağaç — üç kaydırılabilir
+    // şerit alt alta. Dar ekranda taşmaya en açık düzen.
+    ('mufredat', Routes.curriculum),
   ];
   // ------------------------------------------------------------------
   // EDGE-TO-EDGE / SİSTEM ÇUBUKLARI

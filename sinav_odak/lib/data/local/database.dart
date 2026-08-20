@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
   /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -107,6 +107,19 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             // FAZ 4.4 — banner konumu tercihi.
             await m.addColumn(userSettings, userSettings.bannerPosition);
+          }
+          if (from < 4) {
+            // v1.2 — müfredat: alt dal + sınıf + TYT/AYT etiketi.
+            //
+            // Üçü de NULLABLE: mevcut konular olduğu gibi kalıyor
+            // (parentId null = konu, grade/examTag null = etiketsiz).
+            // Kullanıcının kendi eklediği konular hiç etkilenmiyor.
+            await m.addColumn(topics, topics.parentId);
+            await m.addColumn(topics, topics.grade);
+            await m.addColumn(topics, topics.examTag);
+            // Yeni müfredat satırları eklenir; `insertOrIgnore` sayesinde
+            // kullanıcının yeniden adlandırdığı kayıtlara DOKUNMAZ.
+            await SeedData.populate(this);
           }
         },
         beforeOpen: (details) async {

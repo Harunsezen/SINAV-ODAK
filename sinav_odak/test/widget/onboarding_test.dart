@@ -231,8 +231,8 @@ void main() {
       tester
           .widget<Text>(find.byKey(const Key('onboarding-goal-minutes-value')))
           .data,
-      '3sa 55dk',
-      reason: '5 dakikalık adım',
+      '3sa 30dk',
+      reason: '30 dakikalık adım',
     );
 
     await tester.tap(find.byKey(const Key('onboarding-goal-questions-inc')));
@@ -243,8 +243,8 @@ void main() {
             find.byKey(const Key('onboarding-goal-questions-value')),
           )
           .data,
-      '105 soru',
-      reason: '5 soruluk adım',
+      '110 soru',
+      reason: '10 soruluk adım',
     );
   });
 
@@ -475,13 +475,13 @@ void main() {
       tester
           .widget<Text>(find.byKey(const Key('onboarding-summary-minutes')))
           .data,
-      '4sa 5dk',
+      '4sa 30dk',
     );
     expect(
       tester
           .widget<Text>(find.byKey(const Key('onboarding-summary-questions')))
           .data,
-      '95',
+      '90',
     );
     expect(
       tester
@@ -506,7 +506,7 @@ void main() {
     final s = await db.settingsDao.read();
     expect(s.onboardingCompleted, isTrue);
     expect(s.examType, ExamType.yks);
-    expect(s.dailyGoalMinutes, 245);
+    expect(s.dailyGoalMinutes, 270);
     expect(s.dailyGoalQuestions, 100);
     expect(s.personalizedAdsConsent, isFalse);
 

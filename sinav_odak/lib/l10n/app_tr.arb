@@ -785,5 +785,55 @@
   "bannerPositionBottom": "Alt",
   "bannerPositionTop": "Üst",
   "bannerPositionSideLandscape": "Yatayda yan",
-  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda."
+  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda.",
+  "curriculumTitle": "Müfredat",
+  "curriculumSubtitle": "Ders, konu ve alt dallar",
+  "curriculumSearchHint": "Konu veya alt dal ara…",
+  "curriculumSearchClear": "Aramayı temizle",
+  "curriculumLevelAll": "Tümü",
+  "curriculumLevelGrade": "{grade}. sınıf",
+  "@curriculumLevelGrade": {
+    "placeholders": {
+      "grade": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumLevelTyt": "TYT",
+  "curriculumLevelAyt": "AYT",
+  "curriculumNoMatch": "\"{query}\" için sonuç yok.",
+  "@curriculumNoMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "curriculumEmptyLevel": "Bu seviyede konu yok.",
+  "curriculumEmptySubject": "Bu derste henüz konu yok.",
+  "curriculumSubBranches": "{count} alt dal",
+  "@curriculumSubBranches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumTopicSummary": "{topics} konu · {branches} alt dal",
+  "@curriculumTopicSummary": {
+    "placeholders": {
+      "topics": {
+        "type": "int"
+      },
+      "branches": {
+        "type": "int"
+      }
+    }
+  },
+  "curriculumExpand": "Alt dalları göster",
+  "curriculumCollapse": "Alt dalları gizle",
+  "curriculumMarkStudied": "Çalışıldı olarak işaretle",
+  "curriculumMarkNotStudied": "Çalışıldı işaretini kaldır",
+  "curriculumStudied": "Çalışıldı",
+  "curriculumPickSubject": "Ders seç"
 }
