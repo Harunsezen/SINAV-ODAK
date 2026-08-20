@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/core/router/routes.dart';
@@ -85,6 +86,7 @@ void main() {
     required double ratio,
     required String route,
     bool running = false,
+    bool scrollToEnd = false,
   }) async {
     await seedShowcase();
     if (running) {
@@ -93,6 +95,17 @@ void main() {
     final c = await pumpQaApp(tester, db, size: surface);
     if (route != Routes.home) {
       c.read(appRouterProviderForQa).go(route);
+      await tester.pumpAndSettle();
+    }
+    if (scrollToEnd) {
+      // Listenin SONUNA kaydır. `AppBar` sabit olduğu için başlık yerinde
+      // kalıyor; kazanılan tek şey alttaki içeriğin tam çerçeveye
+      // girmesi.
+      //
+      // Miktar GÖZLE ayarlandı: sona kadar (-600) kaydırınca üstteki
+      // çubuk grafik yarılanıyordu. -190 hem halkayı tam çerçeveye
+      // alıyor hem grafiği bütün bırakıyor.
+      await tester.drag(find.byType(ListView), const Offset(0, -190));
       await tester.pumpAndSettle();
     }
     await shoot(tester, file, ratio: ratio);
@@ -165,13 +178,18 @@ void main() {
     );
   });
 
-  testWidgets('tablet_2 — istatistik (yan ray)', (tester) async {
+  testWidgets('tablet_2 — istatistik (yan ray, halka tam görünür)',
+      (tester) async {
+    // İlk çekimde alttaki ders dağılımı halkası çerçeveden taşıyordu:
+    // içerik kaydırılabilir, görünen alan halkanın ortasında bitiyordu.
+    // Vitrin görselinde yarım kesilmiş grafik özensiz duruyor.
     await capture(
       tester,
       file: 'tablet_2.png',
       surface: tablet,
       ratio: tabletRatio,
       route: Routes.stats,
+      scrollToEnd: true,
     );
   });
 }
