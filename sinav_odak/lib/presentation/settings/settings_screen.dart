@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/config/ad_config.dart';
 import '../../core/di/ad_providers.dart';
 import '../../core/di/app_providers.dart';
+import '../goals/goal_value_editor.dart';
 import '../../application/settings_controller.dart';
 import '../../core/router/routes.dart';
 import '../../domain/entities/enums.dart';
@@ -486,13 +487,40 @@ class _DailyGoalTile extends ConsumerWidget {
                   .read(settingsControllerProvider)
                   .setDailyGoalMinutes(current - step),
         ),
+        // **Değere dokununca elle giriş açılıyor** (v1.2 — Zehra'nın geri
+        // bildirimi). Stepper duruyor: 30 dk'lık adımlarla 30'dan 720'ye
+        // çıkmak 23 dokunuş; yakın değer için dokun, uzak değer için yaz.
         SizedBox(
-          width: 56,
-          child: Text(
-            '$current',
-            key: const Key('settings-goal-value'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+          width: 72,
+          child: InkWell(
+            key: const Key('settings-goal-edit'),
+            onTap: () async {
+              final typed = await showGoalValueEditor(
+                context,
+                kind: GoalValueKind.duration,
+                current: current,
+              );
+              // Geçersiz/boş girişte diyalog `null` döndürüyor ve eski
+              // değer olduğu gibi kalıyor.
+              if (typed == null) return;
+              await ref
+                  .read(settingsControllerProvider)
+                  .setDailyGoalMinutes(typed);
+            },
+            child: Padding(
+              // Dokunma hedefi en az 48 px yüksek.
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                '$current',
+                key: const Key('settings-goal-value'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationStyle: TextDecorationStyle.dotted,
+                ),
+              ),
+            ),
           ),
         ),
         IconButton(

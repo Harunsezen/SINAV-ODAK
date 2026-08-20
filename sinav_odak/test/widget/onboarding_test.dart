@@ -247,6 +247,76 @@ void main() {
     );
   });
 
+  // ---- v1.2: elle giriş (Zehra'nın geri bildirimi) --------------------
+
+  testWidgets('5c) ELLE GİRİŞ: süreye dokun, "2sa 10dk" yaz', (tester) async {
+    await pumpOnboarding(tester);
+    await gotoGoalStep(tester);
+
+    await tester.tap(find.byKey(const Key('onboarding-goal-minutes-edit')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('goal-value-hours')), '2');
+    await tester.enterText(find.byKey(const Key('goal-value-minutes')), '10');
+    await tester.tap(find.byKey(const Key('goal-value-save')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.byKey(const Key('onboarding-goal-minutes-value')))
+          .data,
+      '2sa 10dk',
+    );
+  });
+
+  testWidgets('5d) ELLE GİRİŞ: soruya dokun, 75 yaz', (tester) async {
+    await pumpOnboarding(tester);
+    await gotoGoalStep(tester);
+
+    await tester.tap(find.byKey(const Key('onboarding-goal-questions-edit')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('goal-value-count')), '75');
+    await tester.tap(find.byKey(const Key('goal-value-save')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const Key('onboarding-goal-questions-value')),
+          )
+          .data,
+      '75 soru',
+    );
+  });
+
+  testWidgets('5e) GEÇERSİZ soru (2001) → eski değer KORUNUYOR',
+      (tester) async {
+    await pumpOnboarding(tester);
+    await gotoGoalStep(tester);
+
+    await tester.tap(find.byKey(const Key('onboarding-goal-questions-edit')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('goal-value-count')), '2001');
+    await tester.tap(find.byKey(const Key('goal-value-save')));
+    await tester.pumpAndSettle();
+
+    // Diyalog açık kalıyor, hedef değişmiyor.
+    expect(find.byKey(const Key('goal-value-error')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('goal-value-cancel')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const Key('onboarding-goal-questions-value')),
+          )
+          .data,
+      '100 soru',
+      reason: 'varsayılan korunmalı',
+    );
+  });
+
   testWidgets('5b) hedef sınırları aşılmıyor', (tester) async {
     await pumpOnboarding(tester);
     await gotoGoalStep(tester);

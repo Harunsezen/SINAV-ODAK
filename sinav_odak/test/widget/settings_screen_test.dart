@@ -151,6 +151,94 @@ void main() {
       expect((await settings()).dailyGoalMinutes, 210);
     });
 
+    // ---- v1.2: elle giriş (Zehra'nın geri bildirimi) ------------------
+    //
+    // Stepper 30 dk adımla ilerliyor; 240'tan 130'a inmek dört dokunuş,
+    // 720'ye çıkmak on altı. Değere dokununca yazılabiliyor.
+
+    testWidgets('ELLE GİRİŞ: değere dokun, "2sa 10dk" yaz → 130',
+        (tester) async {
+      await pumpSettings(tester);
+      expect((await settings()).dailyGoalMinutes, 240);
+
+      await tester.tap(find.byKey(const Key('settings-goal-edit')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('goal-value-dialog')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('goal-value-hours')), '2');
+      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '10');
+      await tester.tap(find.byKey(const Key('goal-value-save')));
+      await tester.pumpAndSettle();
+
+      expect((await settings()).dailyGoalMinutes, 130);
+      expect(find.byKey(const Key('goal-value-dialog')), findsNothing);
+    });
+
+    testWidgets('ELLE GİRİŞ: stepper hâlâ çalışıyor (ikisi birden)',
+        (tester) async {
+      await pumpSettings(tester);
+
+      // Önce yaz…
+      await tester.tap(find.byKey(const Key('settings-goal-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('goal-value-hours')), '3');
+      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '0');
+      await tester.tap(find.byKey(const Key('goal-value-save')));
+      await tester.pumpAndSettle();
+      expect((await settings()).dailyGoalMinutes, 180);
+
+      // …sonra stepper'la ince ayar.
+      await tester.tap(find.byKey(const Key('settings-goal-plus')));
+      await tester.pumpAndSettle();
+      expect((await settings()).dailyGoalMinutes, 210);
+    });
+
+    testWidgets('GEÇERSİZ: 13 saat → eski değer KORUNUYOR, diyalog açık',
+        (tester) async {
+      await pumpSettings(tester);
+
+      await tester.tap(find.byKey(const Key('settings-goal-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('goal-value-hours')), '13');
+      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '0');
+      await tester.tap(find.byKey(const Key('goal-value-save')));
+      await tester.pumpAndSettle();
+
+      // Diyalog KAPANMIYOR: kullanıcı yanlışını görüp düzeltebilsin.
+      // Sessizce kapanıp eski değere dönmek "kaydettim sandım" hatası
+      // üretirdi.
+      expect(find.byKey(const Key('goal-value-dialog')), findsOneWidget);
+      expect(find.byKey(const Key('goal-value-error')), findsOneWidget);
+      expect((await settings()).dailyGoalMinutes, 240);
+    });
+
+    testWidgets('GEÇERSİZ: iki alan da boş → eski değer KORUNUYOR',
+        (tester) async {
+      await pumpSettings(tester);
+
+      await tester.tap(find.byKey(const Key('settings-goal-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('goal-value-hours')), '');
+      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '');
+      await tester.tap(find.byKey(const Key('goal-value-save')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('goal-value-error')), findsOneWidget);
+      expect((await settings()).dailyGoalMinutes, 240);
+    });
+
+    testWidgets('VAZGEÇ: eski değer KORUNUYOR', (tester) async {
+      await pumpSettings(tester);
+
+      await tester.tap(find.byKey(const Key('settings-goal-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('goal-value-hours')), '5');
+      await tester.tap(find.byKey(const Key('goal-value-cancel')));
+      await tester.pumpAndSettle();
+
+      expect((await settings()).dailyGoalMinutes, 240);
+    });
+
     testWidgets('alt sınırda azaltma PASİF', (tester) async {
       await db.settingsDao.ensure();
       await db.settingsDao.patchSettings(
