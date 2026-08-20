@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sinav_odak/presentation/goals/hold_repeat_button.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/core/theme/app_theme.dart';
@@ -230,8 +231,8 @@ void main() {
       tester
           .widget<Text>(find.byKey(const Key('onboarding-goal-minutes-value')))
           .data,
-      '3sa 30dk',
-      reason: '30 dakikalık adım',
+      '3sa 55dk',
+      reason: '5 dakikalık adım',
     );
 
     await tester.tap(find.byKey(const Key('onboarding-goal-questions-inc')));
@@ -242,8 +243,8 @@ void main() {
             find.byKey(const Key('onboarding-goal-questions-value')),
           )
           .data,
-      '110 soru',
-      reason: '10 soruluk adım',
+      '105 soru',
+      reason: '5 soruluk adım',
     );
   });
 
@@ -256,8 +257,10 @@ void main() {
     await tester.tap(find.byKey(const Key('onboarding-goal-minutes-edit')));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byKey(const Key('goal-value-hours')), '2');
-    await tester.enterText(find.byKey(const Key('goal-value-minutes')), '10');
+    await tester.enterText(
+      find.byKey(const Key('goal-value-duration')),
+      '2sa 10dk',
+    );
     await tester.tap(find.byKey(const Key('goal-value-save')));
     await tester.pumpAndSettle();
 
@@ -321,12 +324,14 @@ void main() {
     await pumpOnboarding(tester);
     await gotoGoalStep(tester);
 
-    // 240 -> 60 (alt sınır): 6 kez azalt.
-    for (var i = 0; i < 6; i++) {
-      final dec = tester.widget<IconButton>(
+    // 240 -> 60 (alt sınır). Adım v1.2'de 5 dk; kaç dokunuş gerektiğini
+    // saymak yerine düğme PASİFLEŞENE kadar azaltıyoruz — adım değişirse
+    // test kendiliğinden uyum sağlıyor.
+    for (var i = 0; i < 100; i++) {
+      final dec = tester.widget<HoldRepeatButton>(
         find.byKey(const Key('onboarding-goal-minutes-dec')),
       );
-      if (dec.onPressed == null) break;
+      if (!dec.enabled) break;
       await tester.tap(find.byKey(const Key('onboarding-goal-minutes-dec')));
       await tester.pumpAndSettle();
     }
@@ -336,11 +341,12 @@ void main() {
           .widget<Text>(find.byKey(const Key('onboarding-goal-minutes-value')))
           .data,
       '1sa',
+      reason: 'alt sınır 60 dk',
     );
-    final dec = tester.widget<IconButton>(
+    final dec = tester.widget<HoldRepeatButton>(
       find.byKey(const Key('onboarding-goal-minutes-dec')),
     );
-    expect(dec.onPressed, isNull, reason: '60 dk alt sınır');
+    expect(dec.enabled, isFalse, reason: 'alt sınırda azaltma PASİF');
   });
 
   testWidgets('6) rıza varsayılan KAPALI (KVKK)', (tester) async {
@@ -469,13 +475,13 @@ void main() {
       tester
           .widget<Text>(find.byKey(const Key('onboarding-summary-minutes')))
           .data,
-      '4sa 30dk',
+      '4sa 5dk',
     );
     expect(
       tester
           .widget<Text>(find.byKey(const Key('onboarding-summary-questions')))
           .data,
-      '90',
+      '95',
     );
     expect(
       tester
@@ -500,7 +506,7 @@ void main() {
     final s = await db.settingsDao.read();
     expect(s.onboardingCompleted, isTrue);
     expect(s.examType, ExamType.yks);
-    expect(s.dailyGoalMinutes, 270);
+    expect(s.dailyGoalMinutes, 245);
     expect(s.dailyGoalQuestions, 100);
     expect(s.personalizedAdsConsent, isFalse);
 

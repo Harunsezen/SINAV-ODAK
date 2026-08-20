@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/utils/formatters.dart';
 import '../../goals/goal_value_editor.dart';
+import '../../goals/hold_repeat_button.dart';
 
 /// Onboarding 3/5 — Günlük hedef.
 ///
@@ -27,11 +28,11 @@ class GoalStep extends StatelessWidget {
 
   static const minMinutes = 60;
   static const maxMinutes = 480;
-  static const stepMinutes = 30;
+  static const stepMinutes = 5;
 
   static const minQuestions = 20;
   static const maxQuestions = 500;
-  static const stepQuestions = 10;
+  static const stepQuestions = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +57,13 @@ class GoalStep extends StatelessWidget {
           kind: GoalValueKind.duration,
           value: minutes,
           onTyped: onMinutes,
-          onDec: minutes > minMinutes
-              ? () => onMinutes(minutes - stepMinutes)
-              : null,
-          onInc: minutes < maxMinutes
-              ? () => onMinutes(minutes + stepMinutes)
-              : null,
+          step: stepMinutes,
+          canDec: minutes > minMinutes,
+          canInc: minutes < maxMinutes,
+          onDec: (by) =>
+              onMinutes((minutes - by).clamp(minMinutes, maxMinutes)),
+          onInc: (by) =>
+              onMinutes((minutes + by).clamp(minMinutes, maxMinutes)),
         ),
         const SizedBox(height: 16),
         _Stepper(
@@ -71,12 +73,13 @@ class GoalStep extends StatelessWidget {
           kind: GoalValueKind.count,
           value: questions,
           onTyped: onQuestions,
-          onDec: questions > minQuestions
-              ? () => onQuestions(questions - stepQuestions)
-              : null,
-          onInc: questions < maxQuestions
-              ? () => onQuestions(questions + stepQuestions)
-              : null,
+          step: stepQuestions,
+          canDec: questions > minQuestions,
+          canInc: questions < maxQuestions,
+          onDec: (by) =>
+              onQuestions((questions - by).clamp(minQuestions, maxQuestions)),
+          onInc: (by) =>
+              onQuestions((questions + by).clamp(minQuestions, maxQuestions)),
         ),
       ],
     );
@@ -91,6 +94,9 @@ class _Stepper extends StatelessWidget {
     required this.kind,
     required this.value,
     required this.onTyped,
+    required this.step,
+    required this.canDec,
+    required this.canInc,
     required this.onDec,
     required this.onInc,
   });
@@ -109,8 +115,11 @@ class _Stepper extends StatelessWidget {
   /// eski değer korunuyor.
   final ValueChanged<int> onTyped;
 
-  final VoidCallback? onDec;
-  final VoidCallback? onInc;
+  final int step;
+  final bool canDec;
+  final bool canInc;
+  final ValueChanged<int> onDec;
+  final ValueChanged<int> onInc;
 
   @override
   Widget build(BuildContext context) {
@@ -120,10 +129,12 @@ class _Stepper extends StatelessWidget {
         child: Row(
           children: [
             Expanded(child: Text(label)),
-            IconButton(
+            HoldRepeatButton(
               key: Key('onboarding-goal-$slug-dec'),
-              onPressed: onDec,
-              icon: const Icon(Icons.remove),
+              icon: Icons.remove,
+              enabled: canDec,
+              step: step,
+              onStep: onDec,
             ),
             // **Değere dokununca elle giriş açılıyor.** Stepper duruyor:
             // yakın değer için dokun, uzak değer için yaz.
@@ -155,10 +166,12 @@ class _Stepper extends StatelessWidget {
                 ),
               ),
             ),
-            IconButton(
+            HoldRepeatButton(
               key: Key('onboarding-goal-$slug-inc'),
-              onPressed: onInc,
-              icon: const Icon(Icons.add),
+              icon: Icons.add,
+              enabled: canInc,
+              step: step,
+              onStep: onInc,
             ),
           ],
         ),

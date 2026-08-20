@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../domain/services/goal_input.dart';
 
 /// Hedef değerinin ölçü birimi.
 enum GoalValueKind {
-  /// Süre — saat + dakika olarak iki alan.
+  /// Süre — dakika olarak saklanıyor, "2sa 8dk" gibi yazılabiliyor.
   duration,
 
-  /// Adet (soru) — tek alan.
+  /// Adet (soru).
   count,
 }
 
@@ -22,11 +21,15 @@ enum GoalValueKind {
 /// buydu. Stepper **kalıyor** — ikisi bir arada: yakın değer için dokun,
 /// uzak değer için yaz.
 ///
-/// ## Neden serbest metin değil, iki sayı alanı
+/// ## Tek serbest metin alanı
 ///
-/// "2sa 10dk" gibi bir metni ayrıştırmak dile ve yazıma bağımlı olurdu
-/// ("2 saat 10 dakika", "2:10", "2s10d"…). Saat ve dakika ayrı alanlar
-/// olunca belirsizlik yok; klavye de sayısal açılıyor.
+/// Önce ayrı Saat/Dakika alanları denendi: belirsizlik yoktu ama iki alan
+/// arasında gezinmeye zorluyordu. Tek alan + esnek ayrıştırma daha az
+/// sürtünme — "2sa 8dk", "148dk", "148" ve "2:08" hepsi kabul ediliyor
+/// (bkz. [GoalInput.parseDuration]).
+///
+/// Alan **mevcut değerle dolu** açılıyor: klavye ile stepper aynı sayıyı
+/// gösteriyor.
 ///
 /// Geçersiz girişte diyalog `null` döndürüyor ve çağıran **eski değeri
 /// koruyor** (bkz. [GoalInput]).
@@ -55,31 +58,38 @@ class _GoalValueDialog extends StatefulWidget {
 
 class _GoalValueDialogState extends State<_GoalValueDialog> {
   late final TextEditingController _a;
-  late final TextEditingController _b;
   bool _invalid = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.kind == GoalValueKind.duration) {
-      _a = TextEditingController(text: '${widget.current ~/ 60}');
-      _b = TextEditingController(text: '${widget.current % 60}');
-    } else {
-      _a = TextEditingController(text: '${widget.current}');
-      _b = TextEditingController();
-    }
+    // Alan MEVCUT değerle dolu açılıyor: klavye ile stepper aynı sayıyı
+    // gösteriyor (senkron), kullanıcı sıfırdan yazmak zorunda değil.
+    _a = TextEditingController(
+      text: widget.kind == GoalValueKind.duration
+          ? _durationText(widget.current)
+          : '${widget.current}',
+    );
+  }
+
+  /// 128 → "2sa 8dk" · 45 → "45dk" · 120 → "2sa"
+  static String _durationText(int minutes) {
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    if (h == 0) return '${m}dk';
+    if (m == 0) return '${h}sa';
+    return '${h}sa ${m}dk';
   }
 
   @override
   void dispose() {
     _a.dispose();
-    _b.dispose();
     super.dispose();
   }
 
   void _submit() {
     final value = widget.kind == GoalValueKind.duration
-        ? GoalInput.parseDuration(hours: _a.text, minutes: _b.text)
+        ? GoalInput.parseDuration(_a.text)
         : GoalInput.parseCount(_a.text);
 
     if (value == null) {
@@ -106,34 +116,13 @@ class _GoalValueDialogState extends State<_GoalValueDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (isDuration)
-            Row(
-              children: [
-                Expanded(
-                  child: _field(
-                    key: const Key('goal-value-hours'),
-                    controller: _a,
-                    label: l.goalsEditHours,
-                    autofocus: true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _field(
-                    key: const Key('goal-value-minutes'),
-                    controller: _b,
-                    label: l.goalsEditMinutes,
-                  ),
-                ),
-              ],
-            )
-          else
-            _field(
-              key: const Key('goal-value-count'),
-              controller: _a,
-              label: l.goalsEditCount,
-              autofocus: true,
-            ),
+          _field(
+            key: isDuration
+                ? const Key('goal-value-duration')
+                : const Key('goal-value-count'),
+            controller: _a,
+            label: isDuration ? l.goalsEditDurationLabel : l.goalsEditCount,
+          ),
           const SizedBox(height: 8),
           Text(
             isDuration ? l.goalsEditDurationHint : l.goalsEditCountHint,
@@ -171,16 +160,14 @@ class _GoalValueDialogState extends State<_GoalValueDialog> {
     required Key key,
     required TextEditingController controller,
     required String label,
-    bool autofocus = false,
   }) {
     return TextField(
       key: key,
       controller: controller,
-      autofocus: autofocus,
-      keyboardType: TextInputType.number,
-      // Yalnızca rakam: eksi/nokta/virgül girilemesin. Doğrulama yine de
-      // `GoalInput`'ta — yapıştırma bu filtreyi atlayabiliyor.
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      autofocus: true,
+      // `digitsOnly` YOK: "2sa 8dk" yazılabilmeli. Doğrulama zaten
+      // `GoalInput`'ta ve geçersizde eski değer korunuyor.
+      keyboardType: TextInputType.text,
       textInputAction: TextInputAction.done,
       onSubmitted: (_) => _submit(),
       decoration: InputDecoration(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sinav_odak/presentation/goals/hold_repeat_button.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
@@ -132,14 +133,14 @@ void main() {
   });
 
   group('günlük hedef', () {
-    testWidgets('artırma 30 dk adımla yazıyor', (tester) async {
+    testWidgets('tek dokunuş 5 dk adımla yazıyor', (tester) async {
       await pumpSettings(tester);
       expect((await settings()).dailyGoalMinutes, 240);
 
       await tester.tap(find.byKey(const Key('settings-goal-plus')));
       await tester.pumpAndSettle();
 
-      expect((await settings()).dailyGoalMinutes, 270);
+      expect((await settings()).dailyGoalMinutes, 245);
     });
 
     testWidgets('azaltma çalışıyor', (tester) async {
@@ -148,7 +149,7 @@ void main() {
       await tester.tap(find.byKey(const Key('settings-goal-minus')));
       await tester.pumpAndSettle();
 
-      expect((await settings()).dailyGoalMinutes, 210);
+      expect((await settings()).dailyGoalMinutes, 235);
     });
 
     // ---- v1.2: elle giriş (Zehra'nın geri bildirimi) ------------------
@@ -165,8 +166,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('goal-value-dialog')), findsOneWidget);
 
-      await tester.enterText(find.byKey(const Key('goal-value-hours')), '2');
-      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '10');
+      await tester.enterText(
+        find.byKey(const Key('goal-value-duration')),
+        '2sa 10dk',
+      );
       await tester.tap(find.byKey(const Key('goal-value-save')));
       await tester.pumpAndSettle();
 
@@ -181,16 +184,18 @@ void main() {
       // Önce yaz…
       await tester.tap(find.byKey(const Key('settings-goal-edit')));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('goal-value-hours')), '3');
-      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '0');
+      await tester.enterText(
+        find.byKey(const Key('goal-value-duration')),
+        '3sa',
+      );
       await tester.tap(find.byKey(const Key('goal-value-save')));
       await tester.pumpAndSettle();
       expect((await settings()).dailyGoalMinutes, 180);
 
-      // …sonra stepper'la ince ayar.
+      // …sonra stepper'la ince ayar (tek dokunuş = 5 dk).
       await tester.tap(find.byKey(const Key('settings-goal-plus')));
       await tester.pumpAndSettle();
-      expect((await settings()).dailyGoalMinutes, 210);
+      expect((await settings()).dailyGoalMinutes, 185);
     });
 
     testWidgets('GEÇERSİZ: 13 saat → eski değer KORUNUYOR, diyalog açık',
@@ -199,8 +204,10 @@ void main() {
 
       await tester.tap(find.byKey(const Key('settings-goal-edit')));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('goal-value-hours')), '13');
-      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '0');
+      await tester.enterText(
+        find.byKey(const Key('goal-value-duration')),
+        '13sa',
+      );
       await tester.tap(find.byKey(const Key('goal-value-save')));
       await tester.pumpAndSettle();
 
@@ -218,8 +225,7 @@ void main() {
 
       await tester.tap(find.byKey(const Key('settings-goal-edit')));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('goal-value-hours')), '');
-      await tester.enterText(find.byKey(const Key('goal-value-minutes')), '');
+      await tester.enterText(find.byKey(const Key('goal-value-duration')), '');
       await tester.tap(find.byKey(const Key('goal-value-save')));
       await tester.pumpAndSettle();
 
@@ -232,7 +238,10 @@ void main() {
 
       await tester.tap(find.byKey(const Key('settings-goal-edit')));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('goal-value-hours')), '5');
+      await tester.enterText(
+        find.byKey(const Key('goal-value-duration')),
+        '5sa',
+      );
       await tester.tap(find.byKey(const Key('goal-value-cancel')));
       await tester.pumpAndSettle();
 
@@ -242,14 +251,46 @@ void main() {
     testWidgets('alt sınırda azaltma PASİF', (tester) async {
       await db.settingsDao.ensure();
       await db.settingsDao.patchSettings(
-        const UserSettingsCompanion(dailyGoalMinutes: Value(30)),
+        const UserSettingsCompanion(dailyGoalMinutes: Value(0)),
       );
       await pumpSettings(tester);
 
-      final minus = tester.widget<IconButton>(
+      final minus = tester.widget<HoldRepeatButton>(
         find.byKey(const Key('settings-goal-minus')),
       );
-      expect(minus.onPressed, isNull);
+      expect(minus.enabled, isFalse);
+    });
+
+    testWidgets('BASILI TUT: ±1 ile akıyor, bırakınca duruyor', (tester) async {
+      await pumpSettings(tester);
+      expect((await settings()).dailyGoalMinutes, 240);
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(const Key('settings-goal-plus'))),
+      );
+      // **Bu pump ŞART.** Olmadan parmak-indi olayı hiç işlenmiyor,
+      // zamanlayıcı başlamıyor ve akış tetiklenmiyor. Ölçüldü: testin
+      // ilk hâli 241 beklerken 240 görüyordu.
+      await tester.pump();
+
+      // 0,5 sn dolmadan hiçbir şey olmamalı — yoksa her dokunuş hem
+      // adım hem akış başlatırdı.
+      await tester.pump(const Duration(milliseconds: 400));
+      expect((await settings()).dailyGoalMinutes, 240);
+
+      // Gecikme dolunca akış başlıyor: ilk ±1.
+      await tester.pump(const Duration(milliseconds: 200));
+      expect((await settings()).dailyGoalMinutes, 241);
+
+      // Akış sürüyor ve HIZLANIYOR: aynı sürede daha çok adım.
+      await tester.pump(const Duration(milliseconds: 600));
+      final flowed = (await settings()).dailyGoalMinutes;
+      expect(flowed, greaterThan(243), reason: 'ivmelenerek akmalı');
+
+      // Bırakınca duruyor ve tek-dokunuş adımı UYGULANMIYOR.
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect((await settings()).dailyGoalMinutes, flowed);
     });
   });
 

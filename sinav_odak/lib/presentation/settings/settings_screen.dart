@@ -7,6 +7,7 @@ import '../../core/config/ad_config.dart';
 import '../../core/di/ad_providers.dart';
 import '../../core/di/app_providers.dart';
 import '../goals/goal_value_editor.dart';
+import '../goals/hold_repeat_button.dart';
 import '../../application/settings_controller.dart';
 import '../../core/router/routes.dart';
 import '../../domain/entities/enums.dart';
@@ -463,33 +464,67 @@ class _SectionCard extends StatelessWidget {
 }
 
 /// Günlük hedef (dakika) — 30 dk adımlarla.
-class _DailyGoalTile extends ConsumerWidget {
+class _DailyGoalTile extends ConsumerStatefulWidget {
   const _DailyGoalTile({required this.current});
 
   final int current;
 
-  static const int min = 30;
+  static const int min = 0;
   static const int max = 720;
-  static const int step = 30;
+
+  /// Tek dokunuş adımı. 30 dk'dan **5 dk'ya** indirildi (v1.2): 30'luk
+  /// adım "biraz artır"ı imkânsız kılıyordu. Uzak değer için artık
+  /// basılı tutma ve klavye var.
+  static const int step = 5;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DailyGoalTile> createState() => _DailyGoalTileState();
+}
+
+class _DailyGoalTileState extends ConsumerState<_DailyGoalTile> {
+  /// Kullanıcı dokunduğu andan itibaren **yerel** değer.
+  ///
+  /// **Neden gerekli:** basılı tutma akışı en hızlıda 40 ms'de bir adım
+  /// atıyor; her adım veritabanına yazıp akıştan geri gelmeyi bekleseydi
+  /// ardışık adımlar aynı BAYAT değerden hesaplardı ve sayaç yerinde
+  /// sayardı. Ölçüldü: 600 ms akışta değer 1 arttı, 5 değil.
+  ///
+  /// Yazma yine yapılıyor; yerel kopya yalnızca gidiş-dönüşü beklemiyor.
+  int? _local;
+
+  int get _value => _local ?? widget.current;
+
+  @override
+  void didUpdateWidget(_DailyGoalTile old) {
+    super.didUpdateWidget(old);
+    // Veritabanı bizim yazdığımıza yetişti → yerel kopyayı bırak ki
+    // başka bir yerden gelen değişiklikler görünsün.
+    if (widget.current == _local) _local = null;
+  }
+
+  void _apply(int next) {
+    final clamped = next.clamp(_DailyGoalTile.min, _DailyGoalTile.max);
+    if (clamped == _value) return;
+    setState(() => _local = clamped);
+    ref.read(settingsControllerProvider).setDailyGoalMinutes(clamped);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l = L10n.of(context);
     return Row(
       children: [
         Expanded(child: Text(l.settingsDailyGoal)),
-        IconButton(
+        HoldRepeatButton(
           key: const Key('settings-goal-minus'),
-          icon: const Icon(Icons.remove_circle_outline),
-          onPressed: current <= min
-              ? null
-              : () => ref
-                  .read(settingsControllerProvider)
-                  .setDailyGoalMinutes(current - step),
+          icon: Icons.remove_circle_outline,
+          enabled: _value > _DailyGoalTile.min,
+          step: _DailyGoalTile.step,
+          onStep: (by) => _apply(_value - by),
         ),
         // **Değere dokununca elle giriş açılıyor** (v1.2 — Zehra'nın geri
-        // bildirimi). Stepper duruyor: 30 dk'lık adımlarla 30'dan 720'ye
-        // çıkmak 23 dokunuş; yakın değer için dokun, uzak değer için yaz.
+        // bildirimi). Stepper duruyor: yakın değer için dokun/basılı tut,
+        // uzak değer için yaz.
         SizedBox(
           width: 72,
           child: InkWell(
@@ -498,20 +533,17 @@ class _DailyGoalTile extends ConsumerWidget {
               final typed = await showGoalValueEditor(
                 context,
                 kind: GoalValueKind.duration,
-                current: current,
+                current: _value,
               );
               // Geçersiz/boş girişte diyalog `null` döndürüyor ve eski
               // değer olduğu gibi kalıyor.
-              if (typed == null) return;
-              await ref
-                  .read(settingsControllerProvider)
-                  .setDailyGoalMinutes(typed);
+              if (typed != null) _apply(typed);
             },
             child: Padding(
               // Dokunma hedefi en az 48 px yüksek.
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
-                '$current',
+                '$_value',
                 key: const Key('settings-goal-value'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -523,14 +555,12 @@ class _DailyGoalTile extends ConsumerWidget {
             ),
           ),
         ),
-        IconButton(
+        HoldRepeatButton(
           key: const Key('settings-goal-plus'),
-          icon: const Icon(Icons.add_circle_outline),
-          onPressed: current >= max
-              ? null
-              : () => ref
-                  .read(settingsControllerProvider)
-                  .setDailyGoalMinutes(current + step),
+          icon: Icons.add_circle_outline,
+          enabled: _value < _DailyGoalTile.max,
+          step: _DailyGoalTile.step,
+          onStep: (by) => _apply(_value + by),
         ),
       ],
     );
