@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sinav_odak/presentation/shell/app_shell.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
 import 'package:sinav_odak/core/router/routes.dart';
@@ -269,7 +270,7 @@ void main() {
       await locationAfter(tester, goTo: Routes.run);
 
       expect(
-        find.byType(NavigationBar),
+        find.byKey(AppShell.navKey),
         findsNothing,
         reason: 'run route\'ları shell DIŞINDA tanımlı olmalı',
       );
@@ -279,7 +280,7 @@ void main() {
       await setOnboarding(done: true);
       await locationAfter(tester, goTo: Routes.home);
 
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byKey(AppShell.navKey), findsOneWidget);
     });
   });
 }

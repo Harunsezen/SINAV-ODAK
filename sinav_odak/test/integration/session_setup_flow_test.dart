@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sinav_odak/presentation/shell/app_shell.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
 import 'package:sinav_odak/core/router/routes.dart';
@@ -164,7 +165,7 @@ void main() {
   testWidgets('kurulum ekranlarında alt navigasyon GİZLİ', (tester) async {
     await pumpApp(tester);
     expect(
-      find.byType(NavigationBar),
+      find.byKey(AppShell.navKey),
       findsOneWidget,
       reason: 'ana panelde var',
     );
@@ -173,7 +174,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.byType(NavigationBar),
+      find.byKey(AppShell.navKey),
       findsNothing,
       reason: 'kurulum route\'ları shell DIŞINDA',
     );
