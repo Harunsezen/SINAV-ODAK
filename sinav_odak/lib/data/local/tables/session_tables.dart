@@ -106,3 +106,46 @@ class SessionBlocks extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Bir oturumda çalışılan konular (v1.2/D).
+///
+/// ## Neden ayrı tablo, neden `study_sessions.topic_id` DURUYOR
+///
+/// v1.1'de bir oturumun tek konusu vardı. Çoklu konu için iki yol vardı:
+/// `topic_id`'yi silip her okuyanı bu tabloya çevirmek, ya da tabloyu
+/// EKLEYİP `topic_id`'yi **birincil konu** olarak bırakmak.
+///
+/// İkincisi seçildi. `topic_id`'yi okuyan altı yer var — CSV dışa
+/// aktarma, "gelişim gereken konular", oturum sonu yanlış kaydı, yanlış
+/// defterindeki "bu konuyu çalış", ana panel listesi ve aktif oturum
+/// başlığı. Hepsi **tek bir konu** gösteriyor; çoklu listeye çevrilseler
+/// bile "hangisini göstereyim" sorusunu yine cevaplamaları gerekirdi.
+/// Kural açıkça yazılı olsun diye birincil konu şemada duruyor:
+/// **`topic_id` = listenin İLK konusu.**
+///
+/// İkisinin ayrışması gerçek bir risk; bu yüzden ikisi de TEK yerden
+/// (`StartSessionUseCase`) yazılıyor ve bir test eşitliği kilitliyor.
+///
+/// ## Süre bu konulara BÖLÜNMÜYOR
+///
+/// Oturum 90 dakika ve üç konu seçildiyse, her konuya 30 dakika yazmak
+/// uydurma olurdu — kullanıcı hangi konuya ne kadar ayırdığını
+/// bildirmiyor. Bu tablo "bu oturumda şunlara çalışıldı" etiketi;
+/// istatistikteki süre oturumun kendisine ait kalıyor.
+@TableIndex(name: 'idx_session_topics_topic', columns: {#topicId})
+class SessionTopics extends Table {
+  TextColumn get sessionId =>
+      text().references(StudySessions, #id, onDelete: KeyAction.cascade)();
+
+  /// `cascade` DEĞİL `restrict` de değil: konu silinirse satır düşsün ama
+  /// oturum yaşasın. Konular zaten arşivleniyor, silinmiyor (G8); bu
+  /// yalnızca son çare.
+  TextColumn get topicId =>
+      text().references(Topics, #id, onDelete: KeyAction.cascade)();
+
+  /// Kullanıcının seçtiği sıra. 0 = birincil konu.
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {sessionId, topicId};
+}

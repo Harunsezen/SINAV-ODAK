@@ -27,7 +27,7 @@ void main() {
         sessionId: id,
         schedule: schedule(startAtMs: startAtMs),
         subjectId: subjectId,
-        topicId: topicId,
+        topicIds: const [topicId],
         activityTypeId: activityId,
       );
 

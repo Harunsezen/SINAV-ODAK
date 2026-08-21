@@ -18,14 +18,14 @@ class RunController {
     required String sessionId,
     required SessionSchedule schedule,
     required String subjectId,
-    String? topicId,
+    List<String> topicIds = const [],
     required String activityTypeId,
   }) {
     return _ref.read(startSessionProvider)(
       sessionId: sessionId,
       schedule: schedule,
       subjectId: subjectId,
-      topicId: topicId,
+      topicIds: topicIds,
       activityTypeId: activityTypeId,
     );
   }

@@ -512,7 +512,13 @@ final dayStatsProvider = StreamProvider.family<DailyStat?, String>(
 ///
 /// Oturum sonu formu başlığında gösterilir. Presentation katmanı Drift
 /// tiplerini isimlendirmeden tükettiği için ad çözümlemesi burada yapılır.
-typedef ActiveLabels = ({String subjectName, String? topicName});
+/// [topicNames] oturumun TÜM konuları, seçilme sırasıyla (v1.2/D);
+/// [topicName] birincil konu — ilk eleman.
+typedef ActiveLabels = ({
+  String subjectName,
+  String? topicName,
+  List<String> topicNames,
+});
 
 final activeSessionLabelsProvider = FutureProvider<ActiveLabels?>((ref) async {
   final session = ref.watch(activeSessionProvider).valueOrNull;
@@ -520,10 +526,26 @@ final activeSessionLabelsProvider = FutureProvider<ActiveLabels?>((ref) async {
 
   final dao = ref.watch(subjectDaoProvider);
   final subject = await dao.findSubject(session.subjectId);
-  final topicId = session.topicId;
-  final topic = topicId == null ? null : await dao.findTopic(topicId);
 
-  return (subjectName: subject?.name ?? '', topicName: topic?.name);
+  // Konular `session_topics`ten, SEÇİLME sırasıyla. `topic_id` üzerinden
+  // tek konu okumak çoklu oturumda diğerlerini görünmez yapardı.
+  final topics = await ref.watch(databaseProvider).sessionDao.topicsOf(
+        session.id,
+      );
+  final names = topics.map((t) => t.name).toList();
+
+  // Geriye dönük: `session_topics` boş ama `topic_id` doluysa (v1.2/D
+  // öncesi bir kayıt taşınmamışsa) yine de konu gösteriliyor.
+  if (names.isEmpty && session.topicId != null) {
+    final t = await dao.findTopic(session.topicId!);
+    if (t != null) names.add(t.name);
+  }
+
+  return (
+    subjectName: subject?.name ?? '',
+    topicName: names.isEmpty ? null : names.first,
+    topicNames: names,
+  );
 });
 
 // ---------------------------------------------------------------------------

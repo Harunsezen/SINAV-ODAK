@@ -29,7 +29,7 @@ class StartSessionUseCase {
     required String sessionId,
     required SessionSchedule schedule,
     required String subjectId,
-    String? topicId,
+    List<String> topicIds = const [],
     required String activityTypeId,
   }) async {
     // Aynı anda iki `running` oturum olamaz. Şemada kısmi unique index yok,
@@ -51,7 +51,9 @@ class StartSessionUseCase {
       startedAt: startMs,
       plannedDurationS: schedule.totalStudyS,
       subjectId: subjectId,
-      topicId: Value(topicId),
+      // Birincil konu = listenin ilki. Liste `session_topics`e aşağıda,
+      // AYNI transaction içinde yazılıyor.
+      topicId: Value(topicIds.isEmpty ? null : topicIds.first),
       activityTypeId: activityTypeId,
       status: SessionStatus.running,
       scheduleJson: jsonEncode(schedule.toJson()),
@@ -62,6 +64,7 @@ class StartSessionUseCase {
     await _db.sessionDao.createSession(
       session,
       ScheduleWriter.blocksOf(sessionId, schedule),
+      topicIds: topicIds,
     );
 
     // Bildirim kurulumu akışı BEKLETMEZ; izin yoksa oturum yine başlar.

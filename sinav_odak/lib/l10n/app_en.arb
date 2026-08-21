@@ -906,5 +906,27 @@
         "type": "int"
       }
     }
-  }
+  },
+  "setupTopicMultiHint": "Tap the boxes to pick more than one topic",
+  "setupTopicSelected": "{count} topics selected",
+  "@setupTopicSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTopicContinue": "Continue",
+  "setupTopicAdd": "Add to list",
+  "setupTopicRemove": "Remove from list",
+  "setupTopicPlus": "+{count}",
+  "@setupTopicPlus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryTopics": "Topics",
+  "planBlockBreakSuffix": "b"
 }

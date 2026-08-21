@@ -906,5 +906,27 @@
         "type": "int"
       }
     }
-  }
+  },
+  "setupTopicMultiHint": "Birden fazla konu için kutucuklara dokun",
+  "setupTopicSelected": "{count} konu seçildi",
+  "@setupTopicSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTopicContinue": "Devam",
+  "setupTopicAdd": "Listeye ekle",
+  "setupTopicRemove": "Listeden çıkar",
+  "setupTopicPlus": "+{count}",
+  "@setupTopicPlus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryTopics": "Konular",
+  "planBlockBreakSuffix": "m"
 }

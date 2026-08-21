@@ -9,8 +9,8 @@ class SetupSelection {
     this.subjectId,
     this.subjectName,
     this.subjectColorHex,
-    this.topicId,
-    this.topicName,
+    this.topicIds = const [],
+    this.topicNames = const [],
     this.activityTypeId,
     this.activityTypeName,
   });
@@ -19,12 +19,24 @@ class SetupSelection {
   final String? subjectName;
   final String? subjectColorHex;
 
-  /// Konu seçimi ATLANABİLİR; bu alan null kalabilir.
-  final String? topicId;
-  final String? topicName;
+  /// Seçilen konular, kullanıcının seçtiği SIRAYLA (v1.2/D).
+  ///
+  /// Konu seçimi ATLANABİLİR; bu listeler boş kalabilir.
+  final List<String> topicIds;
+  final List<String> topicNames;
 
   final String? activityTypeId;
   final String? activityTypeName;
+
+  /// Birincil konu — listenin ilki.
+  ///
+  /// Şemadaki `study_sessions.topic_id` ile aynı kural. Tek konu gösteren
+  /// yerler (CSV, yanlış defteri, ana panel) bunu okuyor.
+  String? get topicId => topicIds.isEmpty ? null : topicIds.first;
+  String? get topicName => topicNames.isEmpty ? null : topicNames.first;
+
+  /// Birden fazla konu seçildiyse kaç TANE FAZLA olduğu ("+2" rozeti).
+  int get extraTopicCount => topicIds.isEmpty ? 0 : topicIds.length - 1;
 
   /// Plan ekranına geçmek için ders ve tür zorunlu, konu değil.
   bool get isReadyForPlan => subjectId != null && activityTypeId != null;
@@ -33,8 +45,8 @@ class SetupSelection {
     String? subjectId,
     String? subjectName,
     String? subjectColorHex,
-    String? topicId,
-    String? topicName,
+    List<String>? topicIds,
+    List<String>? topicNames,
     String? activityTypeId,
     String? activityTypeName,
   }) {
@@ -42,8 +54,8 @@ class SetupSelection {
       subjectId: subjectId ?? this.subjectId,
       subjectName: subjectName ?? this.subjectName,
       subjectColorHex: subjectColorHex ?? this.subjectColorHex,
-      topicId: topicId ?? this.topicId,
-      topicName: topicName ?? this.topicName,
+      topicIds: topicIds ?? this.topicIds,
+      topicNames: topicNames ?? this.topicNames,
       activityTypeId: activityTypeId ?? this.activityTypeId,
       activityTypeName: activityTypeName ?? this.activityTypeName,
     );
@@ -55,25 +67,38 @@ class SetupSelection {
       other.subjectId == subjectId &&
       other.subjectName == subjectName &&
       other.subjectColorHex == subjectColorHex &&
-      other.topicId == topicId &&
-      other.topicName == topicName &&
+      _sameList(other.topicIds, topicIds) &&
+      _sameList(other.topicNames, topicNames) &&
       other.activityTypeId == activityTypeId &&
       other.activityTypeName == activityTypeName;
+
+  /// Liste eşitliği ELLE: Dart'ta `List` `==` kimlik karşılaştırıyor ve
+  /// aynı içerikli iki liste farklı sayılıyor. Riverpod state'i buna
+  /// bakarak yeniden çiziyor; kimlik karşılaştırması her `copyWith`te
+  /// gereksiz yeniden çizim üretirdi.
+  static bool _sameList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   @override
   int get hashCode => Object.hash(
         subjectId,
         subjectName,
         subjectColorHex,
-        topicId,
-        topicName,
+        Object.hashAll(topicIds),
+        Object.hashAll(topicNames),
         activityTypeId,
         activityTypeName,
       );
 
   @override
-  String toString() =>
-      'SetupSelection($subjectName / ${topicName ?? "konusuz"} / $activityTypeName)';
+  String toString() => 'SetupSelection($subjectName / '
+      '${topicNames.isEmpty ? "konusuz" : topicNames.join(", ")} / '
+      '$activityTypeName)';
 }
 
 /// Kurulum akışının state'i.
@@ -100,8 +125,33 @@ class SetupNotifier extends Notifier<SetupSelection> {
     );
   }
 
+  /// Tek konu seçer — önceki seçimin YERİNE.
+  ///
+  /// Hızlı yol: listeden bir konuya dokunmak. Çoklu seçim ayrı bir
+  /// eylem ([toggleTopic]); tek dokunuş v1.1'deki gibi tek konu seçip
+  /// ilerliyor.
   void selectTopic({required String id, required String name}) {
-    state = state.copyWith(topicId: id, topicName: name);
+    state = state.copyWith(topicIds: [id], topicNames: [name]);
+  }
+
+  /// Konuyu listeye ekler veya çıkarır (v1.2/D).
+  ///
+  /// Sıra korunuyor: ilk seçilen birincil konu olarak kalıyor. Çıkarılan
+  /// birincil konuysa sıradaki birincil oluyor — kullanıcı "ilk seçtiğim
+  /// gitti, ikincisi başa geçti" diye şaşırmasın diye liste hep aynı
+  /// sırada.
+  void toggleTopic({required String id, required String name}) {
+    final ids = [...state.topicIds];
+    final names = [...state.topicNames];
+    final i = ids.indexOf(id);
+    if (i >= 0) {
+      ids.removeAt(i);
+      names.removeAt(i);
+    } else {
+      ids.add(id);
+      names.add(name);
+    }
+    state = state.copyWith(topicIds: ids, topicNames: names);
   }
 
   /// "Konu seçmeden devam et": [SetupSelection.topicId] null kalır.

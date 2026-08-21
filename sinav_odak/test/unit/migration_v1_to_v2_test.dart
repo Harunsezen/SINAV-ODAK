@@ -62,9 +62,9 @@ void main() {
     await raw.close();
   });
 
-  test('schemaVersion 5', () async {
+  test('schemaVersion 6', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    expect(db.schemaVersion, 5);
+    expect(db.schemaVersion, 6);
     await db.close();
   });
 

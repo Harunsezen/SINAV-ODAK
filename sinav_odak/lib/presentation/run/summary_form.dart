@@ -297,8 +297,14 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final subject = labels?.subjectName ?? '';
     final topic = labels?.topicName;
-    final title =
-        topic == null || topic.isEmpty ? subject : '$subject · $topic';
+    // Çoklu konuda ilk konu + "+2". Üç ad yan yana başlığı taşırıyor.
+    final extra = (labels?.topicNames.length ?? 0) - 1;
+    final topicText = topic == null || topic.isEmpty
+        ? null
+        : extra > 0
+            ? '$topic ${L10n.of(context).setupTopicPlus(extra)}'
+            : topic;
+    final title = topicText == null ? subject : '$subject · $topicText';
 
     return Card(
       key: const Key('summary-header'),

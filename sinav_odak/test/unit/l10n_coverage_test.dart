@@ -40,7 +40,7 @@ void main() {
     'languageTurkish', 'languageEnglish', 'onboardingLanguage',
     // Yalnızca yer tutucu + noktalama
     'goalsProgress', 'homeProgressOf', 'onboardingStepOf',
-    'setupBreadcrumb', 'wrongsSubjectTopic',
+    'setupBreadcrumb', 'wrongsSubjectTopic', 'setupTopicPlus',
     // Bilerek boş (kilitli rozetin gövdesi yok)
     'achUnknownBody',
   };

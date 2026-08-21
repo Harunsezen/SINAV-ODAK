@@ -37,6 +37,7 @@ part 'database.g.dart';
     Topics,
     ActivityTypes,
     StudySessions,
+    SessionTopics,
     SessionBlocks,
     Goals,
     DailyStats,
@@ -66,7 +67,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
   /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -129,6 +130,21 @@ class AppDatabase extends _$AppDatabase {
             // kullanıcı güncellemeden sonra uygulamayı dil değiştirmiş
             // bulurdu — istemediği bir değişiklik.
             await m.addColumn(userSettings, userSettings.language);
+          }
+          if (from < 6) {
+            // v1.2/D — çoklu konu.
+            //
+            // Tablo eklenip mevcut oturumların TEK konusu birincil konu
+            // olarak taşınıyor. `study_sessions.topic_id` yerinde kalıyor
+            // (bkz. `SessionTopics` başlığı): geçmiş hiçbir kayıt
+            // dokunulmadan çalışmaya devam ediyor.
+            await m.createTable(sessionTopics);
+            await customStatement(
+              'INSERT OR IGNORE INTO session_topics '
+              '(session_id, topic_id, sort_order) '
+              'SELECT id, topic_id, 0 FROM study_sessions '
+              'WHERE topic_id IS NOT NULL',
+            );
           }
         },
         beforeOpen: (details) async {

@@ -121,7 +121,7 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
         sessionId: const Uuid().v4(),
         schedule: schedule,
         subjectId: setup.subjectId!,
-        topicId: setup.topicId,
+        topicIds: setup.topicIds,
         activityTypeId: setup.activityTypeId!,
       );
       // R2: seçimler yeni akışa sızmasın.
@@ -161,9 +161,16 @@ class _PlanSetupState extends ConsumerState<PlanSetup> {
           Text(
             [
               setup.subjectName,
-              setup.topicName,
+              // Çoklu konuda ilk konu + "+2": üç konu adını yan yana
+              // yazmak başlığı iki satıra taşırıyor ve hiçbiri okunmuyor.
+              if (setup.topicName != null)
+                setup.extraTopicCount == 0
+                    ? setup.topicName!
+                    : '${setup.topicName} '
+                        '${L10n.of(context).setupTopicPlus(setup.extraTopicCount)}',
               setup.activityTypeName,
             ].whereType<String>().join(' · '),
+            key: const Key('plan-breadcrumb'),
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 16),
@@ -363,9 +370,15 @@ class _Preview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // "25 · 5m · 25": çıplak sayı ÇALIŞMA bloğu, harfli olan MOLA.
+            // Harf "dakika" değil "mola" demek — İngilizce arayüzde "m"
+            // dakika sanılıyordu, ARB'den geliyor ("m" / "b").
             Text(
               schedule.blocks
-                  .map((b) => '${b.seconds ~/ 60}${b.isStudy ? "" : "m"}')
+                  .map(
+                    (b) => '${b.seconds ~/ 60}'
+                        '${b.isStudy ? "" : L10n.of(context).planBlockBreakSuffix}',
+                  )
                   .join(' · '),
               key: const Key('plan-preview-blocks'),
             ),

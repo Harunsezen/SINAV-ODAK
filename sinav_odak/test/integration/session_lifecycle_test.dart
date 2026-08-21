@@ -57,7 +57,7 @@ void main() {
         sessionId: 's1',
         schedule: schedule(),
         subjectId: subjectId,
-        topicId: topicId,
+        topicIds: const [topicId],
         activityTypeId: activityId,
       );
 

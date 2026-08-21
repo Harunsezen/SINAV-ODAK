@@ -6,7 +6,7 @@ import '../database.dart';
 
 part 'session_dao.g.dart';
 
-@DriftAccessor(tables: [StudySessions, SessionBlocks])
+@DriftAccessor(tables: [StudySessions, SessionBlocks, SessionTopics, Topics])
 class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
   SessionDao(super.db);
 
@@ -32,13 +32,31 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
       (select(studySessions)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   /// Oturumu ve tüm bloklarını tek transaction'da yazar.
+  /// Oturum + bloklar + konular TEK transaction.
+  ///
+  /// [topicIds] çoklu konu listesi (v1.2/D). Ayrı bir çağrıya bırakılsaydı
+  /// arada uygulama ölünce `topic_id` dolu ama `session_topics` boş bir
+  /// oturum kalırdı — ekranda tek konu, gerçekte üç.
   Future<void> createSession(
     StudySessionsCompanion session,
-    List<SessionBlocksCompanion> blocks,
-  ) {
+    List<SessionBlocksCompanion> blocks, {
+    List<String> topicIds = const [],
+  }) {
     return transaction(() async {
       await into(studySessions).insert(session);
       await batch((b) => b.insertAll(sessionBlocks, blocks));
+
+      final sessionId = session.id.value;
+      for (var i = 0; i < topicIds.length; i++) {
+        await into(sessionTopics).insert(
+          SessionTopicsCompanion.insert(
+            sessionId: sessionId,
+            topicId: topicIds[i],
+            sortOrder: Value(i),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
     });
   }
 
@@ -190,5 +208,63 @@ class SessionDao extends DatabaseAccessor<AppDatabase> with _$SessionDaoMixin {
       );
     final row = await q.getSingle();
     return (row.read(studySessions.id.count()) ?? 0) > 0;
+  }
+  // --- Çoklu konu (v1.2/D) ---
+
+  /// Oturumun konularını YAZAR ve `study_sessions.topic_id`'yi listenin
+  /// İLK konusuna eşitler.
+  ///
+  /// **İkisi tek yerden yazılıyor.** Birincil konu şemada denormalize
+  /// duruyor (bkz. `SessionTopics` başlığı); iki ayrı çağrı noktasından
+  /// yazılsaydı biri unutulduğunda oturum "konusuz" görünür, CSV'de ve
+  /// yanlış defterinde boş çıkardı. Tek transaction: yarıda kalırsa
+  /// ikisi de yazılmamış olur.
+  Future<void> setSessionTopics(String sessionId, List<String> topicIds) {
+    return transaction(() async {
+      await (delete(sessionTopics)..where((t) => t.sessionId.equals(sessionId)))
+          .go();
+
+      for (var i = 0; i < topicIds.length; i++) {
+        await into(sessionTopics).insert(
+          SessionTopicsCompanion.insert(
+            sessionId: sessionId,
+            topicId: topicIds[i],
+            sortOrder: Value(i),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+
+      await (update(studySessions)..where((t) => t.id.equals(sessionId))).write(
+        StudySessionsCompanion(
+          topicId: Value(topicIds.isEmpty ? null : topicIds.first),
+        ),
+      );
+    });
+  }
+
+  /// Oturumun konuları, kullanıcının seçtiği sırayla.
+  ///
+  /// **Arşivlenmiş konu da dönüyor:** geçmiş bir oturumun başlığı, konu
+  /// sonradan arşivlendi diye boşalmamalı.
+  Future<List<Topic>> topicsOf(String sessionId) {
+    final q = select(sessionTopics).join([
+      innerJoin(topics, topics.id.equalsExp(sessionTopics.topicId)),
+    ])
+      ..where(sessionTopics.sessionId.equals(sessionId))
+      ..orderBy([OrderingTerm.asc(sessionTopics.sortOrder)]);
+
+    return q.map((row) => row.readTable(topics)).get();
+  }
+
+  /// Aktif oturum başlığı bunu izliyor.
+  Stream<List<Topic>> watchTopicsOf(String sessionId) {
+    final q = select(sessionTopics).join([
+      innerJoin(topics, topics.id.equalsExp(sessionTopics.topicId)),
+    ])
+      ..where(sessionTopics.sessionId.equals(sessionId))
+      ..orderBy([OrderingTerm.asc(sessionTopics.sortOrder)]);
+
+    return q.map((row) => row.readTable(topics)).watch();
   }
 }
