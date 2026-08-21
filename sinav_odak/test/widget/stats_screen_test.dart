@@ -116,6 +116,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           home: StatsScreen(),
@@ -164,7 +167,10 @@ void main() {
       await seedSession(id: 's1', actualDurationS: 2880);
       await pumpStats(tester);
 
-      expect(find.text('48 dk'), findsWidgets);
+      // v1.2/E: süre biçimi tek uygulamaya indirildi ve uygulamanın
+      // baskın yazımı ("48dk", boşluksuz) kazandı — ana panel, plan,
+      // özet ve karşılama zaten böyle yazıyordu.
+      expect(find.text('48dk'), findsWidgets);
     });
 
     testWidgets('bir saati aşan süre "sa dk" biçiminde', (tester) async {
@@ -172,7 +178,7 @@ void main() {
       await seedSession(id: 's1', actualDurationS: 5400);
       await pumpStats(tester);
 
-      expect(find.text('1 sa 30 dk'), findsWidgets);
+      expect(find.text('1sa 30dk'), findsWidgets);
     });
 
     testWidgets('ders dağılımı gösteriliyor', (tester) async {

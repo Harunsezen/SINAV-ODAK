@@ -144,6 +144,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
+              // --- Dil (v1.2/E) ---
+              //
+              // Tema ile aynı desen: etiket üstte, seçici altta. `trailing`
+              // olarak verilseydi dar ekranda ListTile assertion'ı ile
+              // ekranı çökertirdi (temada tam bu olmuştu).
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Column(
+                  key: const Key('settings-language'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.settingsLanguage),
+                    Text(
+                      l.settingsLanguageNote,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<AppLanguage>(
+                      segments: [
+                        ButtonSegment(
+                          value: AppLanguage.system,
+                          label: Text(l.languageSystem),
+                        ),
+                        ButtonSegment(
+                          value: AppLanguage.tr,
+                          label: Text(l.languageTurkish),
+                        ),
+                        ButtonSegment(
+                          value: AppLanguage.en,
+                          label: Text(l.languageEnglish),
+                        ),
+                      ],
+                      selected: {settings.language},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (v) => _settings.setLanguage(v.first),
+                    ),
+                  ],
+                ),
+              ),
               SwitchListTile(
                 key: const Key('settings-keep-screen-on'),
                 contentPadding: EdgeInsets.zero,

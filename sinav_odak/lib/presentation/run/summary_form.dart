@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,7 +11,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/di/app_providers.dart';
 import '../../core/errors/failures.dart';
 import '../../core/router/routes.dart';
-import '../../core/utils/formatters.dart';
 import '../../domain/entities/session_schedule.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/services/net_calculator.dart';
@@ -331,10 +331,14 @@ class _Header extends StatelessWidget {
             ],
             const SizedBox(height: 12),
             Text(
-              L10n.of(context).summaryStudy(formatDurationShort(studyS)),
+              L10n.of(context)
+                  .summaryStudy(L10n.of(context).durationShort(studyS)),
               key: const Key('summary-study'),
             ),
-            Text(L10n.of(context).summaryBreak(formatDurationShort(breakS))),
+            Text(
+              L10n.of(context)
+                  .summaryBreak(L10n.of(context).durationShort(breakS)),
+            ),
           ],
         ),
       ),
@@ -506,7 +510,7 @@ class _BreakdownCard extends StatelessWidget {
                 children: [
                   Text('${L10n.of(context).summaryNet}  '),
                   Text(
-                    formatNet(net ?? 0),
+                    L10n.of(context).netText(net ?? 0),
                     key: const Key('summary-net'),
                     style: const TextStyle(
                       fontSize: 28,

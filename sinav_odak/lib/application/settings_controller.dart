@@ -24,6 +24,11 @@ class SettingsController {
   Future<void> setThemeMode(ThemeModeSetting mode) =>
       _patch(UserSettingsCompanion(themeMode: Value(mode)));
 
+  /// Arayüz dili (v1.2/E). Yazılır yazılmaz `MaterialApp` yeniden kuruluyor;
+  /// ekranı yeniden başlatmaya gerek yok.
+  Future<void> setLanguage(AppLanguage language) =>
+      _patch(UserSettingsCompanion(language: Value(language)));
+
   Future<void> setKeepScreenOn({required bool value}) =>
       _patch(UserSettingsCompanion(keepScreenOn: Value(value)));
 

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sinav_odak/core/l10n/app_locale.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/app_router.dart';
 import 'package:sinav_odak/core/router/routes.dart';
@@ -251,33 +252,65 @@ Future<ProviderContainer> pumpQaApp(
       container: container,
       child: RepaintBoundary(
         key: qaRepaintKey,
-        child: MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          theme: brightness == Brightness.dark
-              ? AppTheme.dark()
-              : AppTheme.light(),
-          locale: const Locale('tr'),
-          localizationsDelegates: L10n.localizationsDelegates,
-          supportedLocales: L10n.supportedLocales,
+        child: _QaApp(
+          brightness: brightness,
+          textScale: textScale,
           routerConfig: container.read(appRouterProvider),
-          // **Üretimle AYNI olmalı.** `app.dart` burada
-          // `AchievementToastLayer` sarıyor; harness onu atlarsa QA turu
-          // gerçek uygulamayı değil, ona benzeyen başka bir ağacı test
-          // eder. Onboarding hatası tam olarak bu tür bir sapmadan
-          // (tema verilmemesinden) doğmuştu.
-          builder: (context, child) => AchievementToastLayer(
-            child: MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(textScale)),
-              child: child ?? const SizedBox.shrink(),
-            ),
-          ),
         ),
       ),
     ),
   );
   await tester.pumpAndSettle();
   return container;
+}
+
+/// QA turunun kök widget'ı — **`app.dart` ile aynı ağaç**.
+///
+/// v1.2/E'ye kadar harness `locale`'ı `Locale('tr')` diye sabitliyordu.
+/// Üretim ise dili AYARDAN okuyor; harness sabitlediği anda QA turu
+/// gerçek uygulamayı değil ona benzeyen başka bir ağacı test etmeye
+/// başlıyordu. Karar `AppLocale.materialLocaleOf` içinde tek yerde
+/// duruyor ve iki taraf da onu çağırıyor.
+///
+/// Varsayılan ayar `AppLanguage.tr` olduğu için mevcut QA testleri yine
+/// Türkçe görüyor; dili değiştiren test gerçek yolu deniyor.
+class _QaApp extends ConsumerWidget {
+  const _QaApp({
+    required this.brightness,
+    required this.textScale,
+    required this.routerConfig,
+  });
+
+  final Brightness brightness;
+  final double textScale;
+  final RouterConfig<Object> routerConfig;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(settingsStreamProvider).valueOrNull?.language ??
+        AppLanguage.tr;
+
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+      locale: AppLocale.materialLocaleOf(language),
+      localizationsDelegates: L10n.localizationsDelegates,
+      supportedLocales: L10n.supportedLocales,
+      routerConfig: routerConfig,
+      // **Üretimle AYNI olmalı.** `app.dart` burada
+      // `AchievementToastLayer` sarıyor; harness onu atlarsa QA turu
+      // gerçek uygulamayı değil, ona benzeyen başka bir ağacı test
+      // eder. Onboarding hatası tam olarak bu tür bir sapmadan
+      // (tema verilmemesinden) doğmuştu.
+      builder: (context, child) => AchievementToastLayer(
+        child: MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child ?? const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
 }
 
 /// Ekran görüntüsü alınacak sınır.

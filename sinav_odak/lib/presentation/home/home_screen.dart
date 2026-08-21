@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -101,10 +102,10 @@ class HomeScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(
                       goalS == 0
-                          ? formatDurationShort(studyS)
+                          ? l.durationShort(studyS)
                           : l.homeProgressOf(
-                              formatDurationShort(studyS),
-                              formatDurationShort(goalS),
+                              l.durationShort(studyS),
+                              l.durationShort(goalS),
                             ),
                       key: const Key('home-today-duration'),
                       style: const TextStyle(fontWeight: FontWeight.w600),
@@ -125,7 +126,7 @@ class HomeScreen extends ConsumerWidget {
                           child: _Metric(
                             slug: 'net',
                             label: l.homeNet,
-                            value: formatNet(stat?.net ?? 0),
+                            value: l.netText(stat?.net ?? 0),
                           ),
                         ),
                         Expanded(
@@ -280,12 +281,12 @@ class _RecentSessions extends ConsumerWidget {
             key: Key('home-recent-${s.id}'),
             child: ListTile(
               dense: true,
-              title: Text(formatDurationShort(s.actualDurationS)),
+              title: Text(L10n.of(context).durationShort(s.actualDurationS)),
               subtitle: Text(
                 L10n.of(context).homeSessionLine(
                   s.dateKey,
                   s.questionCount,
-                  formatNet(s.net),
+                  L10n.of(context).netText(s.net),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

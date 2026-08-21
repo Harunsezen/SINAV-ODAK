@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/data/local/database.dart';
+import 'package:sinav_odak/domain/entities/enums.dart';
 
 import '../unit/usecase_helpers.dart';
 import 'qa_harness.dart';
@@ -151,4 +153,51 @@ void main() {
       });
     }
   }
+
+  // ------------------------------------------------------------------
+  // İNGİLİZCE ARAYÜZ (v1.2/E)
+  // ------------------------------------------------------------------
+  //
+  // İngilizce metinler Türkçesinden UZUN: "Konu seçmeden devam et" 24
+  // karakter, "Continue without a topic" 24 ama "Ayarlar" 7'ye karşı
+  // "Settings" 8, "Yanlışlar" 9'a karşı "Mistakes" 8... tek tek değil,
+  // TOPLAMDA farklılar ve taşma dar ekranda çıkıyor.
+  //
+  // Tüm matris iki kez koşturulmuyor: taşmanın gerçekten olduğu iki EN DAR
+  // yüzey, iki yönde. Sekiz cihazı ikiye katlamak testin süresini iki
+  // katına çıkarır, bulduğu hatayı iki katına çıkarmaz.
+  group('İngilizce arayüz · dar ekranda taşma yok', () {
+    const tightest = <(String, Size)>[
+      ('kucuk-320 dikey', Size(320, 568)),
+      ('kucuk-320 yatay', Size(568, 320)),
+      ('j7prime-360 dikey', Size(360, 640)),
+      ('j7prime-360 yatay', Size(640, 360)),
+    ];
+
+    for (final (name, size) in tightest) {
+      for (final (screenName, route) in screens) {
+        testWidgets('$name · $screenName', (tester) async {
+          await QaSeed.activeUser(db);
+          await db.settingsDao.patchSettings(
+            const UserSettingsCompanion(language: Value(AppLanguage.en)),
+          );
+          if (route == Routes.run) {
+            await seedRunningSession(db, id: 'resp-en', sch: schedule());
+          }
+
+          final c = await pumpQaApp(tester, db, size: size);
+          if (route != Routes.home) {
+            c.read(appRouterProviderForQa).go(route);
+            await tester.pumpAndSettle();
+          }
+
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: 'İngilizce · $name · $screenName taştı',
+          );
+        });
+      }
+    }
+  });
 }

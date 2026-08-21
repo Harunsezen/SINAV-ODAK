@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/l10n/app_locale.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/achievements/achievement_toast.dart';
@@ -53,10 +54,15 @@ class SinavOdakApp extends ConsumerWidget {
       // `builder` içinde: rota değişse de kart yaşar.
       builder: (context, child) =>
           AchievementToastLayer(child: child ?? const SizedBox.shrink()),
-      // FAZ 6: metinler `lib/l10n/*.arb`'den geliyor. Şablon dil TÜRKÇE;
-      // EN dosyası altyapının çalıştığını gösteren iskelet, tam çeviri
-      // v1.2'ye ait (K8). Uygulama şimdilik TR'ye sabit.
-      locale: const Locale('tr'),
+      // FAZ 6: metinler `lib/l10n/*.arb`'den geliyor. Şablon dil TÜRKÇE.
+      // v1.2/E: EN çevirisi tamamlandı ve dil AYARDAN geliyor; artık
+      // sabit değil.
+      //
+      // `null` = cihaz dilini izle. Flutter desteklenmeyen bir cihaz
+      // dilinde `supportedLocales`in ilkine (tr) düşüyor.
+      locale: AppLocale.materialLocaleOf(
+        settings.valueOrNull?.language ?? AppLanguage.tr,
+      ),
       supportedLocales: L10n.supportedLocales,
       localizationsDelegates: const [
         L10n.delegate,

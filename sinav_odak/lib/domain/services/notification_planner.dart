@@ -39,6 +39,44 @@ class PlannedNotification {
   String toString() => 'PlannedNotification(#$id @$atMs "$body")';
 }
 
+/// Bildirim metinleri — planlayıcıya DIŞARIDAN veriliyor.
+///
+/// **Neden parametre, sabit değil:** planlayıcı saf Dart ve `BuildContext`
+/// görmüyor; ama metinler v1.2/E'den beri iki dilde. Metni burada sabitlemek
+/// arayüzü İngilizceye alan kullanıcıya Türkçe bildirim göndermek olurdu.
+///
+/// Varsayılanlar Türkçe: dil çözülemediği bir kenar durumda bildirim
+/// boş gitmesin. Uygulama içinde daima ARB'den doldurulur
+/// (`notificationStringsProvider`).
+class NotificationStrings {
+  const NotificationStrings({
+    this.sessionDoneTitle = 'Oturum tamamlandı',
+    this.sessionDoneBody = 'Harika iş. Şimdi kaç soru çözdüğünü kaydedelim.',
+    this.breakTitle = 'Mola zamanı',
+    this.breakOverTitle = 'Mola bitti',
+    this.breakBody = _trBreakBody,
+    this.breakOverBody = _trBreakOverBody,
+  });
+
+  final String sessionDoneTitle;
+  final String sessionDoneBody;
+  final String breakTitle;
+  final String breakOverTitle;
+
+  /// (kaçıncı blok bitti, mola dakikası) -> gövde
+  final String Function(int block, int minutes) breakBody;
+
+  /// (sırada kaçıncı blok var) -> gövde
+  final String Function(int block) breakOverBody;
+
+  static String _trBreakBody(int block, int minutes) =>
+      '$block. blok bitti. $minutes dakika molan başladı.';
+
+  static String _trBreakOverBody(int block) => '$block. blok seni bekliyor.';
+
+  static const defaults = NotificationStrings();
+}
+
 /// Çizelgeden bildirim planı üretir.
 ///
 /// **Neden ayrı bir sınıf?** `flutter_local_notifications` platform kanalı
@@ -64,6 +102,7 @@ abstract final class NotificationPlanner {
     required String sessionId,
     required SessionSchedule schedule,
     int? fromMs,
+    NotificationStrings strings = NotificationStrings.defaults,
   }) {
     final base = baseIdOf(sessionId);
     final out = <PlannedNotification>[];
@@ -80,19 +119,19 @@ abstract final class NotificationPlanner {
       final String body;
 
       if (isLast) {
-        title = 'Oturum tamamlandı';
-        body = 'Harika iş. Şimdi kaç soru çözdüğünü kaydedelim.';
+        title = strings.sessionDoneTitle;
+        body = strings.sessionDoneBody;
       } else if (b.isStudy) {
         // Çalışma bitti, sırada mola var.
         final studyNo = schedule.studyOrdinalOf(i);
         final breakMin = (next!.seconds / 60).round();
-        title = 'Mola zamanı';
-        body = '$studyNo. blok bitti. $breakMin dakika molan başladı.';
+        title = strings.breakTitle;
+        body = strings.breakBody(studyNo, breakMin);
       } else {
         // Mola bitti, sırada çalışma var.
         final nextStudyNo = schedule.studyOrdinalOf(i + 1);
-        title = 'Mola bitti';
-        body = '$nextStudyNo. blok seni bekliyor.';
+        title = strings.breakOverTitle;
+        body = strings.breakOverBody(nextStudyNo);
       }
 
       out.add(

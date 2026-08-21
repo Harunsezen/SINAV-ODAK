@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/recovery_service.dart';
 import '../../core/di/app_providers.dart';
-import '../../core/utils/formatters.dart';
 
 /// S18 — Kurtarma diyaloğu kapısı (KARAR D2).
 ///
@@ -72,7 +72,7 @@ class _RecoveryGateState extends ConsumerState<RecoveryGate> {
         key: const Key('recovery-interrupted-dialog'),
         title: Text(l.recoveryInterruptedTitle),
         content: Text(
-          l.recoveryInterruptedBody(formatDurationShort(recoveredStudyS)),
+          l.recoveryInterruptedBody(l.durationShort(recoveredStudyS)),
         ),
         actions: [
           TextButton(

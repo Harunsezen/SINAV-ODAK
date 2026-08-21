@@ -187,7 +187,7 @@ void main() {
       // 'tyt,ayt' içinde `contains('ayt')` düz metinde de doğru döner ama
       // 'ayt' arayan bir sekmenin 'ayt2' gibi bir etikete takılmaması için
       // parçalara ayrılıyor.
-      final t1 = Topic(
+      const t1 = Topic(
         id: 'x',
         subjectId: 's',
         name: 'n',

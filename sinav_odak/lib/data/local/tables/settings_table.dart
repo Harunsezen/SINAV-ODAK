@@ -43,6 +43,15 @@ class UserSettings extends Table {
   TextColumn get themeMode =>
       textEnum<ThemeModeSetting>().withDefault(const Constant('system'))();
 
+  /// Arayüz dili (v1.2/E). **schemaVersion 5 ile eklendi.**
+  ///
+  /// Varsayılan `tr`, `system` DEĞİL: v1.1'den yükselen kullanıcı
+  /// uygulamayı Türkçe bırakmıştı; telefonu İngilizce diye arayüzü
+  /// güncellemeden sonra dil değiştirmiş bulmamalı. Yeni kurulumda
+  /// karşılama ekranı dili soruyor.
+  TextColumn get language =>
+      textEnum<AppLanguage>().withDefault(const Constant('tr'))();
+
   /// Aktif çalışma ekranındaki ince banner kullanıcı tarafından kapatılabilir.
   BoolColumn get showAdsInFocusScreen =>
       boolean().withDefault(const Constant(true))();

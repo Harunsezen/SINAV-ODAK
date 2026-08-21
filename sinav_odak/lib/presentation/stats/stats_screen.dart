@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../core/utils/color_hex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/app_providers.dart';
@@ -151,7 +152,7 @@ class _SummaryGrid extends ConsumerWidget {
         ),
         _StatChip(
           label: l.statsNet,
-          value: summary.net.toStringAsFixed(1),
+          value: l.decimalFixed(summary.net, 1),
           icon: Icons.functions,
         ),
         _StatChip(
@@ -162,7 +163,7 @@ class _SummaryGrid extends ConsumerWidget {
         if (summary.questionCount > 0)
           _StatChip(
             label: l.statsSuccessRate,
-            value: '%${(summary.successRate * 100).round()}',
+            value: l.percentValue((summary.successRate * 100).round()),
             icon: Icons.check_circle_outline,
           ),
       ],
@@ -382,7 +383,7 @@ class _BreakdownBar extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '%${(ratio * 100).round()}',
+                L10n.of(context).percentValue((ratio * 100).round()),
                 style: const TextStyle(fontSize: 11),
               ),
             ],
@@ -456,6 +457,9 @@ class _ExportButtonState extends ConsumerState<_ExportButton> {
       from: bounds.from,
       to: bounds.to,
       subject: l.statsExportSubject,
+      // Başlıklar arayüzle aynı dilden: İngilizce bir uygulamadan
+      // Türkçe başlıklı dosya çıkmasın.
+      headers: ref.read(csvHeadersProvider),
     );
 
     if (!mounted) return;
@@ -491,14 +495,15 @@ class _ExportButtonState extends ConsumerState<_ExportButton> {
   }
 }
 
-/// Saniyeyi "2 sa 15 dk" / "45 dk" biçimine çevirir (ARB'den).
-String formatDuration(BuildContext context, int seconds) {
-  final l = L10n.of(context);
-  final totalMinutes = seconds ~/ 60;
-  final h = totalMinutes ~/ 60;
-  final m = totalMinutes % 60;
-  return h == 0 ? l.durationM(m) : l.durationHm(h, m);
-}
+/// Saniyeyi "2sa 15dk" / "45dk" biçimine çevirir (ARB'den).
+///
+/// v1.2/E öncesinde uygulamada **iki ayrı süre biçimi** vardı: burası ve
+/// takvim "1 sa 36 dk" yazarken ana panel, plan, özet ve karşılama
+/// `formatDurationShort` ile "1sa 36dk" yazıyordu. Aynı uygulamada aynı
+/// verinin iki yazımı. Tek uygulamaya indirildi; biçim artık yalnızca
+/// `L10n.durationShort` içinde.
+String formatDuration(BuildContext context, int seconds) =>
+    L10n.of(context).durationShort(seconds);
 
 // =====================================================================
 // FAZ 3.2 — grafikler

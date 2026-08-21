@@ -62,6 +62,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: const Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           routerConfig: router,
@@ -245,6 +248,9 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
+            // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+            // cihaz diline (testte en_US) düşülüyor.
+            locale: const Locale('tr'),
             localizationsDelegates: L10n.localizationsDelegates,
             supportedLocales: L10n.supportedLocales,
             home: settingsPageFor(debug: false),

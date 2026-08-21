@@ -64,6 +64,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           home: CalendarScreen(),
@@ -113,7 +116,8 @@ void main() {
     await seedDay(id: 's2', dateKey: '2025-08-07');
     await pumpCalendar(tester);
 
-    expect(find.text('1 sa 36 dk'), findsOneWidget);
+    // v1.2/E: tek süre biçimi (boşluksuz), bkz. format_l10n.dart.
+    expect(find.text('1sa 36dk'), findsOneWidget);
     expect(find.text('2 gün çalışıldı'), findsOneWidget);
   });
 

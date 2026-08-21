@@ -51,6 +51,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           home: RecoveryGate(child: Scaffold(body: Text('ANA PANEL'))),
@@ -245,6 +248,9 @@ void main() {
       UncontrolledProviderScope(
         container: c,
         child: const MaterialApp(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: Locale('tr'),
           localizationsDelegates: L10n.localizationsDelegates,
           supportedLocales: L10n.supportedLocales,
           home: RecoveryGate(

@@ -4,18 +4,18 @@
   "@appTitle": {
     "description": "Uygulama adı"
   },
-  "navHome": "Ana Panel",
-  "navStats": "İstatistik",
-  "navWrongs": "Yanlışlar",
-  "navCalendar": "Takvim",
-  "navSettings": "Ayarlar",
-  "runRemaining": "kalan",
-  "runNextBreak": "Sonraki: mola",
-  "runLastBlock": "Son blok",
-  "runFinish": "Bitir",
-  "runSkipBreak": "Molayı Atla",
-  "runBackBlocked": "Oturumu bitirmek için \"Bitir\"e bas.",
-  "runBlockOf": "{index}. blok / {total}",
+  "navHome": "Home",
+  "navStats": "Stats",
+  "navWrongs": "Mistakes",
+  "navCalendar": "Calendar",
+  "navSettings": "Settings",
+  "runRemaining": "left",
+  "runNextBreak": "Next: break",
+  "runLastBlock": "Last block",
+  "runFinish": "Finish",
+  "runSkipBreak": "Skip Break",
+  "runBackBlocked": "Tap \"Finish\" to end the session.",
+  "runBlockOf": "Block {index} / {total}",
   "@runBlockOf": {
     "placeholders": {
       "index": {
@@ -26,16 +26,16 @@
       }
     }
   },
-  "runConfirmTitle": "Oturumu bitirelim mi?",
-  "runConfirmCancel": "Vazgeç",
-  "runConfirmYes": "Evet, bitir",
-  "runClockMovedBack": "Cihaz saati değişmiş görünüyor.\nOturumun doğru sürdürülebilmesi için saati kontrol et.",
-  "breakStarted": "Mola başladı.",
-  "blockStarted": "Çalışma bloğu başladı.",
-  "breakTitle": "MOLA",
-  "breakRemaining": "kalan mola",
-  "breakEnd": "Molayı Bitir",
-  "breakExtend": "+5 dk ({left} hak)",
+  "runConfirmTitle": "End the session?",
+  "runConfirmCancel": "Cancel",
+  "runConfirmYes": "Yes, end it",
+  "runClockMovedBack": "Your device clock seems to have changed.\nCheck the time so the session can continue correctly.",
+  "breakStarted": "Break started.",
+  "blockStarted": "Study block started.",
+  "breakTitle": "BREAK",
+  "breakRemaining": "break left",
+  "breakEnd": "End Break",
+  "breakExtend": "+5 min ({left} left)",
   "@breakExtend": {
     "placeholders": {
       "left": {
@@ -43,22 +43,22 @@
       }
     }
   },
-  "summaryTitle": "Oturum Sonu",
-  "summaryDone": "Oturum tamamlandı",
-  "summaryQuestionsTitle": "Kaç soru çözdün?",
-  "summaryQuestionCount": "Soru sayısı",
-  "summaryReset": "Sıfırla",
-  "summaryBreakdownTitle": "Doğru / Yanlış / Boş",
-  "summaryCorrect": "Doğru",
-  "summaryWrong": "Yanlış",
-  "summaryEmpty": "Boş",
+  "summaryTitle": "Session Summary",
+  "summaryDone": "Session complete",
+  "summaryQuestionsTitle": "How many questions did you solve?",
+  "summaryQuestionCount": "Question count",
+  "summaryReset": "Reset",
+  "summaryBreakdownTitle": "Correct / Wrong / Blank",
+  "summaryCorrect": "Correct",
+  "summaryWrong": "Wrong",
+  "summaryEmpty": "Blank",
   "summaryNet": "Net",
-  "summaryMoodTitle": "Nasıl geçti?",
-  "summaryNote": "Not (opsiyonel)",
-  "summarySave": "KAYDET",
-  "summaryNoAds": "Bu ekranda reklam gösterilmez.",
-  "summaryEmptyState": "Özetlenecek oturum yok.",
-  "summaryStudy": "Çalışma: {duration}",
+  "summaryMoodTitle": "How did it go?",
+  "summaryNote": "Note (optional)",
+  "summarySave": "SAVE",
+  "summaryNoAds": "No ads are shown on this screen.",
+  "summaryEmptyState": "No session to summarise.",
+  "summaryStudy": "Study: {duration}",
   "@summaryStudy": {
     "placeholders": {
       "duration": {
@@ -66,7 +66,7 @@
       }
     }
   },
-  "summaryBreak": "Mola: {duration}",
+  "summaryBreak": "Break: {duration}",
   "@summaryBreak": {
     "placeholders": {
       "duration": {
@@ -74,20 +74,20 @@
       }
     }
   },
-  "adSponsored": "Sponsorlu",
-  "settingsTitle": "Ayarlar",
-  "settingsAppearance": "Görünüm",
-  "settingsTheme": "Tema",
-  "settingsThemeSystem": "Sistem",
-  "settingsThemeLight": "Açık",
-  "settingsThemeDark": "Koyu",
-  "settingsKeepScreenOn": "Ekran açık kalsın",
-  "settingsKeepScreenOnNote": "Çalışma sırasında ekran kendiliğinden kapanmaz. Pil tüketimini artırır.",
-  "settingsStudy": "Çalışma",
-  "settingsNetCoefficient": "Net katsayısı",
-  "settingsNetCoefficientNote": "Net = doğru − (yanlış ÷ katsayı). YKS'de 4, bazı sınavlarda 3.",
-  "settingsNetRecomputeTitle": "Geçmiş netler yeniden hesaplansın mı?",
-  "settingsNetRecomputeBody": "Katsayıyı {from} yerine {to} yaparsan geçmiş oturumların netleri de bu katsayıyla yeniden hesaplanır. Aksi halde istatistiklerin iki farklı katsayının karışımı olur.",
+  "adSponsored": "Sponsored",
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsKeepScreenOn": "Keep the screen on",
+  "settingsKeepScreenOnNote": "The screen won't switch off during study. Uses more battery.",
+  "settingsStudy": "Study",
+  "settingsNetCoefficient": "Net coefficient",
+  "settingsNetCoefficientNote": "Net = correct − (wrong ÷ coefficient). 4 for YKS, 3 for some exams.",
+  "settingsNetRecomputeTitle": "Recalculate past nets?",
+  "settingsNetRecomputeBody": "If you change the coefficient from {from} to {to}, the nets of your past sessions are recalculated with it too. Otherwise your stats become a mix of two coefficients.",
   "@settingsNetRecomputeBody": {
     "placeholders": {
       "from": {
@@ -98,8 +98,8 @@
       }
     }
   },
-  "settingsNetRecomputeConfirm": "Hesapla",
-  "settingsNetRecomputeDone": "{count} oturumun neti güncellendi.",
+  "settingsNetRecomputeConfirm": "Recalculate",
+  "settingsNetRecomputeDone": "Nets updated for {count} sessions.",
   "@settingsNetRecomputeDone": {
     "placeholders": {
       "count": {
@@ -107,23 +107,23 @@
       }
     }
   },
-  "settingsDailyGoal": "Günlük hedef (dakika)",
-  "settingsNotifications": "Bildirim ve ses",
-  "settingsNotificationEnabled": "Bildirimler",
-  "settingsNotificationNote": "Mola ve oturum bitişinde haber ver.",
-  "settingsSound": "Ses",
-  "settingsVibration": "Titreşim",
-  "settingsCatalog": "Ders ve konular",
-  "settingsCatalogNote": "Ders, konu ve çalışma türü ekle veya düzenle.",
-  "settingsCatalogOpen": "Yönet",
-  "settingsData": "Veri",
-  "settingsReset": "Verileri sıfırla",
-  "settingsResetNote": "Tüm oturumlar, istatistikler ve yanlış defteri silinir.",
-  "settingsResetStep1Title": "Verilerin tamamı silinsin mi?",
-  "settingsResetStep1Body": "Oturum geçmişin, istatistiklerin, yanlış defterin, hedeflerin ve eklediğin dersler silinir. Bu işlem GERİ ALINAMAZ.",
-  "settingsResetStep1Continue": "Devam et",
-  "settingsResetStep2Title": "Son onay",
-  "settingsResetStep2Body": "Onaylamak için aşağıya {word} yaz.",
+  "settingsDailyGoal": "Daily goal (minutes)",
+  "settingsNotifications": "Notifications and sound",
+  "settingsNotificationEnabled": "Notifications",
+  "settingsNotificationNote": "Tell me when a break or a session ends.",
+  "settingsSound": "Sound",
+  "settingsVibration": "Vibration",
+  "settingsCatalog": "Subjects and topics",
+  "settingsCatalogNote": "Add or edit subjects, topics and study types.",
+  "settingsCatalogOpen": "Manage",
+  "settingsData": "Data",
+  "settingsReset": "Reset data",
+  "settingsResetNote": "All sessions, stats and the mistake log are deleted.",
+  "settingsResetStep1Title": "Delete all your data?",
+  "settingsResetStep1Body": "Your session history, stats, mistake log, goals and the subjects you added are deleted. This CANNOT be undone.",
+  "settingsResetStep1Continue": "Continue",
+  "settingsResetStep2Title": "Final confirmation",
+  "settingsResetStep2Body": "Type {word} below to confirm.",
   "@settingsResetStep2Body": {
     "placeholders": {
       "word": {
@@ -131,34 +131,34 @@
       }
     }
   },
-  "settingsResetKeyword": "SIFIRLA",
-  "settingsResetConfirm": "Kalıcı olarak sil",
-  "settingsResetDone": "Tüm veriler silindi.",
-  "settingsAbout": "Hakkında",
-  "settingsVersion": "Sürüm",
-  "settingsAboutBody": "Sınav Odak %100 ücretsizdir ve hiçbir özelliği kilitli değildir. Çalışma verilerin yalnızca bu cihazda tutulur, hiçbir sunucuya gönderilmez.",
-  "settingsTestAdsWarning": "TEST reklam kimlikleri kullanılıyor.",
-  "commonCancel": "Vazgeç",
-  "commonSave": "Kaydet",
-  "commonEdit": "Düzenle",
-  "catalogTitle": "Ders ve Konular",
-  "catalogTabSubjects": "Dersler",
-  "catalogTabActivities": "Türler",
-  "catalogAddSubject": "Ders ekle",
-  "catalogEditSubject": "Dersi düzenle",
-  "catalogSubjectName": "Ders adı",
-  "catalogAddTopic": "Konu ekle",
-  "catalogEditTopic": "Konuyu düzenle",
-  "catalogTopicName": "Konu adı",
-  "catalogAddActivity": "Tür ekle",
-  "catalogEditActivity": "Türü düzenle",
-  "catalogActivityName": "Tür adı",
-  "catalogArchive": "Arşivle",
-  "catalogUnarchive": "Arşivden çıkar",
-  "catalogArchived": "Arşivlenmiş",
-  "catalogShowArchived": "Arşivlenenleri göster",
-  "catalogNoDelete": "Kayıtlar silinmez, arşivlenir: silinen ders geçmiş istatistikleri bozar.",
-  "catalogTopicCount": "{count} konu",
+  "settingsResetKeyword": "RESET",
+  "settingsResetConfirm": "Delete permanently",
+  "settingsResetDone": "All data deleted.",
+  "settingsAbout": "About",
+  "settingsVersion": "Version",
+  "settingsAboutBody": "Sınav Odak is 100% free and nothing is locked behind a paywall. Your study data stays on this device only and is never sent to any server.",
+  "settingsTestAdsWarning": "TEST ad identifiers are in use.",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonEdit": "Edit",
+  "catalogTitle": "Subjects and Topics",
+  "catalogTabSubjects": "Subjects",
+  "catalogTabActivities": "Types",
+  "catalogAddSubject": "Add subject",
+  "catalogEditSubject": "Edit subject",
+  "catalogSubjectName": "Subject name",
+  "catalogAddTopic": "Add topic",
+  "catalogEditTopic": "Edit topic",
+  "catalogTopicName": "Topic name",
+  "catalogAddActivity": "Add type",
+  "catalogEditActivity": "Edit type",
+  "catalogActivityName": "Type name",
+  "catalogArchive": "Archive",
+  "catalogUnarchive": "Unarchive",
+  "catalogArchived": "Archived",
+  "catalogShowArchived": "Show archived",
+  "catalogNoDelete": "Records are archived, not deleted: deleting a subject would break your past stats.",
+  "catalogTopicCount": "{count} topics",
   "@catalogTopicCount": {
     "placeholders": {
       "count": {
@@ -166,19 +166,19 @@
       }
     }
   },
-  "catalogEmptyTopics": "Bu derste henüz konu yok.",
-  "statsTitle": "İstatistik",
-  "statsRangeWeek": "Hafta",
-  "statsRangeMonth": "Ay",
-  "statsTotalStudy": "Toplam çalışma",
-  "statsSessionCount": "Oturum",
+  "catalogEmptyTopics": "This subject has no topics yet.",
+  "statsTitle": "Stats",
+  "statsRangeWeek": "Week",
+  "statsRangeMonth": "Month",
+  "statsTotalStudy": "Total study",
+  "statsSessionCount": "Sessions",
   "statsNet": "Net",
-  "statsAvgFocus": "Ortalama odak",
-  "statsSuccessRate": "Başarı oranı",
-  "statsDailyChart": "Günlük çalışma (dakika)",
-  "statsSubjectBreakdown": "Ders dağılımı",
-  "statsWeakestTopics": "Gelişim gereken konular",
-  "statsWeakestTopicWrongs": "{count} yanlış",
+  "statsAvgFocus": "Average focus",
+  "statsSuccessRate": "Success rate",
+  "statsDailyChart": "Daily study (minutes)",
+  "statsSubjectBreakdown": "Subject breakdown",
+  "statsWeakestTopics": "Topics that need work",
+  "statsWeakestTopicWrongs": "{count} wrong",
   "@statsWeakestTopicWrongs": {
     "placeholders": {
       "count": {
@@ -186,14 +186,14 @@
       }
     }
   },
-  "statsEmpty": "Bu aralıkta kayıtlı oturum yok.",
-  "statsEmptyHint": "Henüz veri yok — ya dahisin ya da daha başlamadın 😏",
-  "statsExport": "CSV olarak dışa aktar",
-  "statsExportSubject": "Sınav Odak — çalışma kayıtları",
-  "statsExportDone": "Dosya paylaşıma hazır.",
-  "statsExportEmpty": "Dışa aktarılacak oturum yok.",
-  "statsExportFailed": "Dışa aktarma yapılamadı.",
-  "durationHm": "{hours} sa {minutes} dk",
+  "statsEmpty": "No sessions recorded in this range.",
+  "statsEmptyHint": "No data yet — either you're a genius or you haven't started 😏",
+  "statsExport": "Export as CSV",
+  "statsExportSubject": "Sınav Odak — study records",
+  "statsExportDone": "File ready to share.",
+  "statsExportEmpty": "No session to export.",
+  "statsExportFailed": "Export failed.",
+  "durationHm": "{hours}h {minutes}m",
   "@durationHm": {
     "placeholders": {
       "hours": {
@@ -204,7 +204,7 @@
       }
     }
   },
-  "durationM": "{minutes} dk",
+  "durationM": "{minutes} min",
   "@durationM": {
     "placeholders": {
       "minutes": {
@@ -212,13 +212,13 @@
       }
     }
   },
-  "calendarTitle": "Takvim",
-  "calendarPrevMonth": "Önceki ay",
-  "calendarNextMonth": "Sonraki ay",
-  "calendarEmpty": "Bu ayda kayıtlı oturum yok.",
-  "calendarEmptyHint": "Çalıştığın günler burada renklenir.",
-  "calendarMonthTotal": "Ay toplamı",
-  "calendarStudyDays": "{count} gün çalışıldı",
+  "calendarTitle": "Calendar",
+  "calendarPrevMonth": "Previous month",
+  "calendarNextMonth": "Next month",
+  "calendarEmpty": "No sessions recorded this month.",
+  "calendarEmptyHint": "The days you study light up here.",
+  "calendarMonthTotal": "Month total",
+  "calendarStudyDays": "{count} days studied",
   "@calendarStudyDays": {
     "placeholders": {
       "count": {
@@ -226,7 +226,7 @@
       }
     }
   },
-  "calendarDayDetail": "{day} — {duration}, {sessions} oturum",
+  "calendarDayDetail": "{day} — {duration}, {sessions} sessions",
   "@calendarDayDetail": {
     "placeholders": {
       "day": {
@@ -240,7 +240,7 @@
       }
     }
   },
-  "calendarDayEmpty": "{day} — çalışma yok",
+  "calendarDayEmpty": "{day} — no study",
   "@calendarDayEmpty": {
     "placeholders": {
       "day": {
@@ -248,16 +248,16 @@
       }
     }
   },
-  "calendarLegendLess": "az",
-  "calendarLegendMore": "çok",
-  "calendarWeekdayMon": "Pt",
-  "calendarWeekdayTue": "Sa",
-  "calendarWeekdayWed": "Ça",
-  "calendarWeekdayThu": "Pe",
-  "calendarWeekdayFri": "Cu",
-  "calendarWeekdaySat": "Ct",
-  "calendarWeekdaySun": "Pz",
-  "monthName": "{month, select, 1{Ocak} 2{Şubat} 3{Mart} 4{Nisan} 5{Mayıs} 6{Haziran} 7{Temmuz} 8{Ağustos} 9{Eylül} 10{Ekim} 11{Kasım} 12{Aralık} other{}}",
+  "calendarLegendLess": "less",
+  "calendarLegendMore": "more",
+  "calendarWeekdayMon": "Mon",
+  "calendarWeekdayTue": "Tue",
+  "calendarWeekdayWed": "Wed",
+  "calendarWeekdayThu": "Thu",
+  "calendarWeekdayFri": "Fri",
+  "calendarWeekdaySat": "Sat",
+  "calendarWeekdaySun": "Sun",
+  "monthName": "{month, select, 1{January} 2{February} 3{March} 4{April} 5{May} 6{June} 7{July} 8{August} 9{September} 10{October} 11{November} 12{December} other{}}",
   "@monthName": {
     "placeholders": {
       "month": {
@@ -265,27 +265,27 @@
       }
     }
   },
-  "goalsTitle": "Hedefler",
-  "goalsActive": "Aktif",
-  "goalsCompleted": "Tamamlanan",
-  "goalsEmpty": "Henüz hedef yok.",
-  "goalsEmptyHint": "Küçük ve ulaşılabilir bir hedefle başla.",
-  "goalsAdd": "Hedef ekle",
-  "goalsNew": "Yeni hedef",
-  "goalsTypeLabel": "Hedef türü",
-  "goalsTargetLabel": "Hedef değeri",
-  "goalsEditDurationTitle": "Günlük süre hedefi",
-  "goalsEditCountTitle": "Günlük soru hedefi",
+  "goalsTitle": "Goals",
+  "goalsActive": "Active",
+  "goalsCompleted": "Completed",
+  "goalsEmpty": "No goals yet.",
+  "goalsEmptyHint": "Start with something small and reachable.",
+  "goalsAdd": "Add goal",
+  "goalsNew": "New goal",
+  "goalsTypeLabel": "Goal type",
+  "goalsTargetLabel": "Target value",
+  "goalsEditDurationTitle": "Daily time goal",
+  "goalsEditCountTitle": "Daily question goal",
   "goalsEditDurationLabel": "Duration",
-  "goalsEditHours": "Saat",
-  "goalsEditMinutes": "Dakika",
-  "goalsEditCount": "Soru",
-  "goalsEditDurationHint": "Örnek: 2sa 8dk · 148dk · 2:08 — en fazla 12 saat",
-  "goalsEditCountHint": "Örnek: 75 · 75 soru — 1 ile 2000 arası",
-  "goalsEditInvalid": "Geçersiz değer — eski hedef korundu.",
-  "goalsEditTapHint": "Değere dokunup yazabilirsin",
-  "goalsSubjectLabel": "Ders",
-  "goalsCreate": "Oluştur",
+  "goalsEditHours": "Hours",
+  "goalsEditMinutes": "Minutes",
+  "goalsEditCount": "Questions",
+  "goalsEditDurationHint": "For example: 2h 8m · 148m · 2:08 — 12 hours max",
+  "goalsEditCountHint": "For example: 75 · 75 questions — between 1 and 2000",
+  "goalsEditInvalid": "Invalid value — your previous goal was kept.",
+  "goalsEditTapHint": "Tap the value to type it",
+  "goalsSubjectLabel": "Subject",
+  "goalsCreate": "Create",
   "goalsProgress": "{current} / {target}",
   "@goalsProgress": {
     "placeholders": {
@@ -297,24 +297,24 @@
       }
     }
   },
-  "goalsReached": "Tamamlandı",
-  "goalsDelete": "Hedefi sil",
-  "goalsDeleteConfirm": "Bu hedef silinsin mi?",
-  "goalsUnitMinutes": "dk",
-  "goalsUnitQuestions": "soru",
-  "goalsUnitDays": "gün",
-  "goalsUnitTopics": "konu",
+  "goalsReached": "Completed",
+  "goalsDelete": "Delete goal",
+  "goalsDeleteConfirm": "Delete this goal?",
+  "goalsUnitMinutes": "min",
+  "goalsUnitQuestions": "questions",
+  "goalsUnitDays": "days",
+  "goalsUnitTopics": "topics",
   "goalsUnitNet": "net",
-  "goalTypeDailyMinutes": "Günlük çalışma süresi",
-  "goalTypeWeeklyMinutes": "Haftalık çalışma süresi",
-  "goalTypeDailyQuestions": "Günlük soru sayısı",
-  "goalTypeWeeklyQuestions": "Haftalık soru sayısı",
-  "goalTypeSubjectMinutes": "Ders bazlı süre",
-  "goalTypeTopicCompletion": "Tamamlanan konu",
-  "goalTypeNet": "Günlük net",
-  "goalTypeStreak": "Seri (gün)",
-  "achievementsTitle": "Rozetler",
-  "achievementsUnlockedOf": "{unlocked} / {total} rozet",
+  "goalTypeDailyMinutes": "Daily study time",
+  "goalTypeWeeklyMinutes": "Weekly study time",
+  "goalTypeDailyQuestions": "Daily question count",
+  "goalTypeWeeklyQuestions": "Weekly question count",
+  "goalTypeSubjectMinutes": "Time per subject",
+  "goalTypeTopicCompletion": "Topics completed",
+  "goalTypeNet": "Daily net",
+  "goalTypeStreak": "Streak (days)",
+  "achievementsTitle": "Badges",
+  "achievementsUnlockedOf": "{unlocked} / {total} badges",
   "@achievementsUnlockedOf": {
     "placeholders": {
       "unlocked": {
@@ -325,33 +325,33 @@
       }
     }
   },
-  "achievementsLocked": "Kilitli",
-  "achievementsNew": "YENİ",
-  "achStreak3Title": "Üç Gün Üst Üste",
-  "achStreak3Body": "3 gün arka arkaya çalıştın.",
-  "achStreak7Title": "Bir Hafta Kesintisiz",
-  "achStreak7Body": "7 gün arka arkaya çalıştın.",
-  "achStreak30Title": "Bir Ay Kesintisiz",
-  "achStreak30Body": "30 gün arka arkaya çalıştın.",
-  "achFirstSessionTitle": "İlk Adım",
-  "achFirstSessionBody": "İlk oturumunu tamamladın.",
-  "achHours10Title": "10 Saat",
-  "achHours10Body": "Toplam 10 saat çalıştın.",
-  "achHours100Title": "100 Saat",
-  "achHours100Body": "Toplam 100 saat çalıştın.",
-  "achQuestions1000Title": "1000 Soru",
-  "achQuestions1000Body": "Toplam 1000 soru çözdün.",
-  "achMarathonDayTitle": "Maraton",
-  "achMarathonDayBody": "Tek günde 6 saat çalıştın.",
-  "achFocus90Title": "Tam Odak",
-  "achFocus90Body": "Bir günün odak puanı 90'ı geçti.",
-  "achEarlyBirdTitle": "Erken Kuş",
-  "achEarlyBirdBody": "Sabah 06:00-08:00 arasında oturum başlattın.",
-  "achNightOwlTitle": "Gece Kuşu",
-  "achNightOwlBody": "Uyku efsanesi varmış, duydun mu? 🦉",
-  "achUnknownTitle": "Bilinmeyen rozet",
+  "achievementsLocked": "Locked",
+  "achievementsNew": "NEW",
+  "achStreak3Title": "Three Days Running",
+  "achStreak3Body": "You studied 3 days in a row.",
+  "achStreak7Title": "A Week Unbroken",
+  "achStreak7Body": "You studied 7 days in a row.",
+  "achStreak30Title": "A Month Unbroken",
+  "achStreak30Body": "You studied 30 days in a row.",
+  "achFirstSessionTitle": "First Step",
+  "achFirstSessionBody": "You completed your first session.",
+  "achHours10Title": "10 Hours",
+  "achHours10Body": "You studied 10 hours in total.",
+  "achHours100Title": "100 Hours",
+  "achHours100Body": "You studied 100 hours in total.",
+  "achQuestions1000Title": "1000 Questions",
+  "achQuestions1000Body": "You solved 1000 questions in total.",
+  "achMarathonDayTitle": "Marathon",
+  "achMarathonDayBody": "You studied 6 hours in a single day.",
+  "achFocus90Title": "Full Focus",
+  "achFocus90Body": "A day's focus score went past 90.",
+  "achEarlyBirdTitle": "Early Bird",
+  "achEarlyBirdBody": "You started a session between 06:00 and 08:00.",
+  "achNightOwlTitle": "Night Owl",
+  "achNightOwlBody": "Sleep is a legend, they say. Heard of it? 🦉",
+  "achUnknownTitle": "Unknown badge",
   "achUnknownBody": "",
-  "a11yRemaining": "{minutes} dakika {seconds} saniye kaldı",
+  "a11yRemaining": "{minutes} minutes {seconds} seconds left",
   "@a11yRemaining": {
     "placeholders": {
       "minutes": {
@@ -362,7 +362,7 @@
       }
     }
   },
-  "a11yBreakRemaining": "Molanın bitmesine {minutes} dakika {seconds} saniye",
+  "a11yBreakRemaining": "{minutes} minutes {seconds} seconds until the break ends",
   "@a11yBreakRemaining": {
     "placeholders": {
       "minutes": {
@@ -373,7 +373,7 @@
       }
     }
   },
-  "a11yGoalProgress": "{name}: {percent} tamamlandı",
+  "a11yGoalProgress": "{name}: {percent} complete",
   "@a11yGoalProgress": {
     "placeholders": {
       "name": {
@@ -384,7 +384,7 @@
       }
     }
   },
-  "a11yAchievementUnlocked": "{name} rozeti açıldı",
+  "a11yAchievementUnlocked": "{name} badge unlocked",
   "@a11yAchievementUnlocked": {
     "placeholders": {
       "name": {
@@ -392,7 +392,7 @@
       }
     }
   },
-  "a11yAchievementLocked": "{name} rozeti kilitli",
+  "a11yAchievementLocked": "{name} badge locked",
   "@a11yAchievementLocked": {
     "placeholders": {
       "name": {
@@ -400,7 +400,7 @@
       }
     }
   },
-  "a11yCalendarDay": "{day} {month}: {duration}, {sessions} oturum",
+  "a11yCalendarDay": "{day} {month}: {duration}, {sessions} sessions",
   "@a11yCalendarDay": {
     "placeholders": {
       "day": {
@@ -417,7 +417,7 @@
       }
     }
   },
-  "a11yCalendarDayEmpty": "{day} {month}: çalışma yok",
+  "a11yCalendarDayEmpty": "{day} {month}: no study",
   "@a11yCalendarDayEmpty": {
     "placeholders": {
       "day": {
@@ -428,7 +428,7 @@
       }
     }
   },
-  "a11yFocusScore": "Odak puanı {score} / 100",
+  "a11yFocusScore": "Focus score {score} out of 100",
   "@a11yFocusScore": {
     "placeholders": {
       "score": {
@@ -436,15 +436,15 @@
       }
     }
   },
-  "notificationChannelName": "Çalışma oturumu",
-  "notificationChannelDescription": "Blok ve mola bitişlerinde bilgilendirir.",
-  "homeToday": "Bugün",
-  "homeQuestions": "Soru",
+  "notificationChannelName": "Study session",
+  "notificationChannelDescription": "Tells you when a block or a break ends.",
+  "homeToday": "Today",
+  "homeQuestions": "Questions",
   "homeNet": "Net",
-  "homeFocus": "Odak",
-  "homeStartSession": "Oturumu Başlat",
-  "homeRecentSessions": "Son oturumlar",
-  "homeNoSessions": "Henüz kayıtlı oturum yok.",
+  "homeFocus": "Focus",
+  "homeStartSession": "Start Session",
+  "homeRecentSessions": "Recent sessions",
+  "homeNoSessions": "No sessions recorded yet.",
   "homeProgressOf": "{current} / {goal}",
   "@homeProgressOf": {
     "placeholders": {
@@ -456,7 +456,7 @@
       }
     }
   },
-  "homeSessionLine": "{date} · {questions} soru · net {net}",
+  "homeSessionLine": "{date} · {questions} questions · net {net}",
   "@homeSessionLine": {
     "placeholders": {
       "date": {
@@ -470,8 +470,8 @@
       }
     }
   },
-  "recoveryInterruptedTitle": "Oturum yarıda kesildi",
-  "recoveryInterruptedBody": "{duration} çalışman kurtarıldı ve kaydedildi.\nKaydı silmek ister misin?",
+  "recoveryInterruptedTitle": "Session was cut short",
+  "recoveryInterruptedBody": "{duration} of your study was recovered and saved.\nDo you want to delete the record?",
   "@recoveryInterruptedBody": {
     "placeholders": {
       "duration": {
@@ -479,17 +479,17 @@
       }
     }
   },
-  "recoveryDelete": "Sil",
-  "recoveryKeep": "Koru",
-  "recoveryClockTitle": "Cihaz saati değişmiş görünüyor",
-  "recoveryClockBody": "Devam eden oturumun süresi doğru hesaplanamayabilir.\nOturuma devam edebilir veya burada kesebilirsin.",
-  "recoveryStopSession": "Oturumu kes",
-  "recoveryContinue": "Devam et",
-  "doneEmpty": "Gösterilecek oturum yok.",
-  "doneTitle": "Tebrikler",
-  "doneFocusScore": "Odak skorun",
-  "doneTodayProgress": "Bugünkü ilerleme",
-  "doneQuestionsNet": "Soru: {questions} · Net: {net}",
+  "recoveryDelete": "Delete",
+  "recoveryKeep": "Keep",
+  "recoveryClockTitle": "Your device clock seems to have changed",
+  "recoveryClockBody": "The length of the ongoing session may not be calculated correctly.\nYou can continue the session or stop it here.",
+  "recoveryStopSession": "Stop the session",
+  "recoveryContinue": "Continue",
+  "doneEmpty": "No session to show.",
+  "doneTitle": "Well done",
+  "doneFocusScore": "Your focus score",
+  "doneTodayProgress": "Today's progress",
+  "doneQuestionsNet": "Questions: {questions} · Net: {net}",
   "@doneQuestionsNet": {
     "placeholders": {
       "questions": {
@@ -500,9 +500,9 @@
       }
     }
   },
-  "doneNewSession": "Yeni oturum",
-  "doneHome": "Ana panel",
-  "runConfirmBody": "{total} planın {done} kadarı tamamlandı.\nBu oturum 'erken bitirildi' olarak kaydedilecek.",
+  "doneNewSession": "New session",
+  "doneHome": "Home",
+  "runConfirmBody": "You completed {done} of your {total} plan.\nThis session will be recorded as 'ended early'.",
   "@runConfirmBody": {
     "placeholders": {
       "total": {
@@ -513,9 +513,9 @@
       }
     }
   },
-  "onboardingBack": "Geri",
-  "onboardingStart": "Başla",
-  "onboardingNext": "Devam",
+  "onboardingBack": "Back",
+  "onboardingStart": "Start",
+  "onboardingNext": "Continue",
   "onboardingStepOf": "{shown}/{total}",
   "@onboardingStepOf": {
     "placeholders": {
@@ -528,43 +528,43 @@
     }
   },
   "onboardingPromiseTitle": "Sınav Odak",
-  "onboardingPromiseBody": "Ne kadar çalıştığını tahmin etmeyi bırak.\nSüre tut, soru gir, gelişimini gör.",
-  "onboardingPromiseRules": "Sayaç duraklatılamaz: başladığın bloğu bitirirsin.\nUygulama %100 ücretsizdir.",
-  "onboardingExamTitle": "Hangi sınava hazırlanıyorsun?",
-  "onboardingExamNote": "Ders listen buna göre kurulur. Sonradan ayarlardan değiştirebilirsin.",
+  "onboardingPromiseBody": "Stop guessing how much you studied.\nTime it, log your questions, watch yourself improve.",
+  "onboardingPromiseRules": "The timer cannot be paused: you finish the block you started.\nThe app is 100% free.",
+  "onboardingExamTitle": "Which exam are you preparing for?",
+  "onboardingExamNote": "Your subject list is built from this. You can change it later in settings.",
   "examYks": "YKS",
   "examLgs": "LGS",
   "examKpss": "KPSS",
   "examAles": "ALES",
   "examDgs": "DGS",
-  "examOther": "Diğer",
-  "examYksNote": "Üniversite sınavı",
-  "examLgsNote": "Liseye geçiş",
-  "examKpssNote": "Kamu personeli",
-  "examAlesNote": "Akademik personel",
-  "examDgsNote": "Dikey geçiş",
-  "examOtherNote": "Kendi ders listeni kurarsın",
-  "onboardingGoalTitle": "Günlük hedefin ne olsun?",
-  "onboardingGoalNote": "Ulaşılabilir bir hedef seç; sonradan ayarlardan değiştirebilirsin.",
-  "onboardingGoalMinutes": "Çalışma süresi",
-  "onboardingGoalQuestions": "Soru sayısı",
-  "onboardingConsentTitle": "Gizlilik ve izinler",
-  "onboardingDataTitle": "Verilerin cihazında kalır",
-  "onboardingDataBody": "Çalışma sürelerin, soru sayıların ve notların yalnızca bu cihazdaki veritabanında saklanır; bir sunucuya gönderilmez. Uygulama ücretsizdir ve gelirini yalnızca reklamdan sağlar. Dilediğin an ayarlardan verilerini silebilir veya dışa aktarabilirsin (KVKK md. 11).",
-  "onboardingAdsTitle": "Kişiselleştirilmiş reklam",
-  "onboardingAdsBody": "Kapalı bırakırsan yine reklam görürsün, ama ilgi alanlarına göre seçilmez. İstediğin an ayarlardan değiştirebilirsin.",
-  "onboardingNotifTitle": "Bildirimler",
-  "onboardingNotifBody": "Blok ve mola bitişlerini haber verir. İzin vermezsen uygulama yine çalışır.",
-  "onboardingNotifGrant": "Bildirim izni ver",
-  "onboardingSummaryTitle": "Hazırsın",
-  "onboardingSummaryNote": "Bunları sonradan ayarlardan değiştirebilirsin.",
-  "onboardingSummaryExam": "Sınav",
-  "onboardingSummaryMinutes": "Günlük süre",
-  "onboardingSummaryQuestions": "Günlük soru",
-  "commonOn": "Açık",
-  "commonOff": "Kapalı",
-  "setupSubjectTitle": "Ders Seç",
-  "setupSubjectsFailed": "Dersler yüklenemedi: {error}",
+  "examOther": "Other",
+  "examYksNote": "University entrance",
+  "examLgsNote": "High school entrance",
+  "examKpssNote": "Public service",
+  "examAlesNote": "Academic staff",
+  "examDgsNote": "Vertical transfer",
+  "examOtherNote": "Build your own subject list",
+  "onboardingGoalTitle": "What's your daily goal?",
+  "onboardingGoalNote": "Pick something you can reach; you can change it later in settings.",
+  "onboardingGoalMinutes": "Study time",
+  "onboardingGoalQuestions": "Question count",
+  "onboardingConsentTitle": "Privacy and permissions",
+  "onboardingDataTitle": "Your data stays on your device",
+  "onboardingDataBody": "Your study times, question counts and notes are kept only in the database on this device; they are never sent to a server. The app is free and earns only from ads. You can delete or export your data from settings whenever you like (Turkish DPA art. 11).",
+  "onboardingAdsTitle": "Personalised ads",
+  "onboardingAdsBody": "If you leave this off you still see ads, but they aren't picked by your interests. You can change it any time in settings.",
+  "onboardingNotifTitle": "Notifications",
+  "onboardingNotifBody": "Tells you when blocks and breaks end. The app works fine without permission.",
+  "onboardingNotifGrant": "Allow notifications",
+  "onboardingSummaryTitle": "You're ready",
+  "onboardingSummaryNote": "You can change all of this later in settings.",
+  "onboardingSummaryExam": "Exam",
+  "onboardingSummaryMinutes": "Daily time",
+  "onboardingSummaryQuestions": "Daily questions",
+  "commonOn": "On",
+  "commonOff": "Off",
+  "setupSubjectTitle": "Pick a Subject",
+  "setupSubjectsFailed": "Subjects could not be loaded: {error}",
   "@setupSubjectsFailed": {
     "placeholders": {
       "error": {
@@ -572,9 +572,9 @@
       }
     }
   },
-  "setupNoSubjects": "Bu sınav türü için ders yok.",
-  "setupTopicTitle": "Konu Seç",
-  "setupTopicsFailed": "Konular yüklenemedi: {error}",
+  "setupNoSubjects": "No subjects for this exam type.",
+  "setupTopicTitle": "Pick a Topic",
+  "setupTopicsFailed": "Topics could not be loaded: {error}",
   "@setupTopicsFailed": {
     "placeholders": {
       "error": {
@@ -582,11 +582,11 @@
       }
     }
   },
-  "setupNoTopics": "Bu derste henüz konu yok.\nKonu seçmeden devam edebilirsin.",
-  "setupSkipTopic": "Konu seçmeden devam et",
-  "setupPickSubjectFirst": "Önce ders seçmen gerekiyor.",
-  "setupActivityTitle": "Çalışma Türü",
-  "setupActivitiesFailed": "Türler yüklenemedi: {error}",
+  "setupNoTopics": "This subject has no topics yet.\nYou can continue without picking one.",
+  "setupSkipTopic": "Continue without a topic",
+  "setupPickSubjectFirst": "You need to pick a subject first.",
+  "setupActivityTitle": "Study Type",
+  "setupActivitiesFailed": "Types could not be loaded: {error}",
   "@setupActivitiesFailed": {
     "placeholders": {
       "error": {
@@ -606,22 +606,22 @@
     }
   },
   "planTitle": "Plan",
-  "planPreset": "Hazır",
-  "planCustom": "Özel",
-  "planByEnd": "Bitiş",
-  "planPickEnd": "Bitiş saatini seç.",
-  "planStart": "BAŞLAT",
-  "planStarting": "Başlatılıyor...",
-  "planLongBlockWarning": "Bir çalışma bloğu 2 saatten uzun. Odaklanmak zorlaşabilir.",
-  "planLastBreakDoubled": "Son mola iki katına çıkarıldı.",
-  "planTemplate": "Şablon",
-  "planCycles": "Döngü sayısı",
-  "planTotalMinutes": "Toplam çalışma (dk)",
-  "planBreakCount": "Mola sayısı",
-  "planBreakMinutes": "Mola süresi (dk)",
-  "planLastBreakLong": "Son mola iki katı olsun",
-  "wrongsTitle": "Yanlışlar",
-  "wrongsFailed": "Yanlışlar yüklenemedi: {error}",
+  "planPreset": "Preset",
+  "planCustom": "Custom",
+  "planByEnd": "By end time",
+  "planPickEnd": "Pick an end time.",
+  "planStart": "START",
+  "planStarting": "Starting...",
+  "planLongBlockWarning": "A study block is longer than 2 hours. Staying focused may be hard.",
+  "planLastBreakDoubled": "The last break was doubled.",
+  "planTemplate": "Template",
+  "planCycles": "Cycle count",
+  "planTotalMinutes": "Total study (min)",
+  "planBreakCount": "Break count",
+  "planBreakMinutes": "Break length (min)",
+  "planLastBreakLong": "Double the last break",
+  "wrongsTitle": "Mistakes",
+  "wrongsFailed": "Mistakes could not be loaded: {error}",
   "@wrongsFailed": {
     "placeholders": {
       "error": {
@@ -629,15 +629,15 @@
       }
     }
   },
-  "wrongsEmptyActive": "Aktif yanlışın yok.\nOturum sonu formuna yanlış girdiğinde buraya otomatik düşer.",
-  "wrongsEmptyReviewed": "Tekrar ettiğin konu yok.\nAktif listeden \"Tekrar ettim\" ile buraya taşıyabilirsin.",
-  "wrongsEmptyMastered": "Henüz öğrenildi işaretlediğin konu yok.",
-  "wrongsStatusActive": "Aktif",
-  "wrongsStatusReviewed": "Tekrar edildi",
-  "wrongsStatusMastered": "Öğrenildi",
-  "wrongsMarkReviewed": "Tekrar ettim",
-  "wrongsMarkMastered": "Öğrendim",
-  "wrongsCount": "{count} yanlış",
+  "wrongsEmptyActive": "You have no active mistakes.\nWhen you enter wrong answers in the session form they land here automatically.",
+  "wrongsEmptyReviewed": "No topic you've reviewed.\nMove them here from the active list with \"Reviewed\".",
+  "wrongsEmptyMastered": "You haven't marked any topic as learned yet.",
+  "wrongsStatusActive": "Active",
+  "wrongsStatusReviewed": "Reviewed",
+  "wrongsStatusMastered": "Learned",
+  "wrongsMarkReviewed": "Reviewed",
+  "wrongsMarkMastered": "Learned it",
+  "wrongsCount": "{count} wrong",
   "@wrongsCount": {
     "placeholders": {
       "count": {
@@ -656,31 +656,31 @@
       }
     }
   },
-  "wrongsAddTitle": "Yanlış Ekle",
-  "wrongsSubject": "Ders",
-  "wrongsTopicOptional": "Konu (opsiyonel)",
-  "wrongsCountLabel": "Yanlış sayısı",
-  "wrongsNoteOptional": "Not (opsiyonel)",
-  "wrongsSave": "KAYDET",
-  "wrongsDetailTitle": "Analiz / Yanlış Defteri",
-  "wrongsDeleteTitle": "Kayıt silinsin mi?",
-  "wrongsDeleteBody": "Bu yanlış kaydı tamamen silinecek. Geri alınamaz.",
-  "wrongsDelete": "Sil",
-  "wrongsNote": "Not",
-  "wrongsStudyThisTopic": "Bu konuyu çalış",
-  "wrongsSaveNote": "Notu kaydet",
-  "supportTitle": "Destek ol",
-  "supportBody": "Uygulama %100 ücretsiz ve hiçbir özelliği kilitli değil. İstersen kısa bir reklam izleyerek destek olabilirsin — izlemezsen hiçbir şey değişmez.",
-  "supportWatch": "İzle ve destekle",
-  "supportDisabledNote": "Reklam tercihi kapalı olduğu için devre dışı. Onboarding'de verdiğin tercihi buradan değiştirebilirsin.",
-  "supportThanks": "Teşekkürler! Desteğin uygulamayı ücretsiz tutuyor.",
-  "supportNoAd": "Şu an gösterilecek reklam yok. Sonra tekrar deneyebilirsin.",
-  "settingsPrivacyNote": "Reklam kişiselleştirme rızanı buradan değiştirebilirsin.",
-  "doneNewAchievement": "Yeni rozet kazandın!",
-  "doneSeeAchievements": "Rozetleri gör",
-  "onboardingNotifDenied": "Bildirim izni verilmedi — sorun değil, devam edebilirsin.",
-  "planEndTime": "Bitiş saati",
-  "planStudyTotal": "Çalışma: {duration}",
+  "wrongsAddTitle": "Add a Mistake",
+  "wrongsSubject": "Subject",
+  "wrongsTopicOptional": "Topic (optional)",
+  "wrongsCountLabel": "Wrong count",
+  "wrongsNoteOptional": "Note (optional)",
+  "wrongsSave": "SAVE",
+  "wrongsDetailTitle": "Analysis / Mistake Log",
+  "wrongsDeleteTitle": "Delete this record?",
+  "wrongsDeleteBody": "This mistake record will be deleted completely. It cannot be undone.",
+  "wrongsDelete": "Delete",
+  "wrongsNote": "Note",
+  "wrongsStudyThisTopic": "Study this topic",
+  "wrongsSaveNote": "Save the note",
+  "supportTitle": "Support us",
+  "supportBody": "The app is 100% free and nothing is locked. If you like, you can support it by watching a short ad — nothing changes if you don't.",
+  "supportWatch": "Watch and support",
+  "supportDisabledNote": "Disabled because your ad preference is off. You can change the choice you made during onboarding here.",
+  "supportThanks": "Thank you! Your support keeps the app free.",
+  "supportNoAd": "No ad available right now. You can try again later.",
+  "settingsPrivacyNote": "You can change your ad personalisation consent here.",
+  "doneNewAchievement": "You earned a new badge!",
+  "doneSeeAchievements": "See badges",
+  "onboardingNotifDenied": "Notification permission not granted — no problem, you can carry on.",
+  "planEndTime": "End time",
+  "planStudyTotal": "Study: {duration}",
   "@planStudyTotal": {
     "placeholders": {
       "duration": {
@@ -688,7 +688,7 @@
       }
     }
   },
-  "planEstimatedEnd": "Tahmini bitiş: {time}",
+  "planEstimatedEnd": "Estimated end: {time}",
   "@planEstimatedEnd": {
     "placeholders": {
       "time": {
@@ -696,18 +696,18 @@
       }
     }
   },
-  "settingsPrivacyTitle": "Gizlilik tercihleri",
-  "commonSkip": "Atla",
-  "planHour": "Saat",
-  "summaryQuestionCapped": "Tek oturum için en fazla 2000 soru.",
-  "runMinimizeTitle": "Oturum arka planda devam edecek",
-  "runMinimizeBody": "Sayaç durmaz — uygulamadan çıksan da işlemeye devam eder. Ana panele dönmek istiyor musun?",
-  "runMinimizeConfirm": "Ana panele dön",
-  "runBackToSession": "Oturuma dön",
-  "homeActiveSessionTitle": "Oturum devam ediyor",
-  "homeActiveSessionBody": "Sayaç işliyor. Dokun, kaldığın yerden devam et.",
-  "runEarlyTitle": "Hedefin altındasın",
-  "runEarlyBody": "{total} planın {done} kadarı tamamlandı. Ne yapalım?",
+  "settingsPrivacyTitle": "Privacy preferences",
+  "commonSkip": "Skip",
+  "planHour": "Hour",
+  "summaryQuestionCapped": "At most 2000 questions per session.",
+  "runMinimizeTitle": "The session will keep running in the background",
+  "runMinimizeBody": "The timer doesn't stop — it keeps running even if you leave the app. Do you want to go back to Home?",
+  "runMinimizeConfirm": "Go to Home",
+  "runBackToSession": "Back to the session",
+  "homeActiveSessionTitle": "A session is running",
+  "homeActiveSessionBody": "The timer is going. Tap to pick up where you left off.",
+  "runEarlyTitle": "You're below your target",
+  "runEarlyBody": "You completed {done} of your {total} plan. What should we do?",
   "@runEarlyBody": {
     "placeholders": {
       "total": {
@@ -718,14 +718,14 @@
       }
     }
   },
-  "runEarlySave": "Kaydet",
-  "runEarlyDelete": "Sil",
-  "runEarlyContinue": "Devam et",
-  "runEarlyDeleteConfirmTitle": "Oturum silinsin mi?",
-  "runEarlyDeleteConfirmBody": "Bu oturumun hiçbir kaydı kalmaz. Geri alınamaz.",
-  "runEarlyDeleted": "Oturum silindi. Bir dahakine 💪",
-  "commonBack": "Geri",
-  "homeActiveSessionRemaining": "{time} kaldı — dokun, devam et",
+  "runEarlySave": "Save",
+  "runEarlyDelete": "Delete",
+  "runEarlyContinue": "Continue",
+  "runEarlyDeleteConfirmTitle": "Delete the session?",
+  "runEarlyDeleteConfirmBody": "No record of this session will remain. It cannot be undone.",
+  "runEarlyDeleted": "Session deleted. Next time 💪",
+  "commonBack": "Back",
+  "homeActiveSessionRemaining": "{time} left — tap to continue",
   "@homeActiveSessionRemaining": {
     "placeholders": {
       "time": {
@@ -733,59 +733,59 @@
       }
     }
   },
-  "achIndustryEscapeTitle": "Sanayiden Kurtuldun",
-  "achIndustryEscapeBody": "150 saat. Artık elin yağlı değil, kalemin keskin. 🏭",
-  "achDownshiftTitle": "Şanzımanı İndir",
-  "achDownshiftBody": "Bu hafta devir düştü. Vites küçült, ama durma. 🔧",
-  "achMasterWaitsTitle": "Mehmet Usta Seni Bekliyor",
-  "achMasterWaitsBody": "5 gün tezgâhı bıraktın. Döndün ya, gerisi kolay. 🔩",
-  "achQuestions15000Title": "15.000 Soru",
-  "achQuestions15000Body": "On beş bin. Bu artık şans değil, alışkanlık. 🏆",
-  "achievementToastNew": "Yeni rozet!",
-  "settingsAchievementToast": "Rozet bildirimleri",
-  "settingsAchievementToastNote": "Rozet kazanınca ekranın üstünde kısa bir kart belirir.",
-  "reportButton": "Rapor Al",
-  "reportPickTitle": "Rapor kime?",
-  "reportParent": "Veli",
-  "reportParentNote": "Tek sayfa gurur tablosu. Zayıf konu listesi YOK.",
-  "reportTeacher": "Eğitimci",
-  "reportTeacherNote": "Analitik döküm: ders dağılımı, zayıf konular, günlük detay.",
-  "reportParentTitle": "Çalışma Karnesi",
-  "reportTeacherTitle": "Çalışma Analiz Raporu",
-  "reportRange": "Dönem",
-  "reportDailyAverage": "Günlük ortalama",
-  "reportBestDay": "En iyi gün",
-  "reportDailyDetail": "Günlük döküm",
-  "reportDay": "Gün",
-  "reportDuration": "Süre",
-  "reportAchievements": "Rozet",
-  "reportPage": "Sayfa",
-  "reportParentStamp": "Bu karne cihazında üretildi; hiçbir yere gönderilmedi. Buradaki her dakika gerçekten çalışılmış dakika. — Balto",
-  "reportCoachNote": "Koç notu",
-  "reportSubjectColumn": "Ders",
-  "reportTopicColumn": "Konu",
-  "reportPrivacyStamp": "Veriler yalnızca cihazda işlendi. Satılmadı, paylaşılmadı. — Balto, Sınav Odak",
-  "reportDone": "Rapor paylaşıma hazır.",
-  "reportEmpty": "Bu aralıkta raporlanacak oturum yok.",
-  "reportFailed": "Rapor oluşturulamadı.",
-  "reportBuilding": "Rapor hazırlanıyor…",
-  "statsChartTrend": "Haftalık eğilim",
-  "statsChartPie": "Ders dağılımı",
-  "statsChartHeat": "Gün × saat yoğunluğu",
-  "statsChartNoData": "Grafik için yeterli veri yok.",
-  "reportStreak": "Seri (güncel / en uzun)",
-  "homeStreakBroken": "Zincir buzda kanka 🧊",
-  "doneBrainSweat": "Beyin: \"ter attım\" 💪",
-  "adOffline": "İnternet yok, reklam yok — Balto da tatilde 🌴",
-  "achBaltoFriendTitle": "Balto'nun Dostu 🤝",
-  "achBaltoFriendBody": "30 saniyeni verdin, uygulama ücretsiz kaldı.",
-  "supportNoAdBalto": "Reklam gelmedi. Niyetin yeter, sağ ol 🤝",
-  "settingsBannerPosition": "Reklam konumu",
-  "settingsBannerPositionNote": "Banner'ın ekranda durduğu yer.",
-  "bannerPositionBottom": "Alt",
-  "bannerPositionTop": "Üst",
-  "bannerPositionSideLandscape": "Yatayda yan",
-  "runLandscapeHint": "Yatay mod: sayaç ortada, kontroller sağda.",
+  "achIndustryEscapeTitle": "Out of the Workshop",
+  "achIndustryEscapeBody": "150 hours. No more grease on your hands — your pencil is the sharp thing now. 🏭",
+  "achDownshiftTitle": "Downshift",
+  "achDownshiftBody": "The revs dropped this week. Change down a gear, but don't stop. 🔧",
+  "achMasterWaitsTitle": "The Boss Is Waiting",
+  "achMasterWaitsBody": "You left the bench for 5 days. You're back — the rest is easy. 🔩",
+  "achQuestions15000Title": "15,000 Questions",
+  "achQuestions15000Body": "Fifteen thousand. That's not luck any more, that's a habit. 🏆",
+  "achievementToastNew": "New badge!",
+  "settingsAchievementToast": "Badge notifications",
+  "settingsAchievementToastNote": "A short card appears at the top of the screen when you earn a badge.",
+  "reportButton": "Get Report",
+  "reportPickTitle": "Who is the report for?",
+  "reportParent": "Parent",
+  "reportParentNote": "A one-page pride sheet. NO weak-topic list.",
+  "reportTeacher": "Teacher",
+  "reportTeacherNote": "Analytical breakdown: subject split, weak topics, daily detail.",
+  "reportParentTitle": "Study Report Card",
+  "reportTeacherTitle": "Study Analysis Report",
+  "reportRange": "Period",
+  "reportDailyAverage": "Daily average",
+  "reportBestDay": "Best day",
+  "reportDailyDetail": "Daily breakdown",
+  "reportDay": "Day",
+  "reportDuration": "Duration",
+  "reportAchievements": "Badges",
+  "reportPage": "Page",
+  "reportParentStamp": "This report card was produced on the device; it was sent nowhere. Every minute here is a minute genuinely studied. — Balto",
+  "reportCoachNote": "Coach's note",
+  "reportSubjectColumn": "Subject",
+  "reportTopicColumn": "Topic",
+  "reportPrivacyStamp": "Data processed on the device only. Not sold, not shared. — Balto, Sınav Odak",
+  "reportDone": "Report ready to share.",
+  "reportEmpty": "No session to report in this range.",
+  "reportFailed": "The report could not be created.",
+  "reportBuilding": "Preparing the report…",
+  "statsChartTrend": "Weekly trend",
+  "statsChartPie": "Subject breakdown",
+  "statsChartHeat": "Day × hour intensity",
+  "statsChartNoData": "Not enough data for a chart.",
+  "reportStreak": "Streak (current / longest)",
+  "homeStreakBroken": "Chain's on ice, mate 🧊",
+  "doneBrainSweat": "Brain: \"I broke a sweat\" 💪",
+  "adOffline": "No internet, no ads — Balto's on holiday too 🌴",
+  "achBaltoFriendTitle": "Balto's Friend 🤝",
+  "achBaltoFriendBody": "You gave 30 seconds and the app stayed free.",
+  "supportNoAdBalto": "No ad turned up. The thought counts, thanks 🤝",
+  "settingsBannerPosition": "Ad position",
+  "settingsBannerPositionNote": "Where the banner sits on screen.",
+  "bannerPositionBottom": "Bottom",
+  "bannerPositionTop": "Top",
+  "bannerPositionSideLandscape": "Side in landscape",
+  "runLandscapeHint": "Landscape: timer in the middle, controls on the right.",
   "curriculumTitle": "Curriculum",
   "curriculumSubtitle": "Subjects, topics and sub-topics",
   "curriculumSearchHint": "Search topics or sub-topics…",
@@ -835,5 +835,76 @@
   "curriculumMarkStudied": "Mark as studied",
   "curriculumMarkNotStudied": "Remove studied mark",
   "curriculumStudied": "Studied",
-  "curriculumPickSubject": "Pick a subject"
+  "curriculumPickSubject": "Pick a subject",
+  "onboardingQuestionsValue": "{count} questions",
+  "@onboardingQuestionsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notifSessionDoneTitle": "Session complete",
+  "notifSessionDoneBody": "Great work. Now let's log how many questions you solved.",
+  "notifBreakTitle": "Break time",
+  "notifBreakBody": "Block {block} is done. Your {minutes}-minute break has started.",
+  "@notifBreakBody": {
+    "placeholders": {
+      "block": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "notifBreakOverTitle": "Break's over",
+  "notifBreakOverBody": "Block {block} is waiting for you.",
+  "@notifBreakOverBody": {
+    "placeholders": {
+      "block": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLanguage": "Language",
+  "settingsLanguageNote": "Interface language. Subject and topic names stay in Turkish.",
+  "languageSystem": "System",
+  "languageTurkish": "Türkçe",
+  "languageEnglish": "English",
+  "onboardingLanguage": "Dil / Language",
+  "csvDate": "Date",
+  "csvStart": "Start",
+  "csvSubject": "Subject",
+  "csvTopic": "Topic",
+  "csvType": "Type",
+  "csvPlannedMin": "Planned (min)",
+  "csvStudiedMin": "Studied (min)",
+  "csvBreakMin": "Break (min)",
+  "csvQuestions": "Questions",
+  "csvCorrect": "Correct",
+  "csvWrong": "Wrong",
+  "csvBlank": "Blank",
+  "csvNet": "Net",
+  "csvFocusScore": "Focus Score",
+  "csvMood": "Mood",
+  "csvStatus": "Status",
+  "csvNote": "Note",
+  "durationH": "{hours}h",
+  "@durationH": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "decimalSeparator": ".",
+  "percentValue": "{value}%",
+  "@percentValue": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  }
 }

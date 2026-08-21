@@ -20,6 +20,9 @@ void main() {
   Future<void> pump(WidgetTester tester, Widget child) async {
     await tester.pumpWidget(
       MaterialApp(
+        // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+        // cihaz diline (testte en_US) düşülüyor.
+        locale: const Locale('tr'),
         theme: AppTheme.light(),
         home: Scaffold(body: Center(child: child)),
       ),

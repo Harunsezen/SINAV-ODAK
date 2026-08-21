@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -163,8 +164,8 @@ class _RunningBody extends ConsumerWidget {
         title: Text(l.runEarlyTitle),
         content: Text(
           l.runEarlyBody(
-            formatDurationShort(state.schedule.totalStudyS),
-            formatDurationShort(
+            l.durationShort(state.schedule.totalStudyS),
+            l.durationShort(
               elapsedS.clamp(0, state.schedule.totalStudyS),
             ),
           ),

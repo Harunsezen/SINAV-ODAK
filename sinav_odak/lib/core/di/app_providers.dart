@@ -8,9 +8,13 @@
 library;
 
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_locale.dart';
+import '../../domain/services/notification_planner.dart';
 import '../../data/local/daos/achievement_dao.dart';
 import '../../data/local/daos/goal_dao.dart';
 import '../../data/local/daos/session_dao.dart';
@@ -150,8 +154,71 @@ final sessionNotifierProvider = Provider<SessionNotifier>(
     // oturum sürerken ayarı değiştirebilir ve bir sonraki bildirim
     // kurulumu güncel tercihi görmeli.
     prefsReader: () => ref.read(notificationPrefsProvider),
+    // Metinler de kurulum anında okunuyor: kullanıcı oturum sürerken dili
+    // değiştirebilir ve bir sonraki bildirim yeni dilde kurulmalı.
+    stringsReader: () => ref.read(notificationStringsProvider),
   ),
 );
+
+/// Uygulamanın **o anki** arayüz dili.
+///
+/// Ayar okunamazsa Türkçe: uygulama v1.1'de Türkçeydi ve okunamayan bir
+/// ayar yüzünden dil değiştirmek en kötü varsayılan olurdu.
+final appLanguageProvider = Provider<AppLanguage>((ref) {
+  return ref.watch(settingsStreamProvider).valueOrNull?.language ??
+      AppLanguage.tr;
+});
+
+/// Widget ağacı dışından okunabilen çeviri paketi.
+///
+/// `L10n.of(context)` bir `BuildContext` istiyor; bildirim kuran servisin
+/// elinde context yok. `lookupL10n` aynı üretilmiş sınıfı context'siz
+/// veriyor — iki ayrı çeviri kaynağı OLUŞMUYOR.
+final l10nProvider = Provider<L10n>((ref) {
+  return lookupL10n(
+    AppLocale.resolve(
+      ref.watch(appLanguageProvider),
+      platformLocale: PlatformDispatcher.instance.locale,
+    ),
+  );
+});
+
+/// Bildirim metinleri, arayüzle AYNI dilden.
+final notificationStringsProvider = Provider<NotificationStrings>((ref) {
+  final l = ref.watch(l10nProvider);
+  return NotificationStrings(
+    sessionDoneTitle: l.notifSessionDoneTitle,
+    sessionDoneBody: l.notifSessionDoneBody,
+    breakTitle: l.notifBreakTitle,
+    breakOverTitle: l.notifBreakOverTitle,
+    breakBody: l.notifBreakBody,
+    breakOverBody: l.notifBreakOverBody,
+  );
+});
+
+/// CSV sütun başlıkları, arayüzle AYNI dilden.
+final csvHeadersProvider = Provider<List<String>>((ref) {
+  final l = ref.watch(l10nProvider);
+  return [
+    l.csvDate,
+    l.csvStart,
+    l.csvSubject,
+    l.csvTopic,
+    l.csvType,
+    l.csvPlannedMin,
+    l.csvStudiedMin,
+    l.csvBreakMin,
+    l.csvQuestions,
+    l.csvCorrect,
+    l.csvWrong,
+    l.csvBlank,
+    l.csvNet,
+    l.csvFocusScore,
+    l.csvMood,
+    l.csvStatus,
+    l.csvNote,
+  ];
+});
 
 /// Ekran kilidi. **Varsayılan Noop**: `wakelock_plus` platform kanalı
 /// istiyor ve testte `MissingPluginException` fırlatıyor. `main()` gerçek

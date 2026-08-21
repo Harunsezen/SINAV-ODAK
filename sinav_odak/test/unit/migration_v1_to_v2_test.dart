@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/data/local/database.dart';
+import 'package:sinav_odak/domain/entities/enums.dart';
 
 /// v1 → v2 şema yükseltmesi (FAZ 2.1).
 ///
@@ -61,9 +62,45 @@ void main() {
     await raw.close();
   });
 
-  test('schemaVersion 4', () async {
+  test('schemaVersion 5', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    expect(db.schemaVersion, 4);
+    expect(db.schemaVersion, 5);
+    await db.close();
+  });
+
+  test('v4 -> v5: dil kolonu ekleniyor, VARSAYILAN TÜRKÇE', () async {
+    // v1.2/E. Bu testin koruduğu şey bir kolonun varlığı değil, bir
+    // KARAR: yükselen kullanıcı uygulamayı Türkçe bırakmıştı. Varsayılan
+    // 'system' olsaydı, telefonu İngilizce olan kullanıcı güncellemeden
+    // sonra uygulamayı dil değiştirmiş bulurdu — istemediği bir değişiklik.
+    final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('ALTER TABLE user_settings DROP COLUMN language');
+    await db.customStatement(
+      'UPDATE user_settings SET current_streak = 9, daily_goal_minutes = 300',
+    );
+
+    final before =
+        await db.customSelect("PRAGMA table_info('user_settings')").get();
+    expect(
+      before.any((r) => r.read<String>('name') == 'language'),
+      isFalse,
+      reason: 'kolon düşürülemediyse bu test v4 durumunu test etmiyor',
+    );
+
+    await db.customStatement(
+      'ALTER TABLE user_settings ADD COLUMN language TEXT NOT NULL '
+      "DEFAULT 'tr'",
+    );
+
+    final s = await db.settingsDao.ensure();
+    expect(s.currentStreak, 9, reason: 'v4 verisi korunmalı');
+    expect(s.dailyGoalMinutes, 300, reason: 'v4 verisi korunmalı');
+    expect(
+      s.language,
+      AppLanguage.tr,
+      reason: 'yükselen kullanıcı dil değiştirmiş bulmamalı',
+    );
+
     await db.close();
   });
 

@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/local/database.dart';
 import 'core/config/ad_config.dart';
+import 'core/l10n/app_locale.dart';
 import 'core/di/ad_providers.dart';
 import 'core/di/app_providers.dart';
 import 'core/utils/time.dart';
@@ -55,8 +58,20 @@ Future<void> main() async {
   // Kanal adı/açıklaması ARB'den. `L10n.delegate.load` context istemiyor;
   // `runApp`'tan önce çağrılabilen tek yol bu. Kanal Android bildirim
   // ayarlarında bu adla görünür.
+  //
+  // v1.2/E: dil AYARDAN okunuyor. Android bildirim kanalını BİR KEZ
+  // oluşturur ve adını sonradan güncellemez; kullanıcı dili değiştirirse
+  // kanal adı sistem ayarlarında eski dilde kalır. Bildirimlerin kendi
+  // metni her kurulumda yeniden okunduğu için doğru dilde gider
+  // (`notificationStringsProvider`).
   try {
-    final l = await L10n.delegate.load(const Locale('tr'));
+    final language = (await db.settingsDao.read()).language;
+    final l = await L10n.delegate.load(
+      AppLocale.resolve(
+        language,
+        platformLocale: PlatformDispatcher.instance.locale,
+      ),
+    );
     notifications.channelName = l.notificationChannelName;
     notifications.channelDescription = l.notificationChannelDescription;
   } on Object catch (e) {

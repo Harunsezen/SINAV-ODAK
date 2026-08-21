@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import '../../domain/services/achievement_calculator.dart';
 import '../achievements/achievements_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,6 @@ import '../../core/di/app_providers.dart';
 import '../achievements/achievement_toast.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/formatters.dart';
 import '../../domain/entities/ad_placement.dart';
 import '../ads/interstitial_controller.dart';
 import '../session_setup/setup_controller.dart';
@@ -104,10 +104,10 @@ class DoneScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(
                       goalS == 0
-                          ? formatDurationShort(todayStudyS)
+                          ? l.durationShort(todayStudyS)
                           : l.homeProgressOf(
-                              formatDurationShort(todayStudyS),
-                              formatDurationShort(goalS),
+                              l.durationShort(todayStudyS),
+                              l.durationShort(goalS),
                             ),
                       key: const Key('done-progress-text'),
                     ),
@@ -115,7 +115,7 @@ class DoneScreen extends ConsumerWidget {
                     Text(
                       l.doneQuestionsNet(
                         stat?.questionCount ?? 0,
-                        formatNet(stat?.net ?? 0),
+                        l.netText(stat?.net ?? 0),
                       ),
                       key: const Key('done-progress-questions'),
                     ),

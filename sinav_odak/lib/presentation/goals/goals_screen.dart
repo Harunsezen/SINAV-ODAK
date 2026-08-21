@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/app_providers.dart';
@@ -178,7 +179,7 @@ class _GoalCard extends ConsumerWidget {
                 // hiçbir zaman kırpılmaz — asıl bilgi o.
                 Expanded(
                   child: Text(
-                    '${l.goalsProgress(_fmt(current), _fmt(target))} $unit',
+                    '${l.goalsProgress(_fmt(l, current), _fmt(l, target))} $unit',
                     key: Key('goal-value-$id'),
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 12),
@@ -186,7 +187,9 @@ class _GoalCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isCompleted ? l.goalsReached : '%${(ratio * 100).round()}',
+                  isCompleted
+                      ? l.goalsReached
+                      : l.percentValue((ratio * 100).round()),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -202,8 +205,10 @@ class _GoalCard extends ConsumerWidget {
   }
 
   /// Tam sayı hedeflerde ".0" göstermemek için.
-  static String _fmt(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+  ///
+  /// Ondalık ayracı dile bağlı: Türkçede virgül, İngilizcede nokta.
+  static String _fmt(L10n l, double v) =>
+      v == v.roundToDouble() ? v.toStringAsFixed(0) : l.decimalFixed(v, 1);
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final l = L10n.of(context);

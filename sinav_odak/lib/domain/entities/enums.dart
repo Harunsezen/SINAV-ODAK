@@ -57,6 +57,17 @@ enum WrongItemSource {
 
 enum ThemeModeSetting { system, light, dark }
 
+/// Arayüz dili (v1.2/E).
+///
+/// **Neden ayrı bir ayar, sadece cihaz dili değil:** uygulamanın içeriği
+/// (ders ve konu adları) Türkçe. Telefonu İngilizce olan bir Türk
+/// öğrencinin arayüzü de İngilizceye dönseydi, Türkçe konu adlarıyla
+/// İngilizce etiketler karışırdı. Seçim kullanıcıya bırakılıyor.
+///
+/// [system] cihaz dilini izler; desteklenmeyen bir dilde Flutter
+/// `supportedLocales`in ilkine (tr) düşer.
+enum AppLanguage { system, tr, en }
+
 enum AdKind { banner, native, interstitial, rewarded }
 
 /// Banner'ın ekranda durduğu yer (FAZ 4.4).

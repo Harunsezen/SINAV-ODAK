@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -7,7 +8,6 @@ import 'package:uuid/uuid.dart';
 import '../../core/di/app_providers.dart';
 import '../../core/errors/failures.dart';
 import '../../core/router/routes.dart';
-import '../../core/utils/formatters.dart';
 import '../../domain/entities/session_schedule.dart';
 import '../../domain/services/schedule_builder.dart';
 import 'setup_controller.dart';
@@ -371,12 +371,14 @@ class _Preview extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              L10n.of(context)
-                  .planStudyTotal(formatDurationShort(schedule.totalStudyS)),
+              L10n.of(context).planStudyTotal(
+                L10n.of(context).durationShort(schedule.totalStudyS),
+              ),
             ),
             Text(
-              L10n.of(context)
-                  .summaryBreak(formatDurationShort(schedule.totalBreakS)),
+              L10n.of(context).summaryBreak(
+                L10n.of(context).durationShort(schedule.totalBreakS),
+              ),
             ),
             Text(
               L10n.of(context).planEstimatedEnd('$hh:$mm'),

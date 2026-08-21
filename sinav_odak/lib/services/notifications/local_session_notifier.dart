@@ -21,7 +21,9 @@ class LocalSessionNotifier implements SessionNotifier {
     this._service, {
     required this.nowMsProvider,
     NotificationPrefs Function()? prefsReader,
-  }) : prefsReader = prefsReader ?? (() => NotificationPrefs.defaults);
+    NotificationStrings Function()? stringsReader,
+  })  : prefsReader = prefsReader ?? (() => NotificationPrefs.defaults),
+        stringsReader = stringsReader ?? (() => NotificationStrings.defaults);
 
   final NotificationService _service;
 
@@ -32,6 +34,11 @@ class LocalSessionNotifier implements SessionNotifier {
   /// kullanıcı oturum başladıktan sonra ayarı değiştirebilir ve
   /// yapılandırma anındaki değere kilitlenmek yanlış olurdu.
   final NotificationPrefs Function() prefsReader;
+
+  /// Bildirim metinleri. Tercihlerle aynı gerekçeyle **her kurulumda
+  /// yeniden okunuyor**: kullanıcı oturum sürerken dili değiştirebilir ve
+  /// bir sonraki bildirim yeni dilde kurulmalı.
+  final NotificationStrings Function() stringsReader;
 
   @override
   Future<void> scheduleFor({
@@ -52,6 +59,7 @@ class LocalSessionNotifier implements SessionNotifier {
       // Geçmiş bloklar atlanır: geçmişe bildirim kurmak anlamsız ve
       // bazı platformlarda hata verir.
       fromMs: nowMsProvider(),
+      strings: stringsReader(),
     );
 
     for (final n in planned) {

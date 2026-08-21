@@ -429,7 +429,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.light_mode_outlined));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sistem'));
+      // v1.2/E: dil satırında da bir "Sistem" segmenti var; düz
+      // `find.text` iki eşleşme buluyor. İDDİA AYNI (tema Sistem'e
+      // dönüyor), yalnızca hangi satırdaki düğme olduğu açıkça yazıldı.
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(const Key('settings-theme')),
+          matching: find.text('Sistem'),
+        ),
+      );
     });
 
     await step(tester, 'ekran açık kalsın: kapat/aç', () async {

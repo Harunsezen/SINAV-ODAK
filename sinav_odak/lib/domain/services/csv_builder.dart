@@ -62,6 +62,16 @@ abstract final class CsvBuilder {
   /// (ğ, ş, İ) bozuk görünüyor.
   static const String bom = '﻿';
 
+  /// Türkçe sütun başlıkları — varsayılan.
+  ///
+  /// v1.2/E: başlıklar artık [build]'e parametre olarak da verilebiliyor;
+  /// arayüz İngilizceyken dışa aktarılan dosya da İngilizce başlık taşısın.
+  ///
+  /// **Ayraç ve ondalık biçimi dile göre DEĞİŞMİYOR** (`;` ve `12,5`).
+  /// Bu bilinçli: dosyayı açan Excel kurulumu büyük ihtimalle Türkçe ve
+  /// ayracı dile göre değiştirmek, aynı cihazda üretilmiş iki dosyanın
+  /// farklı biçimde olması demek olurdu. Başlık kullanıcının OKUDUĞU şey;
+  /// ayraç Excel'in okuduğu şey.
   static const List<String> headers = [
     'Tarih',
     'Başlangıç',
@@ -129,7 +139,10 @@ abstract final class CsvBuilder {
 
   /// Tam CSV metni. Kayıt yoksa **yalnızca başlık satırı** döner —
   /// boş dosya paylaşmak kullanıcıya "dışa aktarma bozuk" hissi veriyordu.
-  static String build(List<SessionExportRow> rows) {
+  static String build(
+    List<SessionExportRow> rows, {
+    List<String> headers = CsvBuilder.headers,
+  }) {
     final buffer = StringBuffer(bom)
       ..writeln(headers.map(escape).join(delimiter));
     for (final r in rows) {

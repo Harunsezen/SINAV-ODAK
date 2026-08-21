@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
   /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -120,6 +120,15 @@ class AppDatabase extends _$AppDatabase {
             // Yeni müfredat satırları eklenir; `insertOrIgnore` sayesinde
             // kullanıcının yeniden adlandırdığı kayıtlara DOKUNMAZ.
             await SeedData.populate(this);
+          }
+          if (from < 5) {
+            // v1.2/E — arayüz dili.
+            //
+            // Varsayılan 'tr': yükselen kullanıcı uygulamayı Türkçe
+            // bırakmıştı. 'system' yapsaydık, telefonu İngilizce olan
+            // kullanıcı güncellemeden sonra uygulamayı dil değiştirmiş
+            // bulurdu — istemediği bir değişiklik.
+            await m.addColumn(userSettings, userSettings.language);
           }
         },
         beforeOpen: (details) async {

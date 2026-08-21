@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../core/l10n/format_l10n.dart';
 
-import '../../../core/utils/formatters.dart';
 import '../../goals/goal_value_editor.dart';
 import '../../goals/hold_repeat_button.dart';
 
@@ -53,7 +53,7 @@ class GoalStep extends StatelessWidget {
         _Stepper(
           slug: 'minutes',
           label: L10n.of(context).onboardingGoalMinutes,
-          display: formatDurationShort(minutes * 60),
+          display: L10n.of(context).durationShort(minutes * 60),
           kind: GoalValueKind.duration,
           value: minutes,
           onTyped: onMinutes,
@@ -69,7 +69,7 @@ class GoalStep extends StatelessWidget {
         _Stepper(
           slug: 'questions',
           label: L10n.of(context).onboardingGoalQuestions,
-          display: '$questions soru',
+          display: L10n.of(context).onboardingQuestionsValue(questions),
           kind: GoalValueKind.count,
           value: questions,
           onTyped: onQuestions,

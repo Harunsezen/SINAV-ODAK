@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/constants/app_colors.dart';
 
@@ -114,7 +115,8 @@ class SubjectPieChart extends StatelessWidget {
                       value: s.studyS.toDouble(),
                       color: s.color,
                       radius: 44,
-                      title: '%${(s.studyS / total * 100).round()}',
+                      title: L10n.of(context)
+                          .percentValue((s.studyS / total * 100).round()),
                       titleStyle: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

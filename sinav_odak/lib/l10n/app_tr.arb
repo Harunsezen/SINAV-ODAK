@@ -193,7 +193,7 @@
   "statsExportDone": "Dosya paylaşıma hazır.",
   "statsExportEmpty": "Dışa aktarılacak oturum yok.",
   "statsExportFailed": "Dışa aktarma yapılamadı.",
-  "durationHm": "{hours} sa {minutes} dk",
+  "durationHm": "{hours}sa {minutes}dk",
   "@durationHm": {
     "placeholders": {
       "hours": {
@@ -204,7 +204,7 @@
       }
     }
   },
-  "durationM": "{minutes} dk",
+  "durationM": "{minutes}dk",
   "@durationM": {
     "placeholders": {
       "minutes": {
@@ -835,5 +835,76 @@
   "curriculumMarkStudied": "Çalışıldı olarak işaretle",
   "curriculumMarkNotStudied": "Çalışıldı işaretini kaldır",
   "curriculumStudied": "Çalışıldı",
-  "curriculumPickSubject": "Ders seç"
+  "curriculumPickSubject": "Ders seç",
+  "onboardingQuestionsValue": "{count} soru",
+  "@onboardingQuestionsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notifSessionDoneTitle": "Oturum tamamlandı",
+  "notifSessionDoneBody": "Harika iş. Şimdi kaç soru çözdüğünü kaydedelim.",
+  "notifBreakTitle": "Mola zamanı",
+  "notifBreakBody": "{block}. blok bitti. {minutes} dakika molan başladı.",
+  "@notifBreakBody": {
+    "placeholders": {
+      "block": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "notifBreakOverTitle": "Mola bitti",
+  "notifBreakOverBody": "{block}. blok seni bekliyor.",
+  "@notifBreakOverBody": {
+    "placeholders": {
+      "block": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLanguage": "Dil",
+  "settingsLanguageNote": "Arayüz dili. Ders ve konu adları Türkçe kalır.",
+  "languageSystem": "Sistem",
+  "languageTurkish": "Türkçe",
+  "languageEnglish": "English",
+  "onboardingLanguage": "Dil / Language",
+  "csvDate": "Tarih",
+  "csvStart": "Başlangıç",
+  "csvSubject": "Ders",
+  "csvTopic": "Konu",
+  "csvType": "Tür",
+  "csvPlannedMin": "Planlanan (dk)",
+  "csvStudiedMin": "Çalışılan (dk)",
+  "csvBreakMin": "Mola (dk)",
+  "csvQuestions": "Soru",
+  "csvCorrect": "Doğru",
+  "csvWrong": "Yanlış",
+  "csvBlank": "Boş",
+  "csvNet": "Net",
+  "csvFocusScore": "Odak Puanı",
+  "csvMood": "Motivasyon",
+  "csvStatus": "Durum",
+  "csvNote": "Not",
+  "durationH": "{hours}sa",
+  "@durationH": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "decimalSeparator": ",",
+  "percentValue": "%{value}",
+  "@percentValue": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../core/l10n/format_l10n.dart';
 
-import '../../../core/utils/formatters.dart';
 import '../../../domain/entities/enums.dart';
 import 'exam_step.dart';
 
@@ -59,7 +59,7 @@ class SummaryStep extends StatelessWidget {
                 leading: const Icon(Icons.schedule),
                 title: Text(L10n.of(context).onboardingSummaryMinutes),
                 trailing: Text(
-                  formatDurationShort(minutes * 60),
+                  L10n.of(context).durationShort(minutes * 60),
                   key: const Key('onboarding-summary-minutes'),
                 ),
               ),

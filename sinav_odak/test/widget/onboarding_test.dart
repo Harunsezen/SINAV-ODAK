@@ -94,6 +94,9 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
+          // Ürünün TÜRKÇE metnini doğruluyoruz; locale verilmezse
+          // cihaz diline (testte en_US) düşülüyor.
+          locale: const Locale('tr'),
           // GERÇEK tema: hata `AppTheme`'in FilledButton stilinden geliyordu
           // ve varsayılan temayla test edilince görünmüyordu.
           theme: AppTheme.light(),

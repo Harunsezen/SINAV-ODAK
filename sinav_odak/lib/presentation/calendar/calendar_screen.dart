@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/l10n/format_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/app_providers.dart';
@@ -280,12 +281,9 @@ class _DayCell extends StatelessWidget {
     );
   }
 
-  String _duration(BuildContext context, int minutes) {
-    final l = L10n.of(context);
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    return h == 0 ? l.durationM(m) : l.durationHm(h, m);
-  }
+  /// Biçim tek yerde: `L10n.durationShort`. Bkz. `format_l10n.dart`.
+  String _duration(BuildContext context, int minutes) =>
+      L10n.of(context).durationShort(minutes * 60);
 }
 
 class _Legend extends StatelessWidget {
@@ -346,9 +344,7 @@ class _MonthSummary extends StatelessWidget {
         title: Text(l.calendarMonthTotal),
         subtitle: Text(l.calendarStudyDays(studiedDays)),
         trailing: Text(
-          totalMinutes >= 60
-              ? l.durationHm(totalMinutes ~/ 60, totalMinutes % 60)
-              : l.durationM(totalMinutes),
+          l.durationShort(totalMinutes * 60),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
