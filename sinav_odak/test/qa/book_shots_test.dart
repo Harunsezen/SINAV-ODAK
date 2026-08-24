@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -7,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sinav_odak/application/usecases/finish_book_session.dart';
 import 'package:sinav_odak/application/usecases/start_book_session.dart';
+import 'package:sinav_odak/application/schedule_writer.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/data/local/database.dart';
@@ -246,6 +248,65 @@ void main() {
     await tester.tap(find.byKey(BookRunScreen.finishKey));
     await tester.pumpAndSettle();
     await shoot(tester, '11_en_emin_misin');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('13 · oturum sonu: YANLIŞ KONU SEÇİCİ (v1.3 yaması)',
+      (tester) async {
+    // Çalışma oturumu formu — kitap değil. Üç konulu bir oturum yanlışla
+    // bitirilince gömülü seçici çıkıyor; duygu seçicisi de artık emoji
+    // değil Material ikonu.
+    await QaSeed.emptyUser(db);
+    final sch = schedule();
+    await db.sessionDao.createSession(
+      StudySessionsCompanion.insert(
+        id: 'w1',
+        dateKey: '2025-08-06',
+        startedAt: sch.firstStartMs,
+        plannedDurationS: sch.totalStudyS,
+        subjectId: subjectId,
+        topicId: const Value('top_sub_yks_1_22'),
+        activityTypeId: activityId,
+        status: SessionStatus.running,
+        scheduleJson: jsonEncode(sch.toJson()),
+      ),
+      ScheduleWriter.blocksOf('w1', sch),
+      topicIds: const [
+        'top_sub_yks_1_22',
+        'top_sub_yks_1_23',
+        'top_sub_yks_1_0',
+      ],
+    );
+
+    // **Uygulama oturum SÜRERKEN kuruluyor.** Saat doğrudan çizelgenin
+    // sonuna alınsaydı ana panel `/run`a yönleniyor ve RunScreen
+    // `summarizing` durumunda sonsuz dönen bir gösterge çiziyordu;
+    // `pumpAndSettle` hiç dönmüyordu. Sayaç ilerletilince ekranın kendi
+    // dinleyicisi formu açıyor — gerçek yol da bu.
+    now = t0;
+    await pumpQaApp(
+      tester,
+      db,
+      size: const Size(411, 1400),
+      overrides: [
+        clockProvider.overrideWithValue(() => now),
+        uiTickerProvider.overrideWith((ref) => ticker.stream),
+      ],
+    );
+    await advance(tester, (lastEnd + 1000 - t0) ~/ 1000);
+    expect(find.byKey(const Key('summary-form')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('summary-q-plus20')));
+    await tester.pump();
+    for (var i = 0; i < 4; i++) {
+      await tester.tap(find.byKey(const Key('summary-wrong-inc')));
+      await tester.pump();
+    }
+    await tester.tap(find.byKey(const Key('summary-mood-4')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('summary-wrong-topic')), findsOneWidget);
+    await shoot(tester, '13_yanlis_konu_secici');
     expect(tester.takeException(), isNull);
   });
 

@@ -248,3 +248,109 @@ flutter build appbundle --release
    gösteriyor mu?
 3. Sayfa hedefi modunda sayaç gece boyunca açık bırakılırsa süre 12
    saate kırpılıyor ve uyarı görünüyor mu?
+
+---
+
+# v1.3 KALAN YAMALAR
+
+**Test:** 1358 → **1377** · `analyze` temiz · `format` temiz
+
+## 1. Emoji taraması
+
+Emoji yazı tipi **cihaza ait**, uygulamaya değil. Taşımayan bir cihazda
+emoji **boş kutu (▯)** olarak çiziliyor — hata vermeden.
+
+En kötüsü koordinatörün gördüğü satır değildi: oturum sonu formundaki
+**duygu seçicisi** beş emojiden (`😖 😕 😐 🙂 😄`) ibaretti ve `Text`
+olarak çiziliyordu. Orada emoji dekorasyon değil **kontrolün tek
+içeriği**; boş kutuya dönüştüğünde seçici tamamen okunmaz oluyordu.
+Material yüz ikonlarına çevrildi (`Icons.sentiment_*`) — uygulamanın
+kendi font varlığından geliyor, cihazdan bağımsız.
+
+"Hedefe ulaştın 🎉" satırı `Icons.celebration` + metin oldu. Kullanıcıya
+giden **13 metinden** (iki dilde 26 satır) emoji kaldırıldı: 😏 🦉 💪 🏭
+🔧 🔩 🏆 🧊 🌴 🤝 🎉.
+
+**Kural kalıcı yapıldı:** `test/unit/emoji_scan_test.dart` hem ARB
+değerlerini hem `lib/` içindeki **string sabitlerini** (yorumlar hariç)
+tarıyor ve karşıt kontrolü var — tarayıcının gerçekten bulduğu ayrıca
+kanıtlanıyor. Ok (`→`), tire (`—`) ve matematik işaretleri emoji değil,
+Roboto'da var; onlara dokunulmadı.
+
+## 2. Yanlış-konu seçici
+
+Sorunun **iki yüzü** vardı ve ikincisi daha sinsiydi:
+
+| | Nereden okuyordu | Sonuç |
+| --- | --- | --- |
+| Yanlış defteri | `study_sessions.topic_id` | yanlış konu gösteriliyordu |
+| **Gelişim gereken konular** | `study_sessions.topic_id` | kullanıcıya çalışması gereken konu değil, **o gün ilk seçtiği** konu |
+
+Yalnızca `wrong_items.topic_id`'yi düzeltmek yetmezdi; istatistik sorgusu
+da aynı yerden okumak zorundaydı.
+
+- `FinishSessionUseCase` `wrongTopicId` alıyor; `null` → **birincil
+  konu** (v1.2 davranışı). Oturuma ait olmayan bir konu gelirse birincile
+  düşülüyor — arayüz zaten oturumun konularını gösteriyor, bu yalnızca
+  tek yazma noktasının savunması.
+- `stats_dao.weakestTopics`: sayı hâlâ `study_sessions.wrong_count`,
+  **konu** artık `COALESCE(wrong_items.topic_id, ss.topic_id)`.
+  `COALESCE` bilerek: kayıt yoksa eski davranışa düşüyor, dolayısıyla
+  **hiçbir rakam oynamıyor**. (İlk denemede sayıyı da `wrong_items`ten
+  almıştım; altı test düştü çünkü fikstürler `wrong_items` yazmıyordu —
+  daha küçük değişiklik hem doğru hem güvenli.)
+
+Arayüz: forma **gömülü** radio + **"Emin değilim"** (varsayılan seçili).
+Yanlış 0 iken ya da oturumda tek konu varken **hiç çizilmiyor**; yanlış
+sayacı 0'a döndüğünde kayboluyor. Ek adım YOK, form hâlâ tek ekranda
+bitiyor.
+
+Testler (12): tek konulu → seçici yok · yanlış 0 → yok · yanlış girilince
+beliriyor, 0'a dönünce kayboluyor · üç konu + yanlış → seçim
+`wrong_items.topic_id`'ye yazılıyor ve oturumun **birincil konusu
+değişmiyor** · "emin değilim" → birincil konu · hiç dokunmadan kaydetmek
+de birincil konu · **seçilen konu "gelişim gereken konular"da doğru
+satıra düşüyor** · seçim yokken istatistik eskisi gibi · oturuma ait
+olmayan konu reddediliyor.
+
+## 3. Veli PDF Türkçe karakter — **BOZULMA YOK**
+
+Ölçüldü, varsayılmadı. Üretilen dört dosyanın font sözlükleri:
+
+```
+rapor_veli.pdf            BaseFont: [Roboto-Bold, Roboto-Regular]
+rapor_egitimci.pdf        BaseFont: [Roboto-Bold, Roboto-Regular]
+rapor_veli_kitap.pdf      BaseFont: [Roboto-Bold, Roboto-Regular]
+rapor_egitimci_kitap.pdf  BaseFont: [Roboto-Bold, Roboto-Regular]
+   hepsi Subtype /Type0 · hepsinde /FontFile2 (GÖMÜLÜ) · Helvetica YOK
+```
+
+Yapısal olarak da tek kaynak var: `build()` tek bir
+`pw.Document(theme: fonts.theme)` kuruyor, iki şablon da aynı
+`_pageTheme(fonts, …)`'ı alıyor ve `ReportFonts.theme` dört varyantı
+(base/bold/italic/boldItalic) Roboto'ya bağlıyor — italik yolundan
+Helvetica'ya düşmek de mümkün değil.
+
+Veli nüshası ayrıca **zaten** byte seviyesinde korunuyordu: mevcut
+`FONT BEKÇİSİ` testleri her fontun `ToUnicode` CMap'ini çözüp
+"Çalışma", "gönderilmedi", "Satılmadı" dizelerini ve yedi Türkçe harfi
+arıyor. İkisi de geçiyor.
+
+Görsel doğrulama da yapıldı: `rapor_veli.pdf` 1. sayfada
+**Ç**alışma Karnesi · D**ö**nem · T**ü**rkçe · Co**ğ**rafya ·
+Ba**ş**arı oranı · G**ü**nlük d**ö**küm · S**ı**nav Odak — hepsi doğru,
+tek bir kutu yok.
+
+**Eklenen bekçi:** iki nüshanın da font sözlüğünde yalnızca gömülü
+Roboto bulunması artık test edilir. Kırılma yolu gerçek — bir widget'a
+elle `pw.Font.helvetica()` verilirse belge hata vermeden üretilir ve
+ş/ğ/ı/İ bozulur — bu yüzden karşıt kontrol de var: Helvetica enjekte
+edilip taramanın onu bulduğu ve `/FontFile2`'nin **oluşmadığı**
+gösteriliyor.
+
+## Görülecek
+
+```
+qa_book/13_yanlis_konu_secici.png   gömülü seçici + Material duygu ikonları
+qa_pdf/rapor_veli.pdf               Türkçe harfler (görsel doğrulama)
+```

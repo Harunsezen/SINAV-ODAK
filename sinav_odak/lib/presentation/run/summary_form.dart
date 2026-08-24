@@ -47,6 +47,14 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
   int _empty = 0;
   int? _mood;
 
+  /// Yanlışların yazılacağı konu (v1.3).
+  ///
+  /// `null` = **"emin değilim"** → birincil konuya yazılır, yani v1.2
+  /// davranışı. Varsayılan bilerek `null`: hiç dokunmayan kullanıcı için
+  /// hiçbir şey değişmiyor ve seçici kimseyi ilk konuyu suçlamaya
+  /// zorlamıyor.
+  String? _wrongTopicId;
+
   /// Kayıt sürerken form ekranda kalır: `finishSession` biter bitmez aktif
   /// oturum düşer ve [runStateProvider] `idle`'a döner. Bu bayrak olmasaydı
   /// kullanıcı, tebrik ekranına geçilene kadar "özetlenecek oturum yok"
@@ -122,6 +130,10 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
             emptyCount: _empty,
             mood: _mood,
             note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+            // Yanlış 0'a düşerse seçim gönderilmiyor: kayıt zaten
+            // oluşmayacak ve ekranda görünmeyen bir seçimi yazmak
+            // kullanıcının vermediği bir karar olurdu.
+            wrongTopicId: _wrong > 0 ? _wrongTopicId : null,
           );
 
       // Sıra önemli: kayıt sonucu YAZILMADAN yönlendirilirse router'ın aktif
@@ -244,6 +256,23 @@ class _SummaryFormState extends ConsumerState<SummaryForm> {
             error: invariantError,
           ),
           const SizedBox(height: 16),
+
+          // v1.3 — "bu yanlışlar hangi konuya?"
+          //
+          // **Yalnızca gerektiğinde çiziliyor:** yanlış varsa VE oturumda
+          // birden fazla konu varsa. Tek konulu oturumda cevabı belli;
+          // yanlış yoksa yazılacak kayıt yok. Yaygın durum bir dokunuş
+          // bile yavaşlamıyor ve form hâlâ TEK ekranda bitiyor — ek adım
+          // eklemek bu ekranın kırmızı çizgisiydi.
+          if (_wrong > 0 && (labels?.topicIds.length ?? 0) > 1) ...[
+            _WrongTopicCard(
+              topicIds: labels!.topicIds,
+              topicNames: labels.topicNames,
+              selected: _wrongTopicId,
+              onSelected: (id) => setState(() => _wrongTopicId = id),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           _MoodCard(
             mood: _mood,
@@ -581,6 +610,79 @@ class _Counter extends StatelessWidget {
   }
 }
 
+/// "Bu yanlışlar hangi konuya ait?" — forma GÖMÜLÜ seçici (v1.3).
+///
+/// Radyo düğmesi + **"Emin değilim"**. Konu başına ayrı yanlış sayacı
+/// koymak daha doğru olurdu ama oturum sonunda üç ayrı sayaç demek;
+/// "emin değilim" hızlı yolu bozmadan bilen kullanıcıya doğru konuyu
+/// işaretleme imkânı veriyor.
+class _WrongTopicCard extends StatelessWidget {
+  const _WrongTopicCard({
+    required this.topicIds,
+    required this.topicNames,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<String> topicIds;
+  final List<String> topicNames;
+
+  /// `null` = "emin değilim".
+  final String? selected;
+  final ValueChanged<String?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L10n.of(context);
+    return Card(
+      key: const Key('summary-wrong-topic'),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l.summaryWrongTopicTitle,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            for (var i = 0; i < topicIds.length; i++)
+              RadioListTile<String?>(
+                key: Key('wrong-topic-${topicIds[i]}'),
+                value: topicIds[i],
+                groupValue: selected,
+                onChanged: onSelected,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  topicNames.length > i ? topicNames[i] : topicIds[i],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            // "Emin değilim" EN ALTTA ve varsayılan seçili: hızlı yol
+            // burada bitiyor, kullanıcı hiçbir şeye dokunmadan
+            // kaydedebiliyor.
+            RadioListTile<String?>(
+              key: const Key('wrong-topic-unsure'),
+              value: null,
+              groupValue: selected,
+              onChanged: onSelected,
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(l.summaryWrongTopicUnsure),
+            ),
+            Text(
+              l.summaryWrongTopicHint,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Duygu seçici (1..5) + opsiyonel not.
 class _MoodCard extends StatelessWidget {
   const _MoodCard({
@@ -593,7 +695,23 @@ class _MoodCard extends StatelessWidget {
   final ValueChanged<int> onMood;
   final TextEditingController noteController;
 
-  static const _emojis = ['😖', '😕', '😐', '🙂', '😄'];
+  /// 1..5 için yüz ikonları — **emoji DEĞİL** (v1.3 yaması).
+  ///
+  /// Eskiden burada `['😖','😕','😐','🙂','😄']` vardı ve `Text` olarak
+  /// çiziliyordu. Emoji yazı tipi cihaza ait: emoji fontu olmayan ya da
+  /// o kod noktasını taşımayan bir cihazda beşi de **boş kutu (▯)**
+  /// çıkıyor ve seçici tamamen okunmaz hale geliyordu — üstelik burada
+  /// emoji dekorasyon değil, kontrolün TEK içeriği.
+  ///
+  /// Material ikonları uygulamanın kendi font varlığından geliyor;
+  /// cihazdan bağımsız.
+  static const _moodIcons = [
+    Icons.sentiment_very_dissatisfied,
+    Icons.sentiment_dissatisfied,
+    Icons.sentiment_neutral,
+    Icons.sentiment_satisfied,
+    Icons.sentiment_very_satisfied,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -616,10 +734,13 @@ class _MoodCard extends StatelessWidget {
                     key: Key('summary-mood-$i'),
                     onPressed: () => onMood(i),
                     isSelected: mood == i,
-                    icon: Text(
-                      _emojis[i - 1],
-                      style: TextStyle(fontSize: mood == i ? 30 : 22),
-                    ),
+                    // Seçili olan büyük ve vurgu renginde: emoji
+                    // sürümündeki "seçili daha büyük" ipucu korunuyor.
+                    color: mood == i
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                    iconSize: mood == i ? 30 : 24,
+                    icon: Icon(_moodIcons[i - 1]),
                   ),
               ],
             ),

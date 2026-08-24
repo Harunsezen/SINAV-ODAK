@@ -187,7 +187,7 @@
     }
   },
   "statsEmpty": "Bu aralıkta kayıtlı oturum yok.",
-  "statsEmptyHint": "Henüz veri yok — ya dahisin ya da daha başlamadın 😏",
+  "statsEmptyHint": "Henüz veri yok — ya dahisin ya da daha başlamadın",
   "statsExport": "CSV olarak dışa aktar",
   "statsExportSubject": "Sınav Odak — çalışma kayıtları",
   "statsExportDone": "Dosya paylaşıma hazır.",
@@ -348,7 +348,7 @@
   "achEarlyBirdTitle": "Erken Kuş",
   "achEarlyBirdBody": "Sabah 06:00-08:00 arasında oturum başlattın.",
   "achNightOwlTitle": "Gece Kuşu",
-  "achNightOwlBody": "Uyku efsanesi varmış, duydun mu? 🦉",
+  "achNightOwlBody": "Uyku efsanesi varmış, duydun mu?",
   "achUnknownTitle": "Bilinmeyen rozet",
   "achUnknownBody": "",
   "a11yRemaining": "{minutes} dakika {seconds} saniye kaldı",
@@ -723,7 +723,7 @@
   "runEarlyContinue": "Devam et",
   "runEarlyDeleteConfirmTitle": "Oturum silinsin mi?",
   "runEarlyDeleteConfirmBody": "Bu oturumun hiçbir kaydı kalmaz. Geri alınamaz.",
-  "runEarlyDeleted": "Oturum silindi. Bir dahakine 💪",
+  "runEarlyDeleted": "Oturum silindi. Bir dahakine",
   "commonBack": "Geri",
   "homeActiveSessionRemaining": "{time} kaldı — dokun, devam et",
   "@homeActiveSessionRemaining": {
@@ -734,13 +734,13 @@
     }
   },
   "achIndustryEscapeTitle": "Sanayiden Kurtuldun",
-  "achIndustryEscapeBody": "150 saat. Artık elin yağlı değil, kalemin keskin. 🏭",
+  "achIndustryEscapeBody": "150 saat. Artık elin yağlı değil, kalemin keskin.",
   "achDownshiftTitle": "Şanzımanı İndir",
-  "achDownshiftBody": "Bu hafta devir düştü. Vites küçült, ama durma. 🔧",
+  "achDownshiftBody": "Bu hafta devir düştü. Vites küçült, ama durma.",
   "achMasterWaitsTitle": "Mehmet Usta Seni Bekliyor",
-  "achMasterWaitsBody": "5 gün tezgâhı bıraktın. Döndün ya, gerisi kolay. 🔩",
+  "achMasterWaitsBody": "5 gün tezgâhı bıraktın. Döndün ya, gerisi kolay.",
   "achQuestions15000Title": "15.000 Soru",
-  "achQuestions15000Body": "On beş bin. Bu artık şans değil, alışkanlık. 🏆",
+  "achQuestions15000Body": "On beş bin. Bu artık şans değil, alışkanlık.",
   "achievementToastNew": "Yeni rozet!",
   "settingsAchievementToast": "Rozet bildirimleri",
   "settingsAchievementToastNote": "Rozet kazanınca ekranın üstünde kısa bir kart belirir.",
@@ -774,12 +774,12 @@
   "statsChartHeat": "Gün × saat yoğunluğu",
   "statsChartNoData": "Grafik için yeterli veri yok.",
   "reportStreak": "Seri (güncel / en uzun)",
-  "homeStreakBroken": "Zincir buzda kanka 🧊",
-  "doneBrainSweat": "Beyin: \"ter attım\" 💪",
-  "adOffline": "İnternet yok, reklam yok — Balto da tatilde 🌴",
-  "achBaltoFriendTitle": "Balto'nun Dostu 🤝",
+  "homeStreakBroken": "Zincir buzda kanka",
+  "doneBrainSweat": "Beyin: \"ter attım\"",
+  "adOffline": "İnternet yok, reklam yok — Balto da tatilde",
+  "achBaltoFriendTitle": "Balto'nun Dostu",
   "achBaltoFriendBody": "30 saniyeni verdin, uygulama ücretsiz kaldı.",
-  "supportNoAdBalto": "Reklam gelmedi. Niyetin yeter, sağ ol 🤝",
+  "supportNoAdBalto": "Reklam gelmedi. Niyetin yeter, sağ ol",
   "settingsBannerPosition": "Reklam konumu",
   "settingsBannerPositionNote": "Banner'ın ekranda durduğu yer.",
   "bannerPositionBottom": "Alt",
@@ -1010,7 +1010,7 @@
       }
     }
   },
-  "bookSummaryTargetReached": "Hedefe ulaştın 🎉",
+  "bookSummaryTargetReached": "Hedefe ulaştın",
   "bookSummaryTargetMissed": "{count} sayfa kaldı",
   "@bookSummaryTargetMissed": {
     "placeholders": {
@@ -1043,5 +1043,8 @@
   "reportBookColumn": "Kitap",
   "reportBookPagesColumn": "Sayfa",
   "reportBookDateColumn": "Tarih",
-  "bookSummaryReached": "Hedefe ulaştım"
+  "bookSummaryReached": "Hedefe ulaştım",
+  "summaryWrongTopicTitle": "Bu yanlışlar hangi konuya ait?",
+  "summaryWrongTopicUnsure": "Emin değilim",
+  "summaryWrongTopicHint": "\"Emin değilim\" seçilirse yanlışlar ilk konuya yazılır."
 }

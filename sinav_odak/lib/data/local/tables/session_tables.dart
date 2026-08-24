@@ -60,7 +60,10 @@ class StudySessions extends Table {
   /// Kaydedildiği andaki katsayıyla hesaplanmış net (denormalize).
   RealColumn get net => real().withDefault(const Constant(0))();
 
-  /// 1..5 (😖 😕 😐 🙂 😄)
+  /// 1..5 — çok kötü / kötü / orta / iyi / çok iyi.
+  ///
+  /// Arayüzde Material yüz ikonlarıyla gösteriliyor (v1.3'e kadar emoji
+  /// idi; emoji fontu olmayan cihazda boş kutu çıkıyordu).
   IntColumn get mood => integer().nullable()();
   TextColumn get note => text().nullable()();
 

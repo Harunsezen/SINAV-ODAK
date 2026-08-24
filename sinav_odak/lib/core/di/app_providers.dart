@@ -581,6 +581,13 @@ typedef ActiveLabels = ({
   String subjectName,
   String? topicName,
   List<String> topicNames,
+
+  /// Konu KİMLİKLERİ, [topicNames] ile aynı sırada (v1.3).
+  ///
+  /// Oturum sonu formundaki "bu yanlışlar hangi konuya?" seçicisi adı
+  /// gösteriyor ama kimliği yazıyor. Ad üzerinden eşleşmek, aynı adı
+  /// taşıyan iki konuda yanlış kaydı yanlış satıra düşürürdü.
+  List<String> topicIds,
 });
 
 final activeSessionLabelsProvider = FutureProvider<ActiveLabels?>((ref) async {
@@ -596,18 +603,23 @@ final activeSessionLabelsProvider = FutureProvider<ActiveLabels?>((ref) async {
         session.id,
       );
   final names = topics.map((t) => t.name).toList();
+  final ids = topics.map((t) => t.id).toList();
 
   // Geriye dönük: `session_topics` boş ama `topic_id` doluysa (v1.2/D
   // öncesi bir kayıt taşınmamışsa) yine de konu gösteriliyor.
   if (names.isEmpty && session.topicId != null) {
     final t = await dao.findTopic(session.topicId!);
-    if (t != null) names.add(t.name);
+    if (t != null) {
+      names.add(t.name);
+      ids.add(t.id);
+    }
   }
 
   return (
     subjectName: subject?.name ?? '',
     topicName: names.isEmpty ? null : names.first,
     topicNames: names,
+    topicIds: ids,
   );
 });
 

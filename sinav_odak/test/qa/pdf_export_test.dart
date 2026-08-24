@@ -763,6 +763,71 @@ void main() {
     );
   });
 
+  test('v1.3 — İKİ NÜSHA da fontu GÖMÜYOR (Türkçe harf güvencesi)', () async {
+    // **Endişe:** veli nüshasında Ç/ş/ğ eğitimcideki gibi gömülü
+    // olmayabilir. Ölçüldü: değil — ikisi de aynı gömülü Roboto'yu
+    // kullanıyor. Bu test o güvenceyi KALICI yapıyor.
+    //
+    // Kırılma yolu gerçek ve sessiz: `pdf` paketinin yerleşik
+    // Helvetica'sı WinAnsi kodlaması kullanıyor ve ş/ğ/ı/İ harflerini
+    // TAŞIMIYOR. Bir widget'a elle `pw.Font.helvetica()` verilirse belge
+    // **hata vermeden** üretilir, o metin bozuk çıkar — üstelik veliye
+    // giden nüshada.
+    //
+    // Font ENJEKTE EDİLMİYOR: uygulamanın gerçek yolundan
+    // (`loadFonts()` → `rootBundle`) geçen baytlar inceleniyor.
+    await seedRealistic();
+    await seedReadings();
+
+    for (final audience in ReportAudience.values) {
+      final data = await build(audience);
+      final bytes = await const PdfReportBuilder().build(data, strings);
+      final raw = String.fromCharCodes(bytes.map((b) => b & 0xff));
+
+      expect(
+        _baseFonts(raw),
+        {'Roboto-Regular', 'Roboto-Bold'},
+        reason: '$audience nüshasında beklenmeyen font var. Yerleşik '
+            'Helvetica/Courier/Times ş, ğ, ı, İ harflerini TAŞIMIYOR.',
+      );
+
+      // Her font tanımının bir de gömülü dosyası olmalı: `/BaseFont`
+      // adı geçip `/FontFile2` gelmezse font referans edilmiş ama
+      // gömülmemiştir ve okuyucu kendi ikamesini kullanır.
+      expect(
+        '/FontFile2'.allMatches(raw).length,
+        greaterThanOrEqualTo(2),
+        reason: '$audience: font gömülmemiş',
+      );
+    }
+  });
+
+  test('font tarayıcısı GERÇEKTEN yakalıyor (karşıt kontrol)', () async {
+    // Yukarıdaki iddia, "hiçbir şey bulamayan bozuk bir arama" ile de
+    // geçerdi. Helvetica ENJEKTE EDİLİP taramanın onu bulduğu
+    // gösteriliyor.
+    await seedRealistic();
+    final data = await build(ReportAudience.parent);
+    final bytes = await const PdfReportBuilder().build(
+      data,
+      _asciiStrings('PRIVACYSTAMP'),
+      regular: pw.Font.helvetica(),
+      bold: pw.Font.helveticaBold(),
+    );
+    final raw = String.fromCharCodes(bytes.map((b) => b & 0xff));
+
+    expect(
+      _baseFonts(raw),
+      contains('Helvetica'),
+      reason: 'tarayıcı yerleşik fontu bulamıyorsa yukarıdaki iddia boş',
+    );
+    expect(
+      raw,
+      isNot(contains('/FontFile2')),
+      reason: 'yerleşik font GÖMÜLMEZ — aranan kırılma tam olarak bu',
+    );
+  });
+
   test('qa_pdf/ dizininde DÖRT dosya var ve boş değil', () async {
     // Önceki testler dosyaları yazdı; bu test çıktının GERÇEKTEN diske
     // indiğini doğruluyor (bayt üretip yazmamak kolay bir hata).
@@ -794,6 +859,18 @@ void main() {
     }
   });
 }
+
+/// PDF'in içindeki `/BaseFont` adları.
+///
+/// Ayraç boşluğu isteğe bağlı: `pdf` paketi gömülü fontta
+/// `/BaseFont /Roboto-Regular`, yerleşik fontta `/BaseFont/Helvetica`
+/// yazıyor. İlk denemede boşluklu literal arandı ve karşıt kontrol
+/// yerleşik fontu bulamadı.
+Set<String> _baseFonts(String raw) =>
+    RegExp(r'/BaseFont\s*/([A-Za-z0-9+\-,._]+)')
+        .allMatches(raw)
+        .map((m) => m.group(1)!)
+        .toSet();
 
 String _two(int n) => n.toString().padLeft(2, '0');
 

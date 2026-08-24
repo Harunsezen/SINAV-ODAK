@@ -39,6 +39,7 @@ class FinishSessionUseCase {
     int emptyCount = 0,
     int? mood,
     String? note,
+    String? wrongTopicId,
   }) async {
     // Son dışarıda kalma dilimi de yazılsın diye ÖNCE izlemeyi durdur.
     await _tracker.detach();
@@ -88,7 +89,7 @@ class FinishSessionUseCase {
       sessionId: sessionId,
       dateKey: session.dateKey,
       subjectId: session.subjectId,
-      topicId: session.topicId,
+      topicId: await _resolveWrongTopic(session, wrongTopicId),
       wrongCount: wrongCount,
       wrongNote: note,
       patch: StudySessionsCompanion(
@@ -110,5 +111,38 @@ class FinishSessionUseCase {
 
     await _notifier.cancelAll(sessionId);
     return focusScore;
+  }
+
+  /// Yanlış defterine hangi konunun yazılacağı (v1.3 yaması).
+  ///
+  /// ## Sorun
+  ///
+  /// v1.2/D ile bir oturuma birden fazla konu seçilebiliyor ama yanlış
+  /// kaydı hep **birincil konuya** yazılıyordu. Üç konulu bir oturumda
+  /// hata gerçekte üçüncü konuya aitse, yanlış defteri onu birinciye
+  /// yazıyordu — ve "gelişim gereken konular" istatistiği kullanıcıya
+  /// çalışması gereken konuyu değil, o gün ilk seçtiği konuyu
+  /// gösteriyordu.
+  ///
+  /// ## Kural
+  ///
+  /// - [wrongTopicId] `null` → **birincil konu** (bugünkü davranış).
+  ///   Oturum sonu formundaki "emin değilim" seçeneği ve tek konulu
+  ///   oturumlar bu yoldan geçiyor.
+  /// - Dolu → kullanıcının işaretlediği konu.
+  ///
+  /// **Konu oturuma ait değilse birincil konuya düşülüyor.** Bu yalnızca
+  /// bir savunma: arayüz oturumun konularını gösteriyor, ama bu yol tek
+  /// yazma noktası ve buraya başka bir çağıran eklenirse yanlış kayıt
+  /// başka bir dersin konusuna düşebilirdi.
+  Future<String?> _resolveWrongTopic(
+    StudySession session,
+    String? wrongTopicId,
+  ) async {
+    if (wrongTopicId == null) return session.topicId;
+
+    final topics = await _db.sessionDao.topicsOf(session.id);
+    final belongs = topics.any((t) => t.id == wrongTopicId);
+    return belongs ? wrongTopicId : session.topicId;
   }
 }

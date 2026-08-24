@@ -294,6 +294,34 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
   }
 
   /// En çok yanlış yapılan konular — "gelişim gerektiren konular" listesi.
+  ///
+  /// ## v1.3: SAYI oturumdan, KONU yanlış defterinden
+  ///
+  /// Yanlış **sayısı** hâlâ `study_sessions.wrong_count`; değişen tek
+  /// şey satırın hangi konuya yazıldığı.
+  ///
+  /// Önceden konu da `study_sessions.topic_id`den geliyordu; o kolon
+  /// **birincil konu** demek (listenin ilki). Üç konulu bir oturumda
+  /// yanlışlar gerçekte üçüncü konuya aitse bile liste birinci konuyu
+  /// öne çıkarıyordu — kullanıcıya çalışması gereken konuyu değil, o gün
+  /// **ilk seçtiği** konuyu gösteriyordu. Yanlış defterindeki kaydın
+  /// konusunu düzeltmek tek başına yetmezdi; bu sorgu da aynı yerden
+  /// okumak zorundaydı.
+  ///
+  /// `wrong_items.topic_id` oturum sonu formunda kullanıcının
+  /// işaretlediği konuyu taşıyor ("emin değilim" seçilirse yine birincil
+  /// konu).
+  ///
+  /// **`COALESCE` bilerek:** kayıt yoksa (elle silinmiş, ya da oturumu
+  /// `SessionRepository.save` dışından yazan bir yol) sorgu boş dönmüyor,
+  /// eski davranışa — birincil konuya — düşüyor. Sayılar `wrong_items`e
+  /// bağlı OLMADIĞI için bu değişiklik hiçbir rakamı oynatmıyor.
+  ///
+  /// `LEFT JOIN` yalnızca `auto` kayda bakıyor: elle eklenen yanlışlar
+  /// (`manual`) bu listeye eskiden de girmiyordu ve girmiyor.
+  ///
+  /// Tarih yine oturumun `date_key`inden: kullanıcı geçmiş bir oturumu
+  /// bugün düzenlerse yanlış, çalışıldığı güne ait kalmalı.
   Future<List<({String topicName, String subjectName, int wrongCount})>>
       weakestTopics(DateTime from, DateTime to, {int limit = 10}) async {
     final rows = await customSelect(
@@ -302,7 +330,9 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
              s.name AS subject_name,
              SUM(ss.wrong_count) AS wrongs
       FROM study_sessions ss
-      JOIN topics t   ON t.id = ss.topic_id
+      LEFT JOIN wrong_items w
+             ON w.session_id = ss.id AND w.source = ?
+      JOIN topics t   ON t.id = COALESCE(w.topic_id, ss.topic_id)
       JOIN subjects s ON s.id = ss.subject_id
       WHERE ss.date_key >= ? AND ss.date_key <= ?
         AND ss.status != ? AND ss.wrong_count > 0
@@ -311,6 +341,10 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
       LIMIT ?
       ''',
       variables: [
+        // Sıra SQL'deki `?` sırasıyla AYNI olmalı; `source` ilk JOIN'de.
+        // Enum adı yeniden adlandırılırsa Dart derlenir ama SQL sessizce
+        // yanlış sonuç döner; değerler enum'dan bind ediliyor.
+        Variable<String>(WrongItemSource.auto.name),
         Variable<String>(dateKeyOf(from)),
         Variable<String>(dateKeyOf(to)),
         Variable<String>(SessionStatus.running.name),
@@ -318,6 +352,7 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
       ],
       readsFrom: {
         studySessions,
+        attachedDatabase.wrongItems,
         attachedDatabase.topics,
         attachedDatabase.subjects,
       },

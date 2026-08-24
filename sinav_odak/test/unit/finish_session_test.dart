@@ -207,4 +207,87 @@ void main() {
     final s = await db.sessionDao.findById('s1');
     expect(s!.net, 40.0, reason: '44 - 12/3');
   });
+
+  /// v1.3 yaması — yanlışın hangi konuya yazılacağı.
+  ///
+  /// Arayüz tarafı `test/widget/wrong_topic_picker_test.dart`'ta;
+  /// burada **tek yazma noktasının** kuralı ve savunması var.
+  group('yanlış konusu (wrongTopicId)', () {
+    const turev = 'top_sub_yks_1_22';
+    const integral = 'top_sub_yks_1_23';
+
+    /// `s1` seed'i tek konulu; çok konulu bir oturum gerekiyor.
+    Future<void> makeMultiTopic() =>
+        db.sessionDao.setSessionTopics('s1', [turev, integral]);
+
+    Future<WrongItem?> autoWrong() async {
+      final rows = await db.select(db.wrongItems).get();
+      final auto = rows.where((r) => r.source == WrongItemSource.auto);
+      return auto.isEmpty ? null : auto.first;
+    }
+
+    test('VERİLMEZSE birincil konuya yazılıyor (v1.2 davranışı)', () async {
+      await makeMultiTopic();
+      await finish(
+        sessionId: 's1',
+        nowMs: lastEnd,
+        early: false,
+        questionCount: 20,
+        wrongCount: 5,
+      );
+
+      expect((await autoWrong())!.topicId, turev);
+    });
+
+    test('VERİLİRSE o konuya yazılıyor', () async {
+      await makeMultiTopic();
+      await finish(
+        sessionId: 's1',
+        nowMs: lastEnd,
+        early: false,
+        questionCount: 20,
+        wrongCount: 5,
+        wrongTopicId: integral,
+      );
+
+      expect((await autoWrong())!.topicId, integral);
+      expect(
+        (await db.sessionDao.findById('s1'))!.topicId,
+        turev,
+        reason: 'oturumun BİRİNCİL konusu değişmemeli — `topic_id` '
+            '"ne çalışıldı" sorusunu cevaplıyor',
+      );
+    });
+
+    test('OTURUMA AİT OLMAYAN konu reddediliyor, birincile düşülüyor',
+        () async {
+      // Savunma: arayüz yalnızca oturumun konularını gösteriyor ama bu
+      // yol tek yazma noktası; başka bir çağıran eklenirse yanlış kaydı
+      // başka bir dersin konusuna düşebilirdi.
+      await makeMultiTopic();
+      await finish(
+        sessionId: 's1',
+        nowMs: lastEnd,
+        early: false,
+        questionCount: 20,
+        wrongCount: 5,
+        wrongTopicId: 'top_sub_yks_5_2', // Biyoloji konusu
+      );
+
+      expect((await autoWrong())!.topicId, turev);
+    });
+
+    test('yanlış 0 iken kayıt HİÇ oluşmuyor', () async {
+      await makeMultiTopic();
+      await finish(
+        sessionId: 's1',
+        nowMs: lastEnd,
+        early: false,
+        questionCount: 20,
+        wrongTopicId: integral,
+      );
+
+      expect(await autoWrong(), isNull);
+    });
+  });
 }

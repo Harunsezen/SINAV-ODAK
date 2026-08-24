@@ -183,12 +183,32 @@ class _BookSummaryFormState extends ConsumerState<BookSummaryForm> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        _pages >= target
-                            ? l.bookSummaryTargetReached
-                            : l.bookSummaryTargetMissed(target - _pages),
+                      // **Emoji YOK.** İlk halinde satırın sonunda 🎉
+                      // vardı ve emoji fontu olmayan cihazda boş kutu
+                      // (▯) çıkıyordu. Kutlama artık uygulamanın kendi
+                      // ikon varlığından geliyor.
+                      Row(
                         key: const Key('book-summary-target-diff'),
-                        style: const TextStyle(fontSize: 12),
+                        children: [
+                          if (_pages >= target) ...[
+                            Icon(
+                              Icons.celebration,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              _pages >= target
+                                  ? l.bookSummaryTargetReached
+                                  : l.bookSummaryTargetMissed(
+                                      target - _pages,
+                                    ),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ],

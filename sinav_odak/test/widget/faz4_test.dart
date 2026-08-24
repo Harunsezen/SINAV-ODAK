@@ -114,7 +114,10 @@ void main() {
       await pumpSlot(tester, bannerLoads: false);
 
       expect(
-        find.text('İnternet yok, reklam yok — Balto da tatilde 🌴'),
+        // v1.3 yaması: metnin sonundaki 🌴 kaldırıldı — emoji fontu
+        // olmayan cihazda boş kutu çıkıyordu (bkz.
+        // `test/unit/emoji_scan_test.dart`).
+        find.text('İnternet yok, reklam yok — Balto da tatilde'),
         findsOneWidget,
         reason: 'boş gri kutu kullanıcıya "bozuldu" hissi verirdi',
       );
@@ -126,7 +129,10 @@ void main() {
 
       expect(find.text('Sponsorlu'), findsOneWidget);
       expect(
-        find.text('İnternet yok, reklam yok — Balto da tatilde 🌴'),
+        // v1.3 yaması: metnin sonundaki 🌴 kaldırıldı — emoji fontu
+        // olmayan cihazda boş kutu çıkıyordu (bkz.
+        // `test/unit/emoji_scan_test.dart`).
+        find.text('İnternet yok, reklam yok — Balto da tatilde'),
         findsNothing,
       );
     });

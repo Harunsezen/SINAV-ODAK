@@ -48,6 +48,7 @@ class RunController {
     int emptyCount = 0,
     int? mood,
     String? note,
+    String? wrongTopicId,
   }) {
     return _ref.read(finishSessionProvider)(
       sessionId: sessionId,
@@ -59,6 +60,9 @@ class RunController {
       emptyCount: emptyCount,
       mood: mood,
       note: note,
+      // v1.3: çoklu konulu oturumda kullanıcının işaretlediği konu.
+      // `null` = "emin değilim" ya da tek konulu oturum → birincil konu.
+      wrongTopicId: wrongTopicId,
     );
   }
 

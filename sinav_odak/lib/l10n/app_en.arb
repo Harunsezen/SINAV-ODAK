@@ -187,7 +187,7 @@
     }
   },
   "statsEmpty": "No sessions recorded in this range.",
-  "statsEmptyHint": "No data yet — either you're a genius or you haven't started 😏",
+  "statsEmptyHint": "No data yet — either you're a genius or you haven't started",
   "statsExport": "Export as CSV",
   "statsExportSubject": "Sınav Odak — study records",
   "statsExportDone": "File ready to share.",
@@ -348,7 +348,7 @@
   "achEarlyBirdTitle": "Early Bird",
   "achEarlyBirdBody": "You started a session between 06:00 and 08:00.",
   "achNightOwlTitle": "Night Owl",
-  "achNightOwlBody": "Sleep is a legend, they say. Heard of it? 🦉",
+  "achNightOwlBody": "Sleep is a legend, they say. Heard of it?",
   "achUnknownTitle": "Unknown badge",
   "achUnknownBody": "",
   "a11yRemaining": "{minutes} minutes {seconds} seconds left",
@@ -723,7 +723,7 @@
   "runEarlyContinue": "Continue",
   "runEarlyDeleteConfirmTitle": "Delete the session?",
   "runEarlyDeleteConfirmBody": "No record of this session will remain. It cannot be undone.",
-  "runEarlyDeleted": "Session deleted. Next time 💪",
+  "runEarlyDeleted": "Session deleted. Next time",
   "commonBack": "Back",
   "homeActiveSessionRemaining": "{time} left — tap to continue",
   "@homeActiveSessionRemaining": {
@@ -734,13 +734,13 @@
     }
   },
   "achIndustryEscapeTitle": "Out of the Workshop",
-  "achIndustryEscapeBody": "150 hours. No more grease on your hands — your pencil is the sharp thing now. 🏭",
+  "achIndustryEscapeBody": "150 hours. No more grease on your hands — your pencil is the sharp thing now.",
   "achDownshiftTitle": "Downshift",
-  "achDownshiftBody": "The revs dropped this week. Change down a gear, but don't stop. 🔧",
+  "achDownshiftBody": "The revs dropped this week. Change down a gear, but don't stop.",
   "achMasterWaitsTitle": "The Boss Is Waiting",
-  "achMasterWaitsBody": "You left the bench for 5 days. You're back — the rest is easy. 🔩",
+  "achMasterWaitsBody": "You left the bench for 5 days. You're back — the rest is easy.",
   "achQuestions15000Title": "15,000 Questions",
-  "achQuestions15000Body": "Fifteen thousand. That's not luck any more, that's a habit. 🏆",
+  "achQuestions15000Body": "Fifteen thousand. That's not luck any more, that's a habit.",
   "achievementToastNew": "New badge!",
   "settingsAchievementToast": "Badge notifications",
   "settingsAchievementToastNote": "A short card appears at the top of the screen when you earn a badge.",
@@ -774,12 +774,12 @@
   "statsChartHeat": "Day × hour intensity",
   "statsChartNoData": "Not enough data for a chart.",
   "reportStreak": "Streak (current / longest)",
-  "homeStreakBroken": "Chain's on ice, mate 🧊",
-  "doneBrainSweat": "Brain: \"I broke a sweat\" 💪",
-  "adOffline": "No internet, no ads — Balto's on holiday too 🌴",
-  "achBaltoFriendTitle": "Balto's Friend 🤝",
+  "homeStreakBroken": "Chain's on ice, mate",
+  "doneBrainSweat": "Brain: \"I broke a sweat\"",
+  "adOffline": "No internet, no ads — Balto's on holiday too",
+  "achBaltoFriendTitle": "Balto's Friend",
   "achBaltoFriendBody": "You gave 30 seconds and the app stayed free.",
-  "supportNoAdBalto": "No ad turned up. The thought counts, thanks 🤝",
+  "supportNoAdBalto": "No ad turned up. The thought counts, thanks",
   "settingsBannerPosition": "Ad position",
   "settingsBannerPositionNote": "Where the banner sits on screen.",
   "bannerPositionBottom": "Bottom",
@@ -1010,7 +1010,7 @@
       }
     }
   },
-  "bookSummaryTargetReached": "Goal reached 🎉",
+  "bookSummaryTargetReached": "Goal reached",
   "bookSummaryTargetMissed": "{count} pages to go",
   "@bookSummaryTargetMissed": {
     "placeholders": {
@@ -1043,5 +1043,8 @@
   "reportBookColumn": "Book",
   "reportBookPagesColumn": "Pages",
   "reportBookDateColumn": "Date",
-  "bookSummaryReached": "I reached the goal"
+  "bookSummaryReached": "I reached the goal",
+  "summaryWrongTopicTitle": "Which topic were these mistakes in?",
+  "summaryWrongTopicUnsure": "Not sure",
+  "summaryWrongTopicHint": "If you pick \"Not sure\", the mistakes go to the first topic."
 }
