@@ -1,7 +1,7 @@
 name: sinav_odak
 description: "Sınav Odak — sınava hazırlanan öğrenciler için ücretsiz çalışma takip uygulaması."
 publish_to: 'none'
-version: 1.2.0+5
+version: 1.3.0+6
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
