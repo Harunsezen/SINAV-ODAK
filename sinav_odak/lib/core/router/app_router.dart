@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/book/book_run_screen.dart';
+import '../../presentation/book/book_setup_screen.dart';
+import '../../presentation/book/book_summary_form.dart';
 import '../../presentation/home/home_screen.dart';
 import '../../presentation/onboarding/onboarding_screen.dart';
 import '../../presentation/run/break_screen.dart';
@@ -83,9 +86,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // (`showActiveSessionBannerProvider`). Kazara çıkış hâlâ imkânsız:
       // hem sistem geri tuşu hem AppBar geri tuşu onay diyaloğundan geçer.
       final isRunLayer = loc.startsWith(Routes.run);
+      final isBookLayer = loc.startsWith(Routes.book);
       final active = await db.sessionDao.findActiveSession();
       final minimized = ref.read(sessionMinimizedProvider);
+
+      // v1.3 — KİTAP KATMANI, çalışma oturumuyla AYNI kural.
+      //
+      // Açık bir okuma varken kullanıcı başka ekranlara ancak onaylı
+      // "küçültme"den sonra gidebiliyor; aksi halde sayaç görünmeden
+      // işlemeye devam eder ve kullanıcı ona dönecek yol bulamazdı.
+      //
+      // Çalışma oturumu koruması kitap katmanını da kapsıyor: ikisi aynı
+      // anda açık olamaz (`StartBookSessionUseCase` engelliyor), ama
+      // yarım kalmış bir çalışma oturumu varken `/book`'a girilirse
+      // kullanıcı iki sayaçlı bir dünyaya düşerdi.
+      final activeBook = await db.bookDao.findActive();
+      if (activeBook != null && !isBookLayer && !minimized) {
+        return Routes.bookRun;
+      }
+      if (activeBook == null && isBookLayer && loc != Routes.book) {
+        // Okuma kaydedildi veya silindi: sayaç ve form ekranlarının
+        // gösterecek bir şeyi kalmadı. Kurulum ekranı (`/book`) muaf —
+        // oradan yeni okuma başlatılıyor.
+        return Routes.home;
+      }
+      if (activeBook != null && isRunLayer) return Routes.bookRun;
+
       if (active != null && !isRunLayer && !minimized) return Routes.run;
+      if (active != null && isBookLayer) return Routes.run;
       if (active == null && isRunLayer) {
         // Tebrik ekranı (S11) TANIM GEREĞİ aktif oturum olmadan gösterilir:
         // kayıt tamamlandığı anda `running` satır kalmaz. Bu muafiyet
@@ -135,6 +163,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: Routes.sessionPlan,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const PlanSetup(),
+      ),
+
+      // --- KİTAP OKUMA KATMANI (v1.3) ---
+      //
+      // parentNavigatorKey: _rootNavigatorKey → shell'in DIŞINDA, yani
+      // alt navigasyon GÖRÜNMEZ. Kitap sayacı da çalışma sayacı gibi
+      // odaklı bir ekran; sekme değiştirilebilseydi "pause yok" kuralı
+      // fiilen delinirdi (kullanıcı sayaçtan kaçabilirdi).
+      GoRoute(
+        path: Routes.book,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const BookSetupScreen(),
+        routes: [
+          GoRoute(
+            path: 'run',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (_, __) => const BookRunScreen(),
+          ),
+          GoRoute(
+            path: 'summary',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (_, __) => const BookSummaryForm(),
+          ),
+        ],
       ),
 
       // --- AKTİF OTURUM KATMANI ---

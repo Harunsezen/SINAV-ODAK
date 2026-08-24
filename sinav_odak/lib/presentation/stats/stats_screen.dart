@@ -47,10 +47,18 @@ class StatsScreen extends ConsumerWidget {
                   else ...[
                     const _SummaryGrid(),
                     const SizedBox(height: 20),
+                    // v1.3 — KİTAP kartı. Hiç okuma yoksa ÇİZİLMİYOR:
+                    // "0 sayfa" yazan bir kart, olmayan bir özelliği
+                    // eksik gibi gösterirdi.
+                    const _BookCard(),
                     _DailyChart(
                       rows: [
                         for (final r in rows)
-                          (dateKey: r.dateKey, studyS: r.totalStudyS),
+                          (
+                            dateKey: r.dateKey,
+                            studyS: r.totalStudyS,
+                            readingS: r.readingS,
+                          ),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -216,32 +224,164 @@ class _StatChip extends StatelessWidget {
   }
 }
 
+/// KİTAP OKUMA kartı (v1.3) — okuma süresi + toplam sayfa.
+///
+/// **Çalışma kartlarından AYRI.** Okuma süresi `totalStudyS`'e
+/// katılmıyor; kendi kartında, kendi rakamlarıyla duruyor. Aynı satıra
+/// karıştırılsaydı "bu hafta 12 saat çalıştım" cümlesi doğru olmaktan
+/// çıkardı.
+class _BookCard extends ConsumerWidget {
+  const _BookCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final summary = ref.watch(statsSummaryProvider).valueOrNull;
+    if (summary == null || !summary.hasReading) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Card(
+        key: const Key('stats-book-card'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.menu_book_outlined, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    l.statsBookTitle,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _BookMetric(
+                      slug: 'duration',
+                      label: l.statsBookDuration,
+                      value: formatDuration(context, summary.readingS),
+                    ),
+                  ),
+                  Expanded(
+                    child: _BookMetric(
+                      slug: 'pages',
+                      label: l.statsBookPages,
+                      value: '${summary.pagesRead}',
+                    ),
+                  ),
+                  Expanded(
+                    child: _BookMetric(
+                      slug: 'sessions',
+                      label: l.statsBookSessions,
+                      value: '${summary.bookSessionCount}',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookMetric extends StatelessWidget {
+  const _BookMetric({
+    required this.slug,
+    required this.label,
+    required this.value,
+  });
+
+  final String slug;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // `FittedBox`: 360 px + textScale 1.5'te "2 sa 30 dk" iki satıra
+        // bölünüyor ve okunmaz oluyordu (ana paneldeki `_Metric` ile aynı
+        // ders).
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            key: Key('stats-book-$slug'),
+            maxLines: 1,
+            softWrap: false,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          ),
+        ),
+        Text(label, style: const TextStyle(fontSize: 11)),
+      ],
+    );
+  }
+}
+
 /// Günlük çalışma çubuk grafiği.
 ///
 /// Drift'in `DailyStat` satırını DEĞİL, sade kayıtlar alıyor: grafik
 /// veritabanı şemasını bilmek zorunda değil (G4).
+///
+/// v1.3 — **okuma süresi de bu grafikte**, ama çalışmanın ÜSTÜNE yığılmış
+/// ayrı bir renkte. Tek renge katılsaydı grafiğe bakan öğrenci "iki saat
+/// çalışmışım" sanırdı; hiç gösterilmeseydi o gün kitap okuyan öğrenci
+/// grafikte boş bir sütun görürdü. Yığılmış çubuk ikisini birden veriyor:
+/// toplam yükseklik günün tamamı, renkler kırılımı.
 class _DailyChart extends StatelessWidget {
   const _DailyChart({required this.rows});
 
-  final List<({String dateKey, int studyS})> rows;
+  final List<({String dateKey, int studyS, int readingS})> rows;
 
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     final scheme = Theme.of(context).colorScheme;
 
-    final minutes = rows.map((r) => r.studyS / 60).toList();
+    final studyMinutes = rows.map((r) => r.studyS / 60).toList();
+    final readMinutes = rows.map((r) => r.readingS / 60).toList();
+    final totals = [
+      for (var i = 0; i < rows.length; i++) studyMinutes[i] + readMinutes[i],
+    ];
+    final hasReading = rows.any((r) => r.readingS > 0);
+
     // maxY 0 olursa fl_chart ekseni çizemiyor; en az 60 dk'lık bir tavan
     // veriliyor ki boş günlerde grafik "ezik" görünmesin.
-    final maxY = minutes.fold<double>(60, (a, b) => b > a ? b : a) * 1.2;
+    final maxY = totals.fold<double>(60, (a, b) => b > a ? b : a) * 1.2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Başlık v1.3'te "Günlük çalışma"dan "Günlük süre"ye çevrildi:
+        // çubuklara okuma da girdikten sonra "çalışma" demek, grafiğe
+        // bakan öğrenciye okuma dakikalarını çalışma diye saydırırdı.
+        // Efsane kırılımı hemen altında veriyor.
         Text(
           l.statsDailyChart,
           style: Theme.of(context).textTheme.titleSmall,
         ),
+        // Efsane YALNIZCA okuma varken: hiç kitap okumamış kullanıcıya
+        // tek renkli grafiğin altında iki renkli bir açıklama göstermek
+        // gereksiz gürültü olurdu.
+        if (hasReading) ...[
+          const SizedBox(height: 8),
+          Row(
+            key: const Key('stats-chart-legend'),
+            children: [
+              _LegendDot(color: scheme.primary, label: l.statsLegendStudy),
+              const SizedBox(width: 16),
+              _LegendDot(color: scheme.tertiary, label: l.statsLegendReading),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         SizedBox(
           key: const Key('stats-daily-chart'),
@@ -291,10 +431,27 @@ class _DailyChart extends StatelessWidget {
                     x: i,
                     barRods: [
                       BarChartRodData(
-                        toY: minutes[i],
+                        toY: totals[i],
                         width: rows.length > 14 ? 6 : 14,
                         color: scheme.primary,
                         borderRadius: BorderRadius.circular(4),
+                        // Okuma çalışmanın ÜSTÜNE yığılıyor. `rodStackItems`
+                        // boşsa `color` geçerli; yani okuma yoksa çubuk
+                        // v1.2'deki gibi tek renk kalıyor.
+                        rodStackItems: readMinutes[i] <= 0
+                            ? const []
+                            : [
+                                BarChartRodStackItem(
+                                  0,
+                                  studyMinutes[i],
+                                  scheme.primary,
+                                ),
+                                BarChartRodStackItem(
+                                  studyMinutes[i],
+                                  totals[i],
+                                  scheme.tertiary,
+                                ),
+                              ],
                       ),
                     ],
                   ),
@@ -302,6 +459,33 @@ class _DailyChart extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Grafik efsanesi: renk noktası + etiket.
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
   }

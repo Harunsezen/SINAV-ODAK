@@ -40,6 +40,13 @@ class ReportStrings {
     required this.page,
     required this.parentNote,
     required this.coachNote,
+    required this.bookSection,
+    required this.bookTotalDuration,
+    required this.bookTotalPages,
+    required this.bookColumn,
+    required this.bookPagesColumn,
+    required this.bookDateColumn,
+    required this.bookUntitled,
   });
 
   final String appName;
@@ -83,6 +90,25 @@ class ReportStrings {
 
   /// Eğitimci sayfasındaki çizgili alanın başlığı.
   final String coachNote;
+
+  // --- KİTAP OKUMA (v1.3) ---
+
+  /// Bölüm başlığı: "Kitap okuma".
+  final String bookSection;
+  final String bookTotalDuration;
+  final String bookTotalPages;
+
+  /// Tablodaki **sütun** başlığı: "Kitap".
+  final String bookColumn;
+  final String bookPagesColumn;
+  final String bookDateColumn;
+
+  /// Kitap adı boş bırakıldıysa yerine yazılan etiket.
+  ///
+  /// **Boş satır BASILMAZ.** Veliye giden belgede adsız bir satır
+  /// "eksik veri" gibi görünürdü; kullanıcı adı bilerek boş bırakmış
+  /// olabilir.
+  final String bookUntitled;
 }
 
 /// [ReportData]'yı PDF baytlarına çevirir. **Ağ yok, sunucu yok.**
@@ -150,6 +176,17 @@ class PdfReportBuilder {
     switch (data.audience) {
       case ReportAudience.parent:
         doc.addPage(_parentPage(data, s, fonts));
+        // KİTAP SAYFASI — yalnızca okuma varsa (v1.3).
+        //
+        // Veli raporu **tek sayfa** tasarlandı ve öyle kalıyor: hiç
+        // kitap okunmamışsa ikinci sayfa hiç üretilmiyor. Kitap bölümü
+        // birinci sayfaya sıkıştırılsaydı, uzunluğu veriye bağlı bir
+        // liste sabit yükseklikli bir düzene girer ve `pdf` paketi
+        // taşan kısmı **sessizce** çizmezdi — bu dosyada daha önce
+        // yaşanmış bir hata (bkz. `_measureGrid`).
+        if (data.hasReading) {
+          doc.addPage(_bookPage(data, s, fonts, ReportPalette.cream));
+        }
       case ReportAudience.teacher:
         for (final page in _teacherPages(data, s, fonts)) {
           doc.addPage(page);
@@ -473,6 +510,26 @@ class PdfReportBuilder {
             pw.SizedBox(height: 8),
             ..._dailyBlocks(d, s, bold),
             pw.SizedBox(height: 12),
+          ],
+
+          // KİTAP OKUMA — eğitimci raporunun SONUNDA (v1.3).
+          //
+          // **Sıra kasıtlı.** Bölüm günlük dökümün ÖNÜNE konduğunda,
+          // günlük ritim grafiği sayfaya sığmıyor ve `MultiPage` onu bir
+          // sonraki sayfaya taşırken birinci sayfada **boş bir kart
+          // çerçevesi** bırakıyordu (üretilen PDF'te görüldü). Kitap
+          // listesi 14'erlik kartlara bölünebiliyor, grafik
+          // bölünemiyor — bu yüzden taşması gereken bölünebilen olmalı.
+          if (d.hasReading) ...[
+            // Başlık ve toplamlar TEK çocuk: `MultiPage` çocuklarını tek
+            // tek akıtıyor ve ilk denemede "Kitap okuma" başlığı birinci
+            // sayfanın dibinde YALNIZ kaldı, içeriği ikinci sayfaya
+            // geçti. `pw.Column` bölünemeyen bir kutu olduğu için ikisi
+            // birlikte taşınıyor.
+            _bookHead(d, s, bold),
+            pw.SizedBox(height: 8),
+            ..._bookListBlocks(d, s, bold),
+            pw.SizedBox(height: 16),
           ],
 
           _coachNote(s, bold),
@@ -995,6 +1052,190 @@ class PdfReportBuilder {
             fontSize: 7.5,
             color: ReportPalette.inkFaint,
           ),
+        ),
+      );
+
+  // ------------------------------------------------------------------
+  // KİTAP OKUMA (v1.3)
+  // ------------------------------------------------------------------
+
+  /// Veli raporunun KİTAP sayfası.
+  ///
+  /// `MultiPage`: kitap listesi uzun olabilir ve tek sayfaya sığmazsa
+  /// taşan kısım sessizce kaybolmamalı.
+  pw.Page _bookPage(
+    ReportData d,
+    ReportStrings s,
+    ReportFonts fonts,
+    PdfColor bg,
+  ) {
+    final bold = fonts.bold;
+    return pw.MultiPage(
+      pageTheme: _pageTheme(fonts, bg),
+      footer: (context) => _pageFooter(context, s),
+      build: (context) => [
+        _titleBand(s.bookSection, s, d, bold, ReportPalette.teal),
+        pw.SizedBox(height: 18),
+        _bookTotals(d, s, bold),
+        pw.SizedBox(height: 16),
+        // **Bölüm başlığı YOK.** Sayfanın kendi bandı zaten "Kitap
+        // okuma" diyor; ilk üretilen PDF'te aynı cümle üst üste iki kez
+        // görünüyordu. Eğitimci raporunda başlık DURUYOR, çünkü orada
+        // bölüm diğer bölümlerin arasında akıyor.
+        ..._bookListBlocks(d, s, bold),
+      ],
+    );
+  }
+
+  /// Bölüm başlığı + toplamlar, **bölünemez tek blok**.
+  ///
+  /// `pw.Column` YETMİYOR: dikey `Flex` `SpanningWidget` ve `canSpan`
+  /// döndürüyor, yani `MultiPage` onu sayfa sınırından ikiye ayırabiliyor.
+  /// İlk denemede tam bu oldu — "Kitap okuma" başlığı birinci sayfanın
+  /// dibinde yalnız kaldı, kartlar ikinci sayfaya geçti. `Inseparable`
+  /// `canSpan`i kapatıyor; blok sığmıyorsa **bütün olarak** taşınıyor.
+  pw.Widget _bookHead(ReportData d, ReportStrings s, pw.Font bold) =>
+      pw.Inseparable(
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          mainAxisSize: pw.MainAxisSize.min,
+          children: [
+            _sectionTitle(s.bookSection, bold),
+            pw.SizedBox(height: 8),
+            _bookTotals(d, s, bold),
+          ],
+        ),
+      );
+
+  /// İki kahraman rakam: toplam süre ve toplam sayfa.
+  pw.Widget _bookTotals(ReportData d, ReportStrings s, pw.Font bold) => pw.Row(
+        children: [
+          pw.Expanded(
+            child: _heroCard(
+              ReportFormat.hm(d.readingS),
+              s.bookTotalDuration,
+              ReportIcon.clock,
+              ReportPalette.teal,
+              ReportPalette.tealSoft,
+              bold,
+            ),
+          ),
+          pw.SizedBox(width: 10),
+          pw.Expanded(
+            child: _heroCard(
+              '${d.pagesRead}',
+              s.bookTotalPages,
+              ReportIcon.book,
+              ReportPalette.indigo,
+              ReportPalette.indigoSoft,
+              bold,
+            ),
+          ),
+        ],
+      );
+
+  /// Kitap listesi — **ad · sayfa · tarih**.
+  ///
+  /// **Neden parçalanıyor:** `Container` `MultiPage` içinde bölünemez bir
+  /// kutu. Tüm kitapları tek karta koysaydım uzun bir liste sayfadan
+  /// taşar ve taşan kısım hiç çizilmezdi (günlük döküm kartında yaşanan
+  /// hatanın aynısı).
+  List<pw.Widget> _bookListBlocks(
+    ReportData d,
+    ReportStrings s,
+    pw.Font bold,
+  ) {
+    const perCard = 14;
+    final out = <pw.Widget>[];
+    for (var i = 0; i < d.books.length; i += perCard) {
+      final slice = d.books.skip(i).take(perCard).toList();
+      if (i > 0) out.add(pw.SizedBox(height: 8));
+      out.add(_bookListCard(slice, s, bold, showHeader: i == 0));
+    }
+    return out;
+  }
+
+  pw.Widget _bookListCard(
+    List<ReportBookLine> rows,
+    ReportStrings s,
+    pw.Font bold, {
+    required bool showHeader,
+  }) =>
+      _card(
+        padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: pw.Column(
+          children: [
+            if (showHeader) ...[
+              pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      s.bookColumn,
+                      style: const pw.TextStyle(
+                        fontSize: 7.5,
+                        color: ReportPalette.inkFaint,
+                      ),
+                    ),
+                  ),
+                  _colKey(s.duration, 58),
+                  _colKey(s.bookPagesColumn, 44),
+                  _colKey(s.bookDateColumn, 46),
+                ],
+              ),
+              pw.SizedBox(height: 6),
+            ],
+            for (final (i, b) in rows.indexed) ...[
+              if (i > 0) pw.SizedBox(height: 9),
+              pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      // Adı boş bırakılmışsa yerine geçen etiket. Boş
+                      // satır basmak "eksik veri" gibi okunurdu.
+                      b.title ?? s.bookUntitled,
+                      maxLines: 1,
+                      style: pw.TextStyle(
+                        font: bold,
+                        fontSize: 9.5,
+                        color: ReportPalette.ink,
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(
+                    width: 58,
+                    child: pw.Text(
+                      ReportFormat.hm(b.durationS),
+                      textAlign: pw.TextAlign.right,
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                  ),
+                  pw.SizedBox(
+                    width: 44,
+                    child: pw.Text(
+                      '${b.pagesRead}',
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        font: bold,
+                        fontSize: 9,
+                        color: ReportPalette.teal,
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(
+                    width: 46,
+                    child: pw.Text(
+                      ReportFormat.dateShort(b.dateKey),
+                      textAlign: pw.TextAlign.right,
+                      style: const pw.TextStyle(
+                        fontSize: 9,
+                        color: ReportPalette.inkSoft,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
       );
 

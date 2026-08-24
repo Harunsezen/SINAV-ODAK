@@ -38,6 +38,18 @@ class DailyStats extends Table {
   RealColumn get net => real().withDefault(const Constant(0))();
   RealColumn get avgFocusScore => real().withDefault(const Constant(0))();
 
+  /// KİTAP OKUMA — o günün toplam okuma süresi (saniye), v1.3.
+  ///
+  /// **`totalStudyS`'e EKLENMİYOR, ayrı duruyor.** İkisini toplasaydık
+  /// bir saat roman okuyan öğrencinin günlük ÇALIŞMA hedefi kendiliğinden
+  /// dolardı; hedef "ne kadar çalıştım" sorusunu cevaplıyor, "ekrana ne
+  /// kadar baktım" sorusunu değil. Grafik ikisini birlikte, ayrı renkte
+  /// gösteriyor.
+  IntColumn get readingS => integer().withDefault(const Constant(0))();
+
+  /// KİTAP OKUMA — o gün okunan toplam sayfa (v1.3).
+  IntColumn get pagesRead => integer().withDefault(const Constant(0))();
+
   /// {"subjectId": saniye} — pasta/bar grafik için.
   TextColumn get subjectBreakdownJson =>
       text().withDefault(const Constant('{}'))();

@@ -62,9 +62,71 @@ void main() {
     await raw.close();
   });
 
-  test('schemaVersion 6', () async {
+  test('schemaVersion 7', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    expect(db.schemaVersion, 6);
+    expect(db.schemaVersion, 7);
+    await db.close();
+  });
+
+  test('v6 -> v7: kitap tablosu + okuma kolonları, VERİ KAYBOLMUYOR', () async {
+    // v1.3. Aynı desen: gerçek şemadan v6'ya ait olmayanları düşürüp v6
+    // hâlini üretiyoruz, sonra `onUpgrade`in yaptığını uyguluyoruz.
+    //
+    // Bu testin koruduğu şey: v1.2 kullanıcısının GÜNLÜK ÖZETİ yerinde
+    // kalmalı ve yeni kolonlar 0 ile gelmeli. `daily_stats` bozulursa
+    // istatistik ekranı, takvim ve hedefler birden sıfırlanırdı.
+    final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('DROP TABLE book_sessions');
+    await db.customStatement('ALTER TABLE daily_stats DROP COLUMN reading_s');
+    await db.customStatement('ALTER TABLE daily_stats DROP COLUMN pages_read');
+
+    // v6 kullanıcısının günlük özeti.
+    await db.customStatement(
+      'INSERT INTO daily_stats (date_key, total_study_s, session_count) '
+      "VALUES ('2025-08-06', 3600, 2)",
+    );
+
+    final before =
+        await db.customSelect("PRAGMA table_info('daily_stats')").get();
+    final beforeCols = before.map((r) => r.read<String>('name')).toSet();
+    expect(
+      beforeCols.intersection({'reading_s', 'pages_read'}),
+      isEmpty,
+      reason: 'kolonlar düşürülemediyse bu test v6 durumunu test etmiyor',
+    );
+
+    // --- onUpgrade'in yaptığı ---
+    await db.customStatement(
+      'CREATE TABLE book_sessions ('
+      'id TEXT NOT NULL, date_key TEXT NOT NULL, mode TEXT NOT NULL, '
+      'started_at INTEGER NOT NULL, ended_at INTEGER, '
+      'planned_duration_s INTEGER, page_target INTEGER, '
+      'actual_duration_s INTEGER NOT NULL DEFAULT 0, '
+      'pages_read INTEGER NOT NULL DEFAULT 0, book_title TEXT, '
+      'status TEXT NOT NULL, PRIMARY KEY (id))',
+    );
+    await db.customStatement(
+      'ALTER TABLE daily_stats ADD COLUMN reading_s INTEGER NOT NULL '
+      'DEFAULT 0',
+    );
+    await db.customStatement(
+      'ALTER TABLE daily_stats ADD COLUMN pages_read INTEGER NOT NULL '
+      'DEFAULT 0',
+    );
+
+    final rows = await db.select(db.dailyStats).get();
+    expect(rows, hasLength(1), reason: 'v6 satırı yükseltmede kaybolamaz');
+    expect(rows.single.totalStudyS, 3600, reason: 'v6 verisi korunmalı');
+    expect(
+      rows.single.readingS,
+      0,
+      reason: 'v1.2 günlerinde kitap modu YOKTU — 0 doğru cevap',
+    );
+    expect(rows.single.pagesRead, 0);
+
+    // Yeni tablo boş ama KULLANILABİLİR.
+    expect(await db.bookDao.findActive(), isNull);
+
     await db.close();
   });
 

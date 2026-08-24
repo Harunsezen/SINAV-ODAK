@@ -44,6 +44,11 @@ class BuildReportUseCase {
       days.add(ReportDayLine(dateKey: key, studyS: dayStats.totalStudyS));
     }
 
+    // KİTAP OKUMA (v1.3). Liste yalnızca "hangi kitaplar" sorusunu
+    // cevaplıyor; toplamlar `summary`den geliyor ki istatistik ekranıyla
+    // rapor AYNI sayıyı göstersin.
+    final books = await _db.bookDao.logRows(from, to);
+
     final total = summary.totalStudyS;
     return ReportData(
       audience: audience,
@@ -77,6 +82,18 @@ class BuildReportUseCase {
             topicName: w.topicName,
             subjectName: w.subjectName,
             wrongCount: w.wrongCount,
+          ),
+      ],
+      readingS: summary.readingS,
+      pagesRead: summary.pagesRead,
+      bookSessionCount: summary.bookSessionCount,
+      books: [
+        for (final b in books)
+          ReportBookLine(
+            title: b.title,
+            pagesRead: b.pagesRead,
+            dateKey: b.dateKey,
+            durationS: b.durationS,
           ),
       ],
     );

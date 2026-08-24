@@ -4,6 +4,9 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sinav_odak/application/usecases/build_report.dart';
+import 'package:sinav_odak/application/usecases/finish_book_session.dart';
+import 'package:sinav_odak/application/usecases/start_book_session.dart';
+import 'package:sinav_odak/data/repositories/session_repository.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/entities/report_data.dart';
@@ -93,6 +96,13 @@ void main() {
     parentNote:
         'Bu karne cihazında üretildi; hiçbir yere gönderilmedi. — Balto',
     coachNote: 'Koç notu',
+    bookSection: 'Kitap okuma',
+    bookTotalDuration: 'Toplam okuma',
+    bookTotalPages: 'Toplam sayfa',
+    bookColumn: 'Kitap',
+    bookPagesColumn: 'Sayfa',
+    bookDateColumn: 'Tarih',
+    bookUntitled: 'Kitap',
   );
 
   /// 7 oturum · 3 ders · 2 konu · yanlışlar · rozet · seri.
@@ -515,6 +525,174 @@ void main() {
     );
   });
 
+  /// Gerçekçi tohumun üstüne üç okuma ekler (v1.3).
+  ///
+  /// `seedRealistic` DEĞİŞTİRİLMEDİ: oradaki oturum/ders/seri sayıları
+  /// mevcut testlerin iddiası. Okuma yalnızca kitap dosyalarına giriyor.
+  Future<void> seedReadings() async {
+    final start = StartBookSessionUseCase(db);
+    final finish = FinishBookSessionUseCase(db, SessionRepository(db));
+    const rows = <(String, int, int, String?)>[
+      ('2025-08-02', 1800, 24, 'Sefiller'),
+      ('2025-08-04', 2700, 41, 'Kürk Mantolu Madonna'),
+      ('2025-08-06', 1500, 18, null),
+    ];
+    for (final (i, r) in rows.indexed) {
+      final p = r.$1.split('-').map(int.parse).toList();
+      final ms = DateTime(p[0], p[1], p[2], 21).millisecondsSinceEpoch;
+      await start(
+        sessionId: 'pdfbk$i',
+        mode: BookMode.duration,
+        nowMs: ms,
+        durationS: r.$2,
+      );
+      await finish(
+        sessionId: 'pdfbk$i',
+        nowMs: ms + r.$2 * 1000,
+        pagesRead: r.$3,
+        bookTitle: r.$4,
+      );
+    }
+  }
+
+  test('KİTAPLI raporlar üretiliyor → qa_pdf/*_kitap.pdf', () async {
+    // Koordinatör KİTAP bölümünü **görecek**: gerçek fontla, uygulamanın
+    // kullandığı kod yolundan üretilmiş iki dosya.
+    await seedRealistic();
+    await seedReadings();
+
+    for (final audience in ReportAudience.values) {
+      final data = await build(audience);
+      expect(data.hasReading, isTrue);
+      expect(data.readingS, 1800 + 2700 + 1500);
+      expect(data.pagesRead, 24 + 41 + 18);
+      expect(data.books, hasLength(3));
+      expect(
+        data.books.first.dateKey,
+        '2025-08-06',
+        reason: 'en yeni okuma en üstte',
+      );
+
+      await write(
+        audience == ReportAudience.parent
+            ? 'rapor_veli_kitap.pdf'
+            : 'rapor_egitimci_kitap.pdf',
+        data,
+      );
+    }
+  });
+
+  test('v1.3 — KİTAP bölümü: ad · sayfa · tarih PDF\'e BASILIYOR', () async {
+    // Koordinatörün istediği: "PDF KARNE: KİTAP bölümü — toplam süre,
+    // toplam sayfa, kitap listesi (ad · sayfa · tarih) → öğretmen/veli
+    // bu sayfayı görecek."
+    //
+    // Ölçüm yöntemi bu dosyadaki diğer içerik testleriyle aynı:
+    // Helvetica + ASCII etiketlerle üretip sayfa içerik akışlarında
+    // metni ARIYORUZ. Dosya boyutuna bakmak yeterli olmazdı.
+    const marker = 'PRIVACYSTAMP';
+    final helvetica = pw.Font.helvetica();
+
+    Future<String> render(ReportAudience audience) async {
+      final data = await build(audience);
+      final bytes = await const PdfReportBuilder().build(
+        data,
+        _asciiStrings(marker),
+        regular: helvetica,
+        bold: pw.Font.helveticaBold(),
+      );
+      return _inflatedStreams(bytes).join('\n');
+    }
+
+    await db.settingsDao.ensure();
+
+    // --- Okuma YOKKEN bölüm hiç çizilmemeli ---
+    await seedRealistic();
+    for (final audience in ReportAudience.values) {
+      expect(
+        await render(audience),
+        isNot(contains('Books')),
+        reason: '$audience: hiç okuma yokken boş bir kitap bölümü '
+            'öğrencinin yapmadığı şeyi eksik gibi gösterirdi',
+      );
+    }
+
+    // --- İki okuma ekle ---
+    final start = StartBookSessionUseCase(db);
+    final finish = FinishBookSessionUseCase(db, SessionRepository(db));
+    final day3 = DateTime(2025, 8, 3).millisecondsSinceEpoch;
+    final day5 = DateTime(2025, 8, 5).millisecondsSinceEpoch;
+
+    await start(
+      sessionId: 'bk1',
+      mode: BookMode.duration,
+      nowMs: day3,
+      durationS: 1800,
+    );
+    await finish(
+      sessionId: 'bk1',
+      nowMs: day3 + 1800000,
+      pagesRead: 32,
+      bookTitle: 'Sefiller',
+    );
+    await start(
+      sessionId: 'bk2',
+      mode: BookMode.pageTarget,
+      nowMs: day5,
+      pageTarget: 20,
+    );
+    // Adı BOŞ: yerine geçen etiket basılmalı.
+    await finish(sessionId: 'bk2', nowMs: day5 + 2700000, pagesRead: 18);
+
+    for (final audience in ReportAudience.values) {
+      final drawn = await render(audience);
+      expect(
+        drawn,
+        allOf([
+          contains('Books'), // bölüm başlığı
+          contains('TotalReading'), // toplam süre
+          contains('TotalPages'), // toplam sayfa
+          contains('Sefiller'), // kitap ADI
+          contains('Untitled'), // adı boş bırakılan kitap
+          contains('05.08'), // TARİH
+        ]),
+        reason: '$audience raporunda kitap bölümü eksik — '
+            'öğretmen/veli bu sayfayı görecek',
+      );
+      expect(drawn, contains(marker), reason: 'kaşe her koşulda kalır');
+    }
+  });
+
+  test('v1.3 — YALNIZCA okuma varken rapor BOŞ sayılmıyor', () async {
+    // `ReportData.isEmpty` yalnızca çalışma oturumuna bakıyor olsaydı,
+    // o hafta sadece kitap okumuş öğrenciye "veri yok" denirdi — üstelik
+    // o okuma seriye sayılmışken.
+    await db.settingsDao.ensure();
+    final day = DateTime(2025, 8, 4).millisecondsSinceEpoch;
+
+    await StartBookSessionUseCase(db)(
+      sessionId: 'only',
+      mode: BookMode.duration,
+      nowMs: day,
+      durationS: 1800,
+    );
+    await FinishBookSessionUseCase(db, SessionRepository(db))(
+      sessionId: 'only',
+      nowMs: day + 1800000,
+      pagesRead: 40,
+      bookTitle: 'Kürk Mantolu Madonna',
+    );
+
+    final data = await build(ReportAudience.parent);
+    expect(data.sessionCount, 0, reason: 'hiç çalışma oturumu yok');
+    expect(data.isEmpty, isFalse, reason: 'okuma da bir çalışmadır');
+    expect(data.readingS, 1800);
+    expect(data.pagesRead, 40);
+    expect(data.books, hasLength(1));
+    expect(data.books.single.title, 'Kürk Mantolu Madonna');
+    expect(data.books.single.dateKey, '2025-08-04');
+  });
+
   test('gizlilik kaşesi SPILL eden raporda da her sayfada', () async {
     // **Regresyon.** Kaşe eskiden `MultiPage.build` listesinin son
     // elemanıydı; `MultiPage` çocukları akıttığı için kaşe yalnızca son
@@ -585,16 +763,28 @@ void main() {
     );
   });
 
-  test('qa_pdf/ dizininde iki dosya var ve boş değil', () async {
-    // Önceki iki test dosyaları yazdı; bu test çıktının GERÇEKTEN
-    // diske indiğini doğruluyor (bayt üretip yazmamak kolay bir hata).
+  test('qa_pdf/ dizininde DÖRT dosya var ve boş değil', () async {
+    // Önceki testler dosyaları yazdı; bu test çıktının GERÇEKTEN diske
+    // indiğini doğruluyor (bayt üretip yazmamak kolay bir hata).
+    //
+    // v1.3'te iki dosya daha eklendi: kitap bölümlü veli ve eğitimci
+    // raporları.
     final files = outDir
         .listSync()
         .whereType<File>()
         .where((f) => f.path.endsWith('.pdf'))
         .toList();
 
-    expect(files.length, 2);
+    expect(files.length, 4);
+    expect(
+      files.map((f) => f.uri.pathSegments.last).toSet(),
+      {
+        'rapor_veli.pdf',
+        'rapor_egitimci.pdf',
+        'rapor_veli_kitap.pdf',
+        'rapor_egitimci_kitap.pdf',
+      },
+    );
     for (final f in files) {
       expect(
         f.lengthSync(),
@@ -636,6 +826,13 @@ ReportStrings _asciiStrings(String marker) => ReportStrings(
       page: 'Page',
       parentNote: 'Note',
       coachNote: 'Coach',
+      bookSection: 'Books',
+      bookTotalDuration: 'TotalReading',
+      bookTotalPages: 'TotalPages',
+      bookColumn: 'Book',
+      bookPagesColumn: 'Pages',
+      bookDateColumn: 'Date',
+      bookUntitled: 'Untitled',
     );
 
 /// PDF içindeki zlib akışlarını çözüp metin olarak döndürür.
@@ -703,6 +900,13 @@ ReportStrings _withParentNote(ReportStrings s, String note) => ReportStrings(
       page: s.page,
       parentNote: note,
       coachNote: s.coachNote,
+      bookSection: s.bookSection,
+      bookTotalDuration: s.bookTotalDuration,
+      bookTotalPages: s.bookTotalPages,
+      bookColumn: s.bookColumn,
+      bookPagesColumn: s.bookPagesColumn,
+      bookDateColumn: s.bookDateColumn,
+      bookUntitled: s.bookUntitled,
     );
 
 /// PDF'ten çözülen görünür metin.
@@ -870,6 +1074,13 @@ ReportStrings _withPrivacyStamp(ReportStrings s, String stamp) => ReportStrings(
       page: s.page,
       parentNote: s.parentNote,
       coachNote: s.coachNote,
+      bookSection: s.bookSection,
+      bookTotalDuration: s.bookTotalDuration,
+      bookTotalPages: s.bookTotalPages,
+      bookColumn: s.bookColumn,
+      bookPagesColumn: s.bookPagesColumn,
+      bookDateColumn: s.bookDateColumn,
+      bookUntitled: s.bookUntitled,
     );
 
 /// [haystack] içinde [needle] uzunluğundaki eşleşmeyi döndürür; yoksa boş.

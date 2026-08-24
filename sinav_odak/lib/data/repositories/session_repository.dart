@@ -67,6 +67,42 @@ class SessionRepository {
     });
   }
 
+  /// KİTAP OKUMA oturumunu kaydeder (v1.3).
+  ///
+  /// ## SERİ KURALI — koordinatör kararı
+  ///
+  /// **Kitap oturumu da seriye sayılır.** O gün yalnızca kitap okuyan
+  /// öğrencinin zinciri KIRILMAZ. Bu yüzden [recomputeStreak] burada da
+  /// çağrılıyor — [save] ile aynı satır, aynı hesap.
+  ///
+  /// Kural kodda tek yerde duruyor: seri hesabı ayrı bir servise
+  /// bırakılsaydı, oturumu yazan ikinci bir yol açıldığında sessizce
+  /// atlanırdı. `daily_stats`, streak ve rozetlerin başına gelen tam
+  /// olarak buydu (bkz. [save]).
+  ///
+  /// ## Neden [recomputeGoals] ve [recomputeAchievements] de çağrılıyor
+  ///
+  /// Okuma süresi `daily_stats.total_study_s`'e girmiyor, dolayısıyla
+  /// **süre ve soru hedeflerini ilerletmiyor** — bu bilinçli. Ama seri
+  /// değişti: `GoalType.streak` hedefi ve seri rozetleri seriyi okuyor.
+  /// Çağrılmasaydı öğrenci seriyi uzatır, "7 gün üst üste" rozeti bir
+  /// sonraki ÇALIŞMA oturumuna kadar açılmazdı.
+  ///
+  /// Yanlış defteri YOK: okuma oturumunda doğru/yanlış kavramı yok.
+  Future<void> saveBookSession({
+    required String sessionId,
+    required BookSessionsCompanion patch,
+    required String dateKey,
+  }) async {
+    await _db.transaction(() async {
+      await _db.bookDao.patch(sessionId, patch);
+      await _db.statsDao.recomputeDay(dateKey);
+      await recomputeStreak(dateKey);
+      await recomputeGoals(dateKey);
+      await recomputeAchievements(dateKey);
+    });
+  }
+
   /// Ardışık çalışma günü sayacını günceller.
   ///
   /// Şemadaki `currentStreak` / `longestStreak` / `lastStudyDate` kolonları

@@ -21,6 +21,19 @@ enum SessionStatus {
 
 enum BlockType { study, breakTime }
 
+/// Kitap okuma oturumunun modu (v1.3).
+///
+/// İki mod aynı şeyi ölçüyor (süre + sayfa), farkı **neyi önceden
+/// belirlediğin**: [duration] süreyi, [pageTarget] sayfa sayısını.
+/// Sayaç da buna göre çalışıyor — süre modunda geri, sayfa modunda ileri.
+enum BookMode {
+  /// Süre belirlenir, sayaç geri sayar. Süre dolunca oturum biter.
+  duration,
+
+  /// Sayfa hedefi belirlenir, sayaç ileri sayar. Bitişi kullanıcı verir.
+  pageTarget,
+}
+
 enum GoalType {
   dailyMinutes,
   weeklyMinutes,

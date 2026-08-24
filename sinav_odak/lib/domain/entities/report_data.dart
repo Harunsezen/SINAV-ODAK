@@ -53,6 +53,25 @@ class ReportWeakTopic {
   final int wrongCount;
 }
 
+/// KİTAP OKUMA satırı — **ad · sayfa · tarih** (v1.3).
+///
+/// [title] `null` olabilir: kitap adı boş bırakılabilir bir alan. Yerine
+/// geçen etiket ("Kitap") PDF katmanında konuyor; burada `null` duruyor ki
+/// "adı yok" ile "adı gerçekten 'Kitap'" karışmasın.
+class ReportBookLine {
+  const ReportBookLine({
+    required this.title,
+    required this.pagesRead,
+    required this.dateKey,
+    required this.durationS,
+  });
+
+  final String? title;
+  final int pagesRead;
+  final String dateKey;
+  final int durationS;
+}
+
 /// PDF'e dökülecek her şey — **hesaplanmış**, biçimlenmemiş.
 ///
 /// Biçimleme (tarih formatı, "2 sa 30 dk" gibi) sunum katmanının işi;
@@ -77,6 +96,10 @@ class ReportData {
     required this.subjects,
     required this.days,
     required this.weakTopics,
+    this.readingS = 0,
+    this.pagesRead = 0,
+    this.bookSessionCount = 0,
+    this.books = const [],
   });
 
   final ReportAudience audience;
@@ -100,8 +123,33 @@ class ReportData {
   final List<ReportDayLine> days;
   final List<ReportWeakTopic> weakTopics;
 
+  // --- KİTAP OKUMA (v1.3) ---
+
+  /// Toplam okuma süresi (saniye). [totalStudyS]'in İÇİNDE DEĞİL.
+  final int readingS;
+
+  /// Toplam okunan sayfa.
+  final int pagesRead;
+
+  /// Kapanmış okuma oturumu sayısı.
+  final int bookSessionCount;
+
+  /// Kitap listesi — en yeni okuma en üstte.
+  final List<ReportBookLine> books;
+
+  /// Raporda KİTAP bölümü çizilsin mi?
+  ///
+  /// Hiç okuma yoksa bölüm hiç görünmüyor: veliye ve öğretmene boş bir
+  /// "0 sayfa" tablosu göstermek, öğrencinin yapmadığı bir şeyi eksik
+  /// gibi sunardı.
+  bool get hasReading => readingS > 0 || pagesRead > 0 || books.isNotEmpty;
+
   /// Hiç oturum yoksa rapor üretmenin anlamı yok.
-  bool get isEmpty => sessionCount == 0;
+  ///
+  /// v1.3 — **okuma da sayılıyor.** O hafta yalnızca kitap okumuş bir
+  /// öğrencinin raporu "veri yok" diye reddedilseydi, seriye sayılan bir
+  /// çalışma karneye hiç giremezdi.
+  bool get isEmpty => sessionCount == 0 && !hasReading;
 
   /// Doğru / (doğru+yanlış) — boşlar hariç. Veri yoksa 0.
   ///

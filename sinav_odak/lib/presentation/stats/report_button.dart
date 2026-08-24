@@ -48,6 +48,13 @@ class _ReportButtonState extends ConsumerState<ReportButton> {
         page: l.reportPage,
         parentNote: l.reportParentStamp,
         coachNote: l.reportCoachNote,
+        bookSection: l.reportBookSection,
+        bookTotalDuration: l.reportBookTotalDuration,
+        bookTotalPages: l.reportBookTotalPages,
+        bookColumn: l.reportBookColumn,
+        bookPagesColumn: l.reportBookPagesColumn,
+        bookDateColumn: l.reportBookDateColumn,
+        bookUntitled: l.bookUntitled,
       );
 
   Future<void> _run(ReportAudience audience) async {

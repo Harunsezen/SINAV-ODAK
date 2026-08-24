@@ -60,6 +60,13 @@ void main() {
     parentNote:
         'Bu karne cihazında üretildi; hiçbir yere gönderilmedi. — Balto',
     coachNote: 'Koç notu',
+    bookSection: 'Kitap okuma',
+    bookTotalDuration: 'Toplam okuma',
+    bookTotalPages: 'Toplam sayfa',
+    bookColumn: 'Kitap',
+    bookPagesColumn: 'Sayfa',
+    bookDateColumn: 'Tarih',
+    bookUntitled: 'Kitap',
   );
 
   ReportData data(ReportAudience audience) => ReportData(

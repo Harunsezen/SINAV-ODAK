@@ -43,6 +43,11 @@ class HomeScreen extends ConsumerWidget {
     final goalS = goalMinutes * 60;
     final ratio = goalS == 0 ? 0.0 : (studyS / goalS).clamp(0.0, 1.0);
     final hasActiveSession = ref.watch(showActiveSessionBannerProvider);
+    final hasActiveBook = ref.watch(showActiveBookBannerProvider);
+    // Şeritten bağımsız ham durum: okuma açıkken YENİ oturum yolu
+    // kapanmalı, kullanıcı küçültmüş olsun ya da olmasın.
+    final bookRunning =
+        ref.watch(activeBookSessionProvider).valueOrNull != null;
 
     // Yarıda kalan oturum kararı ana panelde, TEK kez sorulur (KARAR D2).
     return RecoveryGate(
@@ -82,6 +87,13 @@ class HomeScreen extends ConsumerWidget {
             // reklamdan da önce.
             if (hasActiveSession) ...[
               const _ActiveSessionBanner(),
+              const SizedBox(height: 12),
+            ],
+            // v1.3 — küçültülmüş OKUMA oturumunun dönüş kapısı. Çalışma
+            // oturumundakiyle aynı gerekçe: bu şerit olmadan küçültme bir
+            // çıkmaz olurdu.
+            if (hasActiveBook) ...[
+              const _ActiveBookBanner(),
               const SizedBox(height: 12),
             ],
             const BannerAdSlot(placement: AdPlacement.homeBanner),
@@ -153,20 +165,49 @@ class HomeScreen extends ConsumerWidget {
             // `SessionFailure` fırlatıyordu — veri bozulmuyordu ama
             // kullanıcı dört ekran sonunda duvara çarpıyordu.
             // Artık buton doğrudan oturuma döndürüyor.
+            //
+            // v1.3 — **açık bir OKUMA varken de pasif.** Ekran görüntüsü
+            // denetiminde bulundu: okuma sürerken bu düğme hâlâ etkindi,
+            // dokununca router kullanıcıyı sayaca geri atıyordu — yani
+            // düğme hiçbir şey yapmıyor gibi görünüyordu. Aynı UX
+            // hatasının (dört ekran sonra duvara çarpmak) kitap
+            // sürümü. Dönüş yolu hemen üstteki şeritte duruyor.
             FilledButton(
               key: const Key('home-start'),
-              onPressed: () {
-                if (hasActiveSession) {
-                  returnToSession(context, ref);
-                  return;
-                }
-                // Yeni akış temiz seçimle başlar (R2: eski seçim sızmasın).
-                ref.read(setupProvider.notifier).reset();
-                context.go(Routes.sessionSubject);
-              },
+              onPressed: bookRunning
+                  ? null
+                  : () {
+                      if (hasActiveSession) {
+                        returnToSession(context, ref);
+                        return;
+                      }
+                      // Yeni akış temiz seçimle başlar (R2: eski seçim
+                      // sızmasın).
+                      ref.read(setupProvider.notifier).reset();
+                      context.go(Routes.sessionSubject);
+                    },
               child: Text(
                 hasActiveSession ? l.runBackToSession : l.homeStartSession,
               ),
+            ),
+            const SizedBox(height: 8),
+            // KİTAP OKUMA — ayrı bir giriş (v1.3).
+            //
+            // **Kurulum akışına üçüncü bir adım olarak EKLENMEDİ.** Ders/
+            // konu/tür seçiminin önüne "ne tür oturum?" diye bir ekran
+            // koymak, yaygın durumu (çalışma oturumu) her seferinde bir
+            // dokunuş yavaşlatırdı. Okuma zaten ders ve konu seçmiyor;
+            // kendi kapısından giriyor.
+            //
+            // İkincil düğme (`OutlinedButton`): birincil eylem hâlâ
+            // çalışma oturumu.
+            OutlinedButton.icon(
+              key: const Key('home-book'),
+              onPressed: (hasActiveSession || hasActiveBook || bookRunning)
+                  ? null
+                  : () => context.go(Routes.book),
+              icon: const Icon(Icons.menu_book_outlined),
+              label: Text(l.homeReadBook),
             ),
             const SizedBox(height: 24),
             Text(
@@ -218,6 +259,45 @@ class _ActiveSessionBanner extends ConsumerWidget {
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => returnToSession(context, ref),
+      ),
+    );
+  }
+}
+
+/// Küçültülmüş OKUMA oturumunun şeridi (v1.3).
+///
+/// Süre modunda kalan, sayfa modunda geçen süreyi gösteriyor — sayacın
+/// ekranda gösterdiği sayının aynısı. "Sayaç işliyor" demek yetmiyordu:
+/// kullanıcı 20 dakika önce küçülttüyse ne kadar kaldığını bilmeden geri
+/// dönmek zorunda kalırdı (çalışma şeridinde öğrenilen ders).
+class _ActiveBookBanner extends ConsumerWidget {
+  const _ActiveBookBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final snapshot = ref.watch(bookRunSnapshotProvider);
+    final remaining = snapshot?.remainingS ?? snapshot?.elapsedS;
+
+    return Card(
+      key: const Key('home-active-book'),
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: ListTile(
+        leading: Icon(
+          Icons.menu_book_outlined,
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
+        ),
+        title: Text(l.homeActiveBookTitle),
+        subtitle: Text(
+          remaining == null
+              ? l.homeActiveBookBody
+              : l.homeActiveSessionRemaining(formatClock(remaining)),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          ref.read(sessionMinimizedProvider.notifier).restore();
+          context.go(Routes.bookRun);
+        },
       ),
     );
   }

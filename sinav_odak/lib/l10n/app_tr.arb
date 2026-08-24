@@ -175,7 +175,7 @@
   "statsNet": "Net",
   "statsAvgFocus": "Ortalama odak",
   "statsSuccessRate": "Başarı oranı",
-  "statsDailyChart": "Günlük çalışma (dakika)",
+  "statsDailyChart": "Günlük süre (dakika)",
   "statsSubjectBreakdown": "Ders dağılımı",
   "statsWeakestTopics": "Gelişim gereken konular",
   "statsWeakestTopicWrongs": "{count} yanlış",
@@ -928,5 +928,120 @@
     }
   },
   "summaryTopics": "Konular",
-  "planBlockBreakSuffix": "m"
+  "planBlockBreakSuffix": "m",
+  "homeReadBook": "Kitap Oku",
+  "homeActiveBookTitle": "Okuma devam ediyor",
+  "homeActiveBookBody": "Sayaç işliyor. Dokun, kaldığın yerden devam et.",
+  "bookSetupTitle": "Kitap Oku",
+  "bookModeDuration": "Süre",
+  "bookModePages": "Sayfa hedefi",
+  "bookDurationLabel": "Okuma süresi",
+  "bookDurationHint": "Dokun ve yaz · tek dokunuş 5 dk · basılı tut, hızlansın",
+  "bookPagesLabel": "Sayfa hedefi",
+  "bookPagesHint": "Dokun ve yaz · tek dokunuş 5 sayfa · basılı tut, hızlansın",
+  "bookPagesUnit": "{count} sayfa",
+  "@bookPagesUnit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookStart": "Okumaya Başla",
+  "bookEditDurationTitle": "Okuma süresi",
+  "bookEditDurationHint": "Örnek: 45 · 45dk · 1sa 30dk · 1:30",
+  "bookEditPagesTitle": "Sayfa sayısı",
+  "bookEditPagesHint": "Örnek: 40 · 40 sayfa",
+  "bookInvalidDuration": "5 dakika ile 12 saat arası bir süre yaz.",
+  "bookInvalidPages": "1 ile 2000 arası bir sayı yaz.",
+  "bookAlreadyRunning": "Zaten devam eden bir oturum var. Önce onu bitir.",
+  "bookNoQuestionsNote": "Kitap oturumunda doğru/yanlış sorulmaz. Ölçülen: süre ve sayfa.",
+  "bookRunRemaining": "kalan",
+  "bookRunElapsed": "okunan süre",
+  "bookRunTarget": "Hedef: {count} sayfa",
+  "@bookRunTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookRunFinish": "Bitti",
+  "bookRunTimeUp": "Süre doldu",
+  "bookRunSureTitle": "Emin misin?",
+  "bookRunSureBody": "{duration} okudun. Bitirirsen sayaç durur ve kitap adı ile sayfa sayısını soracağım.",
+  "@bookRunSureBody": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookRunSureNo": "Hayır, devam",
+  "bookRunSureYes": "Evet, bitir",
+  "bookRunDiscard": "Sil",
+  "bookRunDiscardTitle": "Okuma silinsin mi?",
+  "bookRunDiscardBody": "Bu okumanın hiçbir kaydı kalmaz. Geri alınamaz.",
+  "bookRunDiscarded": "Okuma silindi.",
+  "bookRunCapped": "Sayaç 12 saati aştı; kaydedilen süre 12 saate kırpıldı.",
+  "bookSummaryTitle": "Okuma Bitti",
+  "bookSummaryEmpty": "Kaydedilecek okuma yok.",
+  "bookSummaryDuration": "Okuma süresi: {duration}",
+  "@bookSummaryDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookSummaryNameTitle": "Hangi kitap?",
+  "bookSummaryNameLabel": "Kitap adı",
+  "bookSummaryNameHint": "Boş bırakabilirsin — kayıtta \"Kitap\" görünür.",
+  "bookSummaryPagesTitle": "Kaç sayfa okudun?",
+  "bookSummaryPagesLabel": "Okunan sayfa",
+  "bookSummaryTargetLine": "Hedef {target} · Okunan {actual}",
+  "@bookSummaryTargetLine": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "actual": {
+        "type": "int"
+      }
+    }
+  },
+  "bookSummaryTargetReached": "Hedefe ulaştın 🎉",
+  "bookSummaryTargetMissed": "{count} sayfa kaldı",
+  "@bookSummaryTargetMissed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookSummarySaved": "Okuma kaydedildi · {pages} sayfa · {duration}",
+  "@bookSummarySaved": {
+    "placeholders": {
+      "pages": {
+        "type": "int"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookUntitled": "Kitap",
+  "statsBookTitle": "Kitap okuma",
+  "statsBookDuration": "Okuma süresi",
+  "statsBookPages": "Sayfa",
+  "statsBookSessions": "Okuma",
+  "statsLegendStudy": "Çalışma",
+  "statsLegendReading": "Okuma",
+  "reportBookSection": "Kitap okuma",
+  "reportBookTotalDuration": "Toplam okuma",
+  "reportBookTotalPages": "Toplam sayfa",
+  "reportBookColumn": "Kitap",
+  "reportBookPagesColumn": "Sayfa",
+  "reportBookDateColumn": "Tarih",
+  "bookSummaryReached": "Hedefe ulaştım"
 }

@@ -10,6 +10,7 @@ import '../../domain/entities/enums.dart';
 import 'connection/connection.dart';
 import 'converters/block_type_converter.dart';
 import 'daos/ad_event_dao.dart';
+import 'daos/book_dao.dart';
 import 'daos/achievement_dao.dart';
 import 'daos/goal_dao.dart';
 import 'daos/session_dao.dart';
@@ -18,11 +19,13 @@ import 'daos/stats_dao.dart';
 import 'daos/subject_dao.dart';
 import 'daos/wrong_item_dao.dart';
 import 'seed_data.dart';
+import 'tables/book_tables.dart';
 import 'tables/catalog_tables.dart';
 import 'tables/session_tables.dart';
 import 'tables/settings_table.dart';
 import 'tables/tracking_tables.dart';
 
+export 'tables/book_tables.dart';
 export 'tables/catalog_tables.dart';
 export 'tables/session_tables.dart';
 export 'tables/settings_table.dart';
@@ -39,6 +42,7 @@ part 'database.g.dart';
     StudySessions,
     SessionTopics,
     SessionBlocks,
+    BookSessions,
     Goals,
     DailyStats,
     WrongItems,
@@ -48,6 +52,7 @@ part 'database.g.dart';
   ],
   daos: [
     AdEventDao,
+    BookDao,
     SettingsDao,
     SubjectDao,
     SessionDao,
@@ -67,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
   /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -90,6 +95,15 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE UNIQUE INDEX idx_one_running '
             "ON study_sessions(status) WHERE status = 'running'",
+          );
+
+          // v1.3 — kitap oturumu için AYNI koruma.
+          //
+          // İki `running` kitap oturumu oluşursa ikisi de aynı ekranı
+          // istiyor ve hangisinin sayacının gösterildiği rastgele olurdu.
+          await customStatement(
+            'CREATE UNIQUE INDEX idx_one_running_book '
+            "ON book_sessions(status) WHERE status = 'running'",
           );
 
           await SeedData.populate(this);
@@ -146,6 +160,22 @@ class AppDatabase extends _$AppDatabase {
               'WHERE topic_id IS NOT NULL',
             );
           }
+          if (from < 7) {
+            // v1.3 — KİTAP OKUMA MODU.
+            //
+            // Yeni tablo + `daily_stats`'a iki kolon. Mevcut hiçbir satır
+            // değişmiyor: yeni kolonlar 0 varsayılanlı, yani v1.2'de
+            // kaydedilmiş her gün "0 saniye okuma, 0 sayfa" olarak
+            // devam ediyor — doğru cevap, çünkü o günlerde kitap modu
+            // gerçekten yoktu.
+            await m.createTable(bookSessions);
+            await m.addColumn(dailyStats, dailyStats.readingS);
+            await m.addColumn(dailyStats, dailyStats.pagesRead);
+            await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_one_running_book '
+              "ON book_sessions(status) WHERE status = 'running'",
+            );
+          }
         },
         beforeOpen: (details) async {
           // Foreign key kısıtları SQLite'ta varsayılan olarak KAPALIDIR.
@@ -195,6 +225,7 @@ class AppDatabase extends _$AppDatabase {
       await delete(sessionBlocks).go();
       await delete(wrongItems).go();
       await delete(studySessions).go();
+      await delete(bookSessions).go();
       await delete(dailyStats).go();
       await delete(goals).go();
       await delete(achievements).go();

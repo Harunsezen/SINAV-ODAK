@@ -352,7 +352,7 @@ pw.Widget ruledArea({int lines = 3, double gap = 18}) => pw.SizedBox(
 // ====================================================================
 
 /// Simge türü. Her biri [iconMedallion] içinde yuvarlak zemine çiziliyor.
-enum ReportIcon { clock, questions, target, streak, sessions, medal }
+enum ReportIcon { clock, questions, target, streak, sessions, medal, book }
 
 /// Renkli yuvarlak zemin + içine çizilmiş beyaz simge.
 pw.Widget iconMedallion(
@@ -461,6 +461,22 @@ void _paintGlyph(
         ..fillPath()
         ..setFillColor(PdfColors.white)
         ..drawRRect(c - 6.4 * u, c - 6.4 * u, 8.4 * u, 8 * u, 1.7 * u, 1.7 * u)
+        ..fillPath();
+
+    case ReportIcon.book:
+      // Açık kitap: ortada sırt boşluğu, iki yana açılan sayfalar.
+      // Tek dikdörtgen "kart" gibi okunuyordu; sırttaki boşluk ve
+      // sayfaların eğimi kitabı tek bakışta veriyor.
+      canvas
+        ..moveTo(c - 7 * u, c + 4 * u)
+        ..lineTo(c - 0.9 * u, c + 2.4 * u)
+        ..lineTo(c - 0.9 * u, c - 5.4 * u)
+        ..lineTo(c - 7 * u, c - 3.8 * u)
+        ..fillPath()
+        ..moveTo(c + 7 * u, c + 4 * u)
+        ..lineTo(c + 0.9 * u, c + 2.4 * u)
+        ..lineTo(c + 0.9 * u, c - 5.4 * u)
+        ..lineTo(c + 7 * u, c - 3.8 * u)
         ..fillPath();
 
     case ReportIcon.medal:

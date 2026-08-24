@@ -211,8 +211,13 @@ Future<ProviderContainer> pumpQaApp(
   Size size = const Size(430, 932),
   double textScale = 1.0,
   Brightness brightness = Brightness.light,
+  List<Override> overrides = const [],
 }) async {
   final container = ProviderContainer(
+    // Ek override'lar SONA ekleniyor: aynı provider iki kez verilirse
+    // Riverpod sonuncuyu kullanıyor, yani çağıran taraf varsayılanı
+    // (örneğin sabit saati) bilerek değiştirebiliyor. v1.3'te okuma
+    // sayacını ilerletmek için gerekli oldu.
     overrides: [
       databaseProvider.overrideWithValue(db),
       clockProvider.overrideWithValue(() => t0),
@@ -221,6 +226,7 @@ Future<ProviderContainer> pumpQaApp(
       activityTrackerProvider
           .overrideWithValue(FakeTracker() as SessionActivityTracker),
       uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
+      ...overrides,
     ],
   );
   addTearDown(container.dispose);
@@ -231,6 +237,7 @@ Future<ProviderContainer> pumpQaApp(
   // `pumpAndSettle` ASLA dönmüyor ve QA turu takılıyordu.
   await container.read(settingsStreamProvider.future);
   await container.read(activeSessionProvider.future);
+  await container.read(activeBookSessionProvider.future);
   await container.read(subjectsProvider.future);
   await container.read(activityTypesProvider.future);
   await container.read(recentSessionsProvider.future);

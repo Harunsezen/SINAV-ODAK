@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_locale.dart';
 import '../../domain/services/notification_planner.dart';
 import '../../data/local/daos/achievement_dao.dart';
+import '../../data/local/daos/book_dao.dart';
 import '../../data/local/daos/goal_dao.dart';
 import '../../data/local/daos/session_dao.dart';
 import '../../data/local/daos/settings_dao.dart';
@@ -28,6 +29,9 @@ import '../../application/recovery_service.dart';
 import '../../application/schedule_writer.dart';
 import '../../application/usecases/complete_onboarding.dart';
 import '../../application/usecases/build_report.dart';
+import '../../application/usecases/discard_book_session.dart';
+import '../../application/usecases/finish_book_session.dart';
+import '../../application/usecases/start_book_session.dart';
 import '../../application/usecases/discard_session.dart';
 import '../../application/usecases/extend_break.dart';
 import '../../application/usecases/finish_session.dart';
@@ -41,6 +45,7 @@ import '../../domain/ports/haptic_gateway.dart';
 import '../../domain/ports/screen_wake_gateway.dart';
 import '../../domain/ports/session_activity_tracker.dart';
 import '../../domain/ports/session_notifier.dart';
+import '../../domain/services/book_run_calculator.dart';
 import '../../domain/services/schedule_resolver.dart';
 import '../../domain/services/streak_calculator.dart';
 import '../../services/background/lifecycle_tracker.dart';
@@ -122,6 +127,10 @@ final goalDaoProvider =
 
 final wrongItemDaoProvider =
     Provider<WrongItemDao>((ref) => ref.watch(databaseProvider).wrongItemDao);
+
+/// KİTAP OKUMA oturumları (v1.3).
+final bookDaoProvider =
+    Provider<BookDao>((ref) => ref.watch(databaseProvider).bookDao);
 
 /// Ayarlar akışı — tema, net katsayısı, hedefler buradan okunur.
 /// Satır yoksa otomatik yeniden oluşturur ve akışa devam eder.
@@ -392,6 +401,60 @@ final skipBreakProvider = Provider<SkipBreakUseCase>(
     ref.watch(databaseProvider),
     ref.watch(scheduleWriterProvider),
   ),
+);
+
+// ---------------------------------------------------------------------------
+// KİTAP OKUMA MODU (v1.3)
+// ---------------------------------------------------------------------------
+
+final startBookSessionProvider = Provider<StartBookSessionUseCase>(
+  (ref) => StartBookSessionUseCase(ref.watch(databaseProvider)),
+);
+
+final finishBookSessionProvider = Provider<FinishBookSessionUseCase>(
+  (ref) => FinishBookSessionUseCase(
+    ref.watch(databaseProvider),
+    ref.watch(sessionRepositoryProvider),
+  ),
+);
+
+final discardBookSessionProvider = Provider<DiscardBookSessionUseCase>(
+  (ref) => DiscardBookSessionUseCase(ref.watch(bookDaoProvider)),
+);
+
+/// Açık (`running`) okuma oturumu. Drift akışı: her yazımda tazeleniyor.
+final activeBookSessionProvider = StreamProvider<BookSession?>(
+  (ref) => ref.watch(bookDaoProvider).watchActive(),
+);
+
+/// Okuma sayacının anlık görüntüsü.
+///
+/// [uiTickerProvider] yalnızca yeniden hesaplamayı TETİKLİYOR; süreyi
+/// ilerletmiyor. Doğruluk zinciri: `clock()` → `startedAt` →
+/// `BookRunCalculator.resolve()`. Çalışma oturumundaki
+/// [runStateProvider] ile aynı ilke.
+final bookRunSnapshotProvider = Provider<BookRunSnapshot?>((ref) {
+  ref.watch(uiTickerProvider);
+
+  final session = ref.watch(activeBookSessionProvider).valueOrNull;
+  if (session == null) return null;
+
+  return BookRunCalculator.resolve(
+    startedAtMs: session.startedAt,
+    nowMs: ref.watch(clockProvider)(),
+    plannedDurationS: session.plannedDurationS,
+  );
+});
+
+/// Ana panelde "okuma devam ediyor" şeridi gösterilsin mi?
+final showActiveBookBannerProvider = Provider<bool>((ref) {
+  final minimized = ref.watch(sessionMinimizedProvider);
+  return minimized && ref.watch(activeBookSessionProvider).valueOrNull != null;
+});
+
+/// Son kapanmış okumalar.
+final recentBookSessionsProvider = StreamProvider<List<BookSession>>(
+  (ref) => ref.watch(bookDaoProvider).watchRecent(),
 );
 
 // ---------------------------------------------------------------------------

@@ -175,7 +175,7 @@
   "statsNet": "Net",
   "statsAvgFocus": "Average focus",
   "statsSuccessRate": "Success rate",
-  "statsDailyChart": "Daily study (minutes)",
+  "statsDailyChart": "Daily time (minutes)",
   "statsSubjectBreakdown": "Subject breakdown",
   "statsWeakestTopics": "Topics that need work",
   "statsWeakestTopicWrongs": "{count} wrong",
@@ -928,5 +928,120 @@
     }
   },
   "summaryTopics": "Topics",
-  "planBlockBreakSuffix": "b"
+  "planBlockBreakSuffix": "b",
+  "homeReadBook": "Read a Book",
+  "homeActiveBookTitle": "Reading in progress",
+  "homeActiveBookBody": "The timer is running. Tap to pick up where you left off.",
+  "bookSetupTitle": "Read a Book",
+  "bookModeDuration": "Duration",
+  "bookModePages": "Page goal",
+  "bookDurationLabel": "Reading time",
+  "bookDurationHint": "Tap to type · one tap adds 5 min · hold to speed up",
+  "bookPagesLabel": "Page goal",
+  "bookPagesHint": "Tap to type · one tap adds 5 pages · hold to speed up",
+  "bookPagesUnit": "{count} pages",
+  "@bookPagesUnit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookStart": "Start Reading",
+  "bookEditDurationTitle": "Reading time",
+  "bookEditDurationHint": "Example: 45 · 45m · 1h 30m · 1:30",
+  "bookEditPagesTitle": "Page count",
+  "bookEditPagesHint": "Example: 40 · 40 pages",
+  "bookInvalidDuration": "Enter a time between 5 minutes and 12 hours.",
+  "bookInvalidPages": "Enter a number between 1 and 2000.",
+  "bookAlreadyRunning": "A session is already running. Finish it first.",
+  "bookNoQuestionsNote": "Book sessions have no right/wrong. Only time and pages are recorded.",
+  "bookRunRemaining": "remaining",
+  "bookRunElapsed": "time read",
+  "bookRunTarget": "Goal: {count} pages",
+  "@bookRunTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookRunFinish": "Done",
+  "bookRunTimeUp": "Time is up",
+  "bookRunSureTitle": "Are you sure?",
+  "bookRunSureBody": "You have read for {duration}. If you finish, the timer stops and I will ask for the book name and page count.",
+  "@bookRunSureBody": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookRunSureNo": "No, keep reading",
+  "bookRunSureYes": "Yes, finish",
+  "bookRunDiscard": "Delete",
+  "bookRunDiscardTitle": "Delete this reading?",
+  "bookRunDiscardBody": "No record of this reading will remain. This cannot be undone.",
+  "bookRunDiscarded": "Reading deleted.",
+  "bookRunCapped": "The timer passed 12 hours; the recorded time was capped at 12 hours.",
+  "bookSummaryTitle": "Reading Finished",
+  "bookSummaryEmpty": "No reading to save.",
+  "bookSummaryDuration": "Time read: {duration}",
+  "@bookSummaryDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookSummaryNameTitle": "Which book?",
+  "bookSummaryNameLabel": "Book name",
+  "bookSummaryNameHint": "You can leave this empty — it will show as \"Book\".",
+  "bookSummaryPagesTitle": "How many pages?",
+  "bookSummaryPagesLabel": "Pages read",
+  "bookSummaryTargetLine": "Goal {target} · Read {actual}",
+  "@bookSummaryTargetLine": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "actual": {
+        "type": "int"
+      }
+    }
+  },
+  "bookSummaryTargetReached": "Goal reached 🎉",
+  "bookSummaryTargetMissed": "{count} pages to go",
+  "@bookSummaryTargetMissed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookSummarySaved": "Reading saved · {pages} pages · {duration}",
+  "@bookSummarySaved": {
+    "placeholders": {
+      "pages": {
+        "type": "int"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "bookUntitled": "Book",
+  "statsBookTitle": "Book reading",
+  "statsBookDuration": "Time read",
+  "statsBookPages": "Pages",
+  "statsBookSessions": "Sessions",
+  "statsLegendStudy": "Study",
+  "statsLegendReading": "Reading",
+  "reportBookSection": "Book reading",
+  "reportBookTotalDuration": "Total reading",
+  "reportBookTotalPages": "Total pages",
+  "reportBookColumn": "Book",
+  "reportBookPagesColumn": "Pages",
+  "reportBookDateColumn": "Date",
+  "bookSummaryReached": "I reached the goal"
 }

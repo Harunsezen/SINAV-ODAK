@@ -21,6 +21,9 @@ class StatsSummary {
     required this.emptyCount,
     required this.net,
     required this.avgFocusScore,
+    this.readingS = 0,
+    this.pagesRead = 0,
+    this.bookSessionCount = 0,
   });
 
   factory StatsSummary.empty() => const StatsSummary(
@@ -44,6 +47,26 @@ class StatsSummary {
   final int emptyCount;
   final double net;
   final double avgFocusScore;
+
+  /// KİTAP OKUMA — toplam okuma süresi (saniye), v1.3.
+  ///
+  /// [totalStudyS]'in İÇİNDE DEĞİL, yanında. İkisini toplamak okuma
+  /// süresini günlük çalışma hedefine sayardı.
+  final int readingS;
+
+  /// KİTAP OKUMA — toplam okunan sayfa.
+  final int pagesRead;
+
+  /// KİTAP OKUMA — kapanmış okuma oturumu sayısı.
+  ///
+  /// [sessionCount] yalnızca ÇALIŞMA oturumlarını sayıyor; kitap kartı
+  /// "3 okuma" derken bunu okuyor.
+  final int bookSessionCount;
+
+  /// Aralıkta hiç okuma var mı? Kitap kartı ve PDF bölümü buna bakıyor:
+  /// hiç okumamış kullanıcıya boş bir "0 sayfa" kartı göstermek, olmayan
+  /// bir özelliği eksik gibi gösterirdi.
+  bool get hasReading => readingS > 0 || pagesRead > 0;
 
   /// Doğru / (Doğru + Yanlış + Boş)
   double get successRate {
@@ -92,7 +115,12 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
           ))
         .get();
 
-    if (rows.isEmpty) {
+    // v1.3 — o günün okuma toplamı. Çalışma oturumu olmayan bir gün de
+    // artık satır ÜRETEBİLİR: yalnızca kitap okunan gün takvimde ve
+    // grafikte boş görünmemeli.
+    final book = await attachedDatabase.bookDao.totalsForDay(dayKey);
+
+    if (rows.isEmpty && book.sessionCount == 0) {
       await (delete(dailyStats)..where((t) => t.dateKey.equals(dayKey))).go();
       return;
     }
@@ -139,6 +167,8 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
         emptyCount: Value(empty),
         net: Value(net),
         avgFocusScore: Value(focusCount == 0 ? 0 : focusSum / focusCount),
+        readingS: Value(book.readingS),
+        pagesRead: Value(book.pagesRead),
         subjectBreakdownJson: Value(jsonEncode(bySubject)),
       ),
     );
@@ -174,6 +204,7 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
     if (rows.isEmpty) return StatsSummary.empty();
 
     var studyS = 0, breakS = 0, sc = 0, q = 0, c = 0, w = 0, e = 0;
+    var readingS = 0, pages = 0;
     var net = 0.0, focus = 0.0;
     var focusDays = 0;
     for (final r in rows) {
@@ -185,11 +216,18 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
       w += r.wrongCount;
       e += r.emptyCount;
       net += r.net;
+      readingS += r.readingS;
+      pages += r.pagesRead;
       if (r.avgFocusScore > 0) {
         focus += r.avgFocusScore;
         focusDays++;
       }
     }
+
+    // Okuma OTURUM SAYISI `daily_stats`te tutulmuyor (gün başına tek
+    // sayı olarak anlamı yok); doğrudan tablodan sayılıyor.
+    final book = await attachedDatabase.bookDao.totalsForRange(from, to);
+
     return StatsSummary(
       totalStudyS: studyS,
       totalBreakS: breakS,
@@ -200,6 +238,9 @@ class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
       emptyCount: e,
       net: net,
       avgFocusScore: focusDays == 0 ? 0 : focus / focusDays,
+      readingS: readingS,
+      pagesRead: pages,
+      bookSessionCount: book.sessionCount,
     );
   }
 
