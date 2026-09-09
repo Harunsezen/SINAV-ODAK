@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/config/ad_config.dart';
+import '../../core/constants/app_info.dart';
 import '../../core/di/ad_providers.dart';
 import '../../core/di/app_providers.dart';
 import '../goals/goal_value_editor.dart';
@@ -13,6 +14,7 @@ import '../../core/router/routes.dart';
 import '../../domain/entities/enums.dart';
 import '../ads/rewarded_controller.dart';
 import 'widgets/net_coefficient_tile.dart';
+import 'widgets/backup_tiles.dart';
 import 'widgets/reset_data_tile.dart';
 import '../achievements/achievement_toast.dart';
 
@@ -419,6 +421,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
 
+          // --- Yedekleme (v1.3) ---
+          //
+          // "Verileri sıfırla"nın ÜSTÜNDE: sıfırlamaya gelen kullanıcı
+          // önce yedek seçeneğini görsün. Altında dursaydı, veri silme
+          // düğmesine ulaşan biri yedeğin var olduğunu hiç fark
+          // etmeyebilirdi.
+          _SectionCard(
+            title: l.settingsBackupSection,
+            icon: Icons.backup_outlined,
+            children: const [BackupTiles()],
+          ),
+
           // --- Veri ---
           _SectionCard(
             title: l.settingsData,
@@ -469,10 +483,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 }
-
-/// Uygulama sürümü. `pubspec.yaml` ile ELDE senkron tutuluyor:
-/// `package_info_plus` bir platform kanalı daha demek ve testte çöküyor.
-const String kAppVersion = '1.0.0';
 
 /// Başlıklı ayar bölümü — tekrar eden Card/Padding/başlık üçlüsü.
 class _SectionCard extends StatelessWidget {

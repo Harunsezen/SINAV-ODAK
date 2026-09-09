@@ -1046,5 +1046,47 @@
   "bookSummaryReached": "I reached the goal",
   "summaryWrongTopicTitle": "Which topic were these mistakes in?",
   "summaryWrongTopicUnsure": "Not sure",
-  "summaryWrongTopicHint": "If you pick \"Not sure\", the mistakes go to the first topic."
+  "summaryWrongTopicHint": "If you pick \"Not sure\", the mistakes go to the first topic.",
+  "settingsBackupSection": "Backup",
+  "settingsBackupExport": "Create backup",
+  "settingsBackupExportNote": "Writes all your data to a single file. Send it to Drive or to yourself — restore from it when you change phones.",
+  "settingsBackupImport": "Restore from backup",
+  "settingsBackupImportNote": "REPLACES your current data. If you have not made a backup, your current history is lost.",
+  "backupExportDone": "Backup ready · {sessions} sessions, {books} readings",
+  "@backupExportDone": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "backupExportFailed": "Could not share the backup.",
+  "backupRestoreTitle": "Restore this backup?",
+  "backupRestoreBody": "This backup has {sessions} sessions and {books} readings. ALL your current data will be deleted and replaced. This cannot be undone.",
+  "@backupRestoreBody": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "backupRestoreConfirm": "Yes, restore",
+  "backupRestoreDone": "Restored · {rows} rows",
+  "@backupRestoreDone": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      }
+    }
+  },
+  "backupErrorNotJson": "This file could not be read. The backup file may be damaged.",
+  "backupErrorNotOurs": "This is not a Sınav Odak backup.",
+  "backupErrorTooNew": "This backup is from a newer version of the app. Update the app first.",
+  "backupErrorMalformed": "The backup file is incomplete or damaged."
 }

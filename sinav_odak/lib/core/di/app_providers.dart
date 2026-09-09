@@ -58,11 +58,15 @@ import '../utils/date_key.dart';
 import '../utils/time.dart';
 import '../utils/time.dart' as clock;
 import '../../application/settings_controller.dart';
+import '../../application/usecases/export_backup.dart';
 import '../../application/usecases/export_sessions.dart';
+import '../../application/usecases/import_backup.dart';
 import '../../application/usecases/recompute_nets.dart';
+import '../../domain/ports/backup_file_gateway.dart';
 import '../../domain/ports/share_gateway.dart';
 import '../../services/export/file_share_gateway.dart';
 import '../../services/report/pdf_report_builder.dart';
+import '../constants/app_info.dart';
 
 /// Uygulama boyunca TEK veritabanı örneği.
 /// `main()` içinde `overrideWithValue` ile açılmış örnek verilir; testlerde
@@ -678,6 +682,35 @@ final exportSessionsProvider = Provider<ExportSessionsUseCase>(
     ref.watch(shareGatewayProvider),
   ),
 );
+
+/// TÜM veriyi tek dosyaya yedekler (v1.3).
+final exportBackupProvider = Provider<ExportBackupUseCase>(
+  (ref) => ExportBackupUseCase(
+    ref.watch(databaseProvider),
+    ref.watch(shareGatewayProvider),
+  ),
+);
+
+/// Yedek dosyasından geri yükler (v1.3).
+final importBackupProvider = Provider<ImportBackupUseCase>(
+  (ref) => ImportBackupUseCase(ref.watch(databaseProvider)),
+);
+
+/// Yedek dosyası seçici.
+///
+/// **Varsayılan Noop**: `file_picker` platform kanalı istiyor ve testte
+/// çağrılırsa akış hiç tamamlanmıyor. `main()` gerçek cihazda
+/// [FilePickerBackupGateway] ile override eder.
+final backupFileGatewayProvider = Provider<BackupFileGateway>(
+  (ref) => const NoopBackupFileGateway(),
+);
+
+/// Uygulama sürümü — yedek zarfına yazılıyor ve Ayarlar'da gösteriliyor.
+///
+/// Tek kaynak [kAppVersion]; `pubspec.yaml` ile eşitliği
+/// `test/unit/app_version_test.dart` zorluyor. Provider olarak duruyor ki
+/// test farklı bir sürümle yedek üretebilsin.
+final appVersionProvider = Provider<String>((ref) => kAppVersion);
 
 /// Dosya paylaşımı (CSV dışa aktarma).
 ///

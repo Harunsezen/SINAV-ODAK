@@ -7,6 +7,7 @@ import 'package:sinav_odak/presentation/goals/hold_repeat_button.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
+import 'package:sinav_odak/core/constants/app_info.dart';
 import 'package:sinav_odak/presentation/settings/settings_screen.dart';
 
 import '../unit/usecase_helpers.dart';

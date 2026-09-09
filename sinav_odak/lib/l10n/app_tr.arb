@@ -1046,5 +1046,47 @@
   "bookSummaryReached": "Hedefe ulaştım",
   "summaryWrongTopicTitle": "Bu yanlışlar hangi konuya ait?",
   "summaryWrongTopicUnsure": "Emin değilim",
-  "summaryWrongTopicHint": "\"Emin değilim\" seçilirse yanlışlar ilk konuya yazılır."
+  "summaryWrongTopicHint": "\"Emin değilim\" seçilirse yanlışlar ilk konuya yazılır.",
+  "settingsBackupSection": "Yedekleme",
+  "settingsBackupExport": "Yedek al",
+  "settingsBackupExportNote": "Tüm verini tek dosyaya yazar. Dosyayı Drive'a ya da kendine gönder — telefon değişince buradan geri yüklersin.",
+  "settingsBackupImport": "Yedekten geri yükle",
+  "settingsBackupImportNote": "Şu anki verinin YERİNE geçer. Önce yedek almadıysan mevcut geçmişin silinir.",
+  "backupExportDone": "Yedek hazır · {sessions} oturum, {books} okuma",
+  "@backupExportDone": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "backupExportFailed": "Yedek paylaşılamadı.",
+  "backupRestoreTitle": "Geri yüklensin mi?",
+  "backupRestoreBody": "Bu yedekte {sessions} oturum ve {books} okuma var. Şu anki verinin TAMAMI silinip bunlar yazılacak. Geri alınamaz.",
+  "@backupRestoreBody": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "backupRestoreConfirm": "Evet, geri yükle",
+  "backupRestoreDone": "Geri yüklendi · {rows} satır",
+  "@backupRestoreDone": {
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      }
+    }
+  },
+  "backupErrorNotJson": "Bu dosya okunamadı. Yedek dosyası bozuk olabilir.",
+  "backupErrorNotOurs": "Bu bir Sınav Odak yedeği değil.",
+  "backupErrorTooNew": "Bu yedek uygulamanın daha yeni bir sürümünden. Önce uygulamayı güncelle.",
+  "backupErrorMalformed": "Yedek dosyası eksik ya da bozuk."
 }

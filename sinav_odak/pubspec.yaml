@@ -50,6 +50,11 @@ dependencies:
   fl_chart: ^0.69.0
   csv: ^6.0.0
   share_plus: ^10.0.2
+  # Yedekten geri yükleme için dosya seçici (v1.3).
+  # Yalnızca `FilePickerBackupGateway` içinde kullanılıyor; gerisi
+  # `BackupFileGateway` portuna bakıyor. Paket sorun çıkarırsa etkilenen
+  # tek dosya o adaptör.
+  file_picker: ^8.1.2
 
   # --- Yardımcı ---
   shared_preferences: ^2.3.2

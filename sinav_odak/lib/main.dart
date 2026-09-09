@@ -18,6 +18,7 @@ import 'services/ads/admob_gateway.dart';
 import 'services/ads/ump_consent_gateway.dart';
 import 'services/background/system_haptic_gateway.dart';
 import 'services/background/wakelock_screen_gateway.dart';
+import 'services/backup/file_picker_backup_gateway.dart';
 import 'services/export/file_share_gateway.dart';
 import 'services/notifications/notification_service.dart';
 import 'application/recovery_service.dart';
@@ -106,6 +107,10 @@ Future<void> main() async {
         adGatewayProvider.overrideWith(_buildAdGateway),
         // CSV dışa aktarma: varsayılan Noop, gerçek cihazda dosya + paylaşım.
         shareGatewayProvider.overrideWithValue(const FileShareGateway()),
+        // v1.3 — yedekten geri yükleme için dosya seçici. Varsayılan
+        // Noop; gerçek adaptör yalnızca burada bağlanıyor.
+        backupFileGatewayProvider
+            .overrideWithValue(const FilePickerBackupGateway()),
         // Ekran kilidi: "ekran açık kalsın" ayarının gerçek ucu.
         screenWakeGatewayProvider
             .overrideWithValue(const WakelockScreenGateway()),
