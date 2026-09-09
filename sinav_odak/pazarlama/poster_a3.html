@@ -134,13 +134,6 @@ html,body{
 .url{
   margin-top:5mm; font-size:5mm; color:var(--ink-soft); line-height:1.5;
 }
-/* Paket adı `break-all` ile kelime ortasından bölünüyordu
-   ("com.harun / sezen.sinav_odak"). Yedek yol artık ARAMA; paket adı
-   tek satıra sığan boyutta ve bölünmüyor. */
-.url code{
-  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  font-size:4.4mm; color:var(--ink); white-space:nowrap;
-}
 
 /* --- ALT ŞERİT ---------------------------------------------------------- */
 .foot{
@@ -240,10 +233,12 @@ html,body{
         </svg>
         Google Play
       </div>
-      <!-- QR okunmazsa (yıpranmış baskı, eski kamera) yazıyla yol. -->
+      <!-- QR okunmazsa (yıpranmış baskı, eski kamera) yazıyla yol.
+           **Paket adı BASILMAZ:** içinde geliştiricinin soyadı geçiyor;
+           panodan okuyan biri onu arama motorunda aratabilir. Yedek yol
+           uygulama ADI — zaten aranacak olan da o. -->
       <div class="url">
-        Ya da Google Play’de <strong>“Sınav Odak”</strong> ara.<br>
-        <code>com.harunsezen.sinav_odak</code>
+        Ya da Google Play’de <strong>“Sınav Odak”</strong> ara.
       </div>
     </div>
   </section>

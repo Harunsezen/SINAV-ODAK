@@ -34,7 +34,13 @@ Yazdırma: A3 · dikey · kenar boşluğu yok · "arka plan grafikleri" açık.
 | `qr_sinav_odak.svg` | vektör — afişte, tabelada, her boyutta net |
 | `qr_sinav_odak_seffaf.png` | zemini şeffaf — koyu tasarımların üstüne |
 
-Hedef: `https://play.google.com/store/apps/details?id=com.harunsezen.sinav_odak`
+Hedef: uygulamanın Google Play sayfası.
+
+> **Paket adı afişe BASILMIYOR** — içinde geliştiricinin soyadı geçiyor ve
+> panodan okuyan biri onu aratabilir. Yazıyla yedek yol olarak yalnızca
+> uygulama adı veriliyor: *Google Play'de "Sınav Odak" ara.*
+> Paket adı QR'ın içindeki bağlantıda var (Play bağlantısı başka türlü
+> kurulamıyor) ama **okunabilir biçimde hiçbir yerde yazmıyor**.
 Hata düzeltme seviyesi **H** (%30) — üstüne logo konabilir, yıpranmış
 baskıda da okunur.
 
