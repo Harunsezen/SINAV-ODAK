@@ -8,13 +8,6 @@ alçak, bağırmayan · her videonun sonunda aynı 1 sn kapanış kartı.
 `SINAV ODAK` · alt satır `%100 ücretsiz · hesap yok` · indigo zemin
 `#4F5BD5`, beyaz kronometre ikonu.
 
-> **ÖNEMLİ — 3. senaryo hakkında:** uygulamada **"uyku kuralı" /
-> "yatma saati" diye bir özellik YOK.** Böyle bir şey varmış gibi
-> çekmek olmayan bir özelliği tanıtmak olurdu. Senaryo, uygulamada
-> gerçekten bulunan **"Bitiş saatine göre plan"** modu üzerine kuruldu:
-> öğrenci "23:00'te bitsin" diyor, uygulama planı geriye doğru kuruyor.
-> Disiplin teması aynen duruyor, kaynağı gerçek.
-
 ---
 
 # SENARYO 1 — "SINAV GÜNÜ SABAHI"
@@ -73,33 +66,33 @@ demo yalan olur.
 
 ---
 
-# SENARYO 3 — "GECE 23:30" (disiplin)
+# SENARYO 3 — "BİTİŞ SAATİNİ SEN SÖYLE"
 
 **Tema:** disiplin · **Süre:** 15 sn
 **Müzik:** tek nota üzerine kurulu, gerilimsiz ambient; 11. saniyede
-tamamen susar, son 3 sn **sessiz** (uyku vurgusu).
+tamamen susar, son 3 sn **sessiz**.
 *(Referans tarz: "sparse ambient drone, single sustained pad, 60 BPM,
 fades to silence")*
 
 | sn | Görüntü | Ekran yazısı |
 | --- | --- | --- |
-| 0–3 | Duvar saati 21:00'i gösteriyor. Karanlık oda, tek masa lambası. | **Kuralım basit: 23:30'da yatak.** |
-| 3–7 | Ekran kaydı: plan ekranında **"Bitiş"** sekmesi seçilir, saat **23:00** girilir. Önizleme planı geriye doğru kurar. | **O zaman 23:00'te biter.** |
-| 7–11 | Sayaç işliyor. Lamba ışığı, defter, kalem. Rakamlar akıyor. | **Sayaç duraklatılamaz.** |
-| 11–14 | Son blok biter. El lambayı kapatır. Oda kararır. Telefon ekranı da söner. *(müzik yok)* | **Yarın seri 12 gün.** |
+| 0–3 | Karanlık oda, tek masa lambası. Dağınık defterler, hiç açılmamış kitap. El telefonu alır. | **"Biraz daha" diye başlayan gece hiç bitmiyor.** |
+| 3–7 | Ekran kaydı: plan ekranında **"Bitiş"** sekmesi seçilir, **Bitiş saati** alanına saat girilir. Önizleme planı geriye doğru kurar: bloklar ve molalar bir anda diziliyor. | **Bitişi söyle. Başlangıcı o hesaplasın.** |
+| 7–11 | Sayaç işliyor. Lamba ışığı, defter, kalem sesi. Rakamlar akıyor. | **Sayaç duraklatılamaz.** |
+| 11–14 | Son blok biter, ekranda özet. El lambayı kapatır, oda kararır. *(müzik yok)* | **Bitti. Gerçekten bitti.** |
 | 14–15 | Kapanış kartı. | **SINAV ODAK** |
 
 **Seslendirme (12 sn; son 3 saniyede ses yok):**
-> "Gece yarısına kadar çalışmak disiplin değil, plansızlık.
-> Bitiş saatini söyle — planı o kursun.
-> Yirmi üçte biter, yirmi üç otuzda yatarsın.
-> Sayaç duraklatılamıyor, o yüzden geç de başlayamazsın."
+> "Ne zaman başlayacağını herkes biliyor.
+> Asıl mesele ne zaman biteceği.
+> Bitiş saatini gir — plan kendini geriye doğru kursun.
+> Sayaç duraklatılamıyor, o yüzden 'biraz daha' diye bir şey yok."
 > *(sessizlik)*
 
-**Çekim notu:** 3–7 arası **gerçek** akış — plan ekranı → "Bitiş" sekmesi
-→ "Bitiş saati" alanı → canlı önizleme. Bu mod uygulamada var
-(`PlanMode.endTime`); geçmişte kalan bir saat girilirse otomatik yarına
-taşınmaz, uyarı verir. Çekimde ileri bir saat seçilmeli.
+**Çekim notu:** 3–7 arası **gerçek** akış — plan ekranı → "Bitiş"
+sekmesi → "Bitiş saati" alanı → canlı önizleme. Bu mod uygulamada var
+(`PlanMode.endTime`). Geçmişte kalan bir saat girilirse otomatik yarına
+taşınmaz, uyarı verir; çekimde ileri bir saat seçilmeli.
 
 ---
 
