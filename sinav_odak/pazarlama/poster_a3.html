@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Sınav Odak — A3 okul panosu posteri</title>
+<style>
+/* ==========================================================================
+   SINAV ODAK — A3 OKUL PANOSU POSTERİ
+   Tek dosya, bağımlılık yok, yazdırılabilir. QR gerçek ve gömülü.
+
+   YAZDIRMA: Ctrl/Cmd + P → A3 → Dikey → Kenar boşluğu YOK →
+             "Arka plan grafikleri" AÇIK.
+
+   NEDEN AÇIK ZEMİN: poster okul yazıcısında çıkacak. Tam sayfa koyu
+   zemin hem toner yiyor hem şeritleniyor; QR'ın da koyu-üstüne-açık
+   basılması okuyucuları zorluyor. Marka koyu bandda duruyor, QR
+   beyaz kartta — her yazıcıda okunur.
+   ========================================================================== */
+
+@page { size: A3 portrait; margin: 0; }
+
+:root{
+  --indigo:#4F5BD5;      /* uygulama tohum rengi */
+  --indigo-deep:#3C46A8;
+  --teal:#2FA3A0;        /* mola rengi */
+  --ember:#E9603A;       /* seri rengi */
+  --ink:#232636;
+  --ink-soft:#5C6270;
+  --cream:#FCF9F2;
+  --line:#E4E1F0;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  background:#6b6b76;
+  font-family:"Inter","Segoe UI",Roboto,system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+.sheet{
+  width:297mm; height:420mm;
+  margin:10mm auto;
+  background:var(--cream);
+  position:relative;
+  overflow:hidden;
+  display:flex; flex-direction:column;
+  box-shadow:0 4mm 12mm rgba(0,0,0,.35);
+}
+
+/* --- ÜST BANT ----------------------------------------------------------- */
+.band{
+  background:linear-gradient(135deg,var(--indigo) 0%,var(--indigo-deep) 100%);
+  color:#fff;
+  padding:20mm 20mm 16mm;
+  position:relative;
+}
+.band::after{                     /* alt kenara ince aksan şeridi */
+  content:""; position:absolute; left:0; right:0; bottom:0; height:2.5mm;
+  background:linear-gradient(90deg,var(--teal) 0%,var(--ember) 100%);
+}
+.brand{ display:flex; align-items:center; gap:7mm; }
+.mark{ width:26mm; height:26mm; flex:none; }
+.brand h1{
+  font-size:23mm; line-height:.95; letter-spacing:-.5mm; font-weight:800;
+}
+.brand .sub{
+  margin-top:2.5mm; font-size:5.4mm; font-weight:500; opacity:.9;
+  letter-spacing:.2mm;
+}
+
+/* --- BAŞLIK ------------------------------------------------------------- */
+.lede{ padding:16mm 20mm 0; }
+.lede h2{
+  font-size:15mm; line-height:1.12; font-weight:800; letter-spacing:-.35mm;
+}
+.lede h2 em{ font-style:normal; color:var(--indigo); }
+.lede p{
+  margin-top:6mm; font-size:7mm; line-height:1.45; color:var(--ink-soft);
+  max-width:200mm;
+}
+
+/* --- ÖZELLİKLER --------------------------------------------------------- */
+.features{ padding:13mm 20mm 0; display:grid; gap:10mm; }
+.feature{ display:grid; grid-template-columns:16mm 1fr; gap:7mm;
+          align-items:start; }
+.num{
+  width:16mm; height:16mm; border-radius:4mm; flex:none;
+  display:grid; place-items:center;
+  font-size:8mm; font-weight:800; color:#fff;
+}
+.f1 .num{ background:var(--indigo); }
+.f2 .num{ background:var(--teal); }
+.f3 .num{ background:var(--ember); }
+.feature h3{ font-size:8.6mm; font-weight:750; line-height:1.15; }
+.feature p{
+  margin-top:2.5mm; font-size:6.4mm; line-height:1.4;
+  color:var(--ink-soft);
+}
+
+/* --- QR BÖLÜMÜ ---------------------------------------------------------- */
+.cta{
+  /* `margin-top:auto` boşluk kalmayınca sıfıra iniyor ve QR kartı
+     3. maddenin metnine yapışıyordu; asgari ayrım şart. */
+  margin-top:auto; padding:6mm 20mm 0;
+  display:grid; grid-template-columns:auto 1fr; gap:12mm; align-items:center;
+}
+.qr-card{
+  background:#fff; border:.8mm solid var(--line); border-radius:6mm;
+  padding:7mm; width:110mm; height:110mm; position:relative;
+}
+.qr{ display:block; width:100%; height:100%; }
+/* Logo, QR'ın ortasındaki boş modüllerin üstüne oturuyor. Hata düzeltme
+   H seviyesinde (%30) ve delik ~%8; okunurluk payı geniş. */
+.qr-logo{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:19mm; height:19mm; background:var(--indigo);
+  border-radius:4mm; display:grid; place-items:center;
+  box-shadow:0 0 0 1.6mm #fff;
+}
+.qr-logo svg{ width:12.5mm; height:12.5mm; }
+
+.cta-text h3{ font-size:11mm; font-weight:800; line-height:1.15; }
+.cta-text p{
+  margin-top:4mm; font-size:6.6mm; line-height:1.45; color:var(--ink-soft);
+}
+.store{
+  margin-top:6mm; display:inline-flex; align-items:center; gap:3.5mm;
+  background:var(--ink); color:#fff; border-radius:3mm;
+  padding:4mm 7mm; font-size:6mm; font-weight:600;
+}
+.store svg{ width:7mm; height:7mm; }
+.url{
+  margin-top:5mm; font-size:5mm; color:var(--ink-soft); line-height:1.5;
+}
+/* Paket adı `break-all` ile kelime ortasından bölünüyordu
+   ("com.harun / sezen.sinav_odak"). Yedek yol artık ARAMA; paket adı
+   tek satıra sığan boyutta ve bölünmüyor. */
+.url code{
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:4.4mm; color:var(--ink); white-space:nowrap;
+}
+
+/* --- ALT ŞERİT ---------------------------------------------------------- */
+.foot{
+  margin-top:10mm;
+  background:var(--ink); color:#fff;
+  padding:9mm 20mm;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:5.8mm; letter-spacing:.1mm;
+}
+.foot ul{ display:flex; gap:9mm; list-style:none; }
+.foot li{ display:flex; align-items:center; gap:2.5mm; }
+.dot{ width:2.2mm; height:2.2mm; border-radius:50%; background:var(--teal); }
+.foot .ver{ opacity:.55; font-size:4.2mm; }
+
+@media print{
+  html,body{ background:#fff; }
+  .sheet{ margin:0; box-shadow:none; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="band">
+    <div class="brand">
+      <!-- Uygulama ikonu: beyaz kronometre. Görsel dosya değil, vektör —
+           her boyutta net basılıyor. -->
+      <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="43" y="6" width="14" height="14" rx="5" fill="#fff"/>
+        <circle cx="50" cy="58" r="33" fill="none" stroke="#fff"
+                stroke-width="11"/>
+        <path d="M50 58 L66 42" stroke="#fff" stroke-width="11"
+              stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>SINAV ODAK</h1>
+        <div class="sub">Süre tut · Soru gir · Gelişimini gör</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="lede">
+    <h2>YKS/LGS öğrencileri için<br><em>Sınav Odak</em></h2>
+    <p>Ne kadar çalıştığını tahmin etmeyi bırak. Sayacı başlat, bloğu
+       bitir, rakamları gör.</p>
+  </section>
+
+  <section class="features">
+    <div class="feature f1">
+      <div class="num">1</div>
+      <div>
+        <h3>Duraklatılamayan sayaç</h3>
+        <p>Başladığın bloğu bitirirsin. Hazır plan, özel plan ya da
+           “saat 23:00’te bitsin” — üç kurulum yolu.</p>
+      </div>
+    </div>
+    <div class="feature f2">
+      <div class="num">2</div>
+      <div>
+        <h3>Yanlış defteri ve net takibi</h3>
+        <p>Hangi konuda kaç yanlış yaptığını görürsün. Gelişim gereken
+           konular kendiliğinden listelenir.</p>
+      </div>
+    </div>
+    <div class="feature f3">
+      <div class="num">3</div>
+      <div>
+        <h3>Veli ve öğretmen karnesi</h3>
+        <p>Tek dokunuşla PDF. Telefonda üretilir, sunucuya gitmez —
+           kitap okuma sayfası dahil.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="qr-card">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 49 49" shape-rendering="crispEdges" class="qr"><path fill="#232636" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM28 0h1v1h-1zM29 0h1v1h-1zM31 0h1v1h-1zM35 0h1v1h-1zM37 0h1v1h-1zM40 0h1v1h-1zM42 0h1v1h-1zM43 0h1v1h-1zM44 0h1v1h-1zM45 0h1v1h-1zM46 0h1v1h-1zM47 0h1v1h-1zM48 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM13 1h1v1h-1zM17 1h1v1h-1zM21 1h1v1h-1zM22 1h1v1h-1zM23 1h1v1h-1zM24 1h1v1h-1zM29 1h1v1h-1zM31 1h1v1h-1zM34 1h1v1h-1zM35 1h1v1h-1zM37 1h1v1h-1zM38 1h1v1h-1zM39 1h1v1h-1zM40 1h1v1h-1zM42 1h1v1h-1zM48 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM19 2h1v1h-1zM20 2h1v1h-1zM22 2h1v1h-1zM23 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM27 2h1v1h-1zM28 2h1v1h-1zM31 2h1v1h-1zM39 2h1v1h-1zM40 2h1v1h-1zM42 2h1v1h-1zM44 2h1v1h-1zM45 2h1v1h-1zM46 2h1v1h-1zM48 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM10 3h1v1h-1zM11 3h1v1h-1zM12 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM23 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM27 3h1v1h-1zM28 3h1v1h-1zM29 3h1v1h-1zM32 3h1v1h-1zM33 3h1v1h-1zM35 3h1v1h-1zM36 3h1v1h-1zM39 3h1v1h-1zM42 3h1v1h-1zM44 3h1v1h-1zM45 3h1v1h-1zM46 3h1v1h-1zM48 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM13 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM19 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM31 4h1v1h-1zM36 4h1v1h-1zM37 4h1v1h-1zM42 4h1v1h-1zM44 4h1v1h-1zM45 4h1v1h-1zM46 4h1v1h-1zM48 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM9 5h1v1h-1zM10 5h1v1h-1zM11 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM17 5h1v1h-1zM18 5h1v1h-1zM20 5h1v1h-1zM21 5h1v1h-1zM22 5h1v1h-1zM26 5h1v1h-1zM29 5h1v1h-1zM30 5h1v1h-1zM31 5h1v1h-1zM32 5h1v1h-1zM33 5h1v1h-1zM34 5h1v1h-1zM35 5h1v1h-1zM38 5h1v1h-1zM42 5h1v1h-1zM48 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h1v1h-1zM28 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM34 6h1v1h-1zM36 6h1v1h-1zM38 6h1v1h-1zM40 6h1v1h-1zM42 6h1v1h-1zM43 6h1v1h-1zM44 6h1v1h-1zM45 6h1v1h-1zM46 6h1v1h-1zM47 6h1v1h-1zM48 6h1v1h-1zM8 7h1v1h-1zM9 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM17 7h1v1h-1zM18 7h1v1h-1zM19 7h1v1h-1zM20 7h1v1h-1zM22 7h1v1h-1zM26 7h1v1h-1zM28 7h1v1h-1zM31 7h1v1h-1zM33 7h1v1h-1zM35 7h1v1h-1zM36 7h1v1h-1zM37 7h1v1h-1zM38 7h1v1h-1zM39 7h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM26 8h1v1h-1zM28 8h1v1h-1zM29 8h1v1h-1zM30 8h1v1h-1zM31 8h1v1h-1zM36 8h1v1h-1zM37 8h1v1h-1zM38 8h1v1h-1zM39 8h1v1h-1zM40 8h1v1h-1zM41 8h1v1h-1zM42 8h1v1h-1zM43 8h1v1h-1zM46 8h1v1h-1zM47 8h1v1h-1zM48 8h1v1h-1zM1 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM15 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM23 9h1v1h-1zM27 9h1v1h-1zM28 9h1v1h-1zM29 9h1v1h-1zM30 9h1v1h-1zM32 9h1v1h-1zM35 9h1v1h-1zM36 9h1v1h-1zM37 9h1v1h-1zM42 9h1v1h-1zM45 9h1v1h-1zM47 9h1v1h-1zM1 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM17 10h1v1h-1zM21 10h1v1h-1zM27 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM34 10h1v1h-1zM36 10h1v1h-1zM38 10h1v1h-1zM39 10h1v1h-1zM40 10h1v1h-1zM41 10h1v1h-1zM43 10h1v1h-1zM46 10h1v1h-1zM48 10h1v1h-1zM0 11h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM16 11h1v1h-1zM18 11h1v1h-1zM21 11h1v1h-1zM26 11h1v1h-1zM29 11h1v1h-1zM30 11h1v1h-1zM31 11h1v1h-1zM32 11h1v1h-1zM35 11h1v1h-1zM40 11h1v1h-1zM41 11h1v1h-1zM42 11h1v1h-1zM43 11h1v1h-1zM44 11h1v1h-1zM47 11h1v1h-1zM0 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM11 12h1v1h-1zM13 12h1v1h-1zM15 12h1v1h-1zM17 12h1v1h-1zM18 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM27 12h1v1h-1zM31 12h1v1h-1zM33 12h1v1h-1zM34 12h1v1h-1zM35 12h1v1h-1zM36 12h1v1h-1zM37 12h1v1h-1zM38 12h1v1h-1zM39 12h1v1h-1zM40 12h1v1h-1zM41 12h1v1h-1zM42 12h1v1h-1zM43 12h1v1h-1zM45 12h1v1h-1zM46 12h1v1h-1zM48 12h1v1h-1zM2 13h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM17 13h1v1h-1zM23 13h1v1h-1zM27 13h1v1h-1zM28 13h1v1h-1zM29 13h1v1h-1zM35 13h1v1h-1zM36 13h1v1h-1zM37 13h1v1h-1zM39 13h1v1h-1zM41 13h1v1h-1zM42 13h1v1h-1zM43 13h1v1h-1zM45 13h1v1h-1zM46 13h1v1h-1zM1 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM21 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM27 14h1v1h-1zM28 14h1v1h-1zM30 14h1v1h-1zM32 14h1v1h-1zM36 14h1v1h-1zM38 14h1v1h-1zM39 14h1v1h-1zM40 14h1v1h-1zM46 14h1v1h-1zM47 14h1v1h-1zM48 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM3 15h1v1h-1zM5 15h1v1h-1zM7 15h1v1h-1zM8 15h1v1h-1zM9 15h1v1h-1zM16 15h1v1h-1zM19 15h1v1h-1zM20 15h1v1h-1zM21 15h1v1h-1zM23 15h1v1h-1zM24 15h1v1h-1zM26 15h1v1h-1zM32 15h1v1h-1zM34 15h1v1h-1zM37 15h1v1h-1zM38 15h1v1h-1zM39 15h1v1h-1zM40 15h1v1h-1zM42 15h1v1h-1zM44 15h1v1h-1zM45 15h1v1h-1zM3 16h1v1h-1zM4 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM11 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM25 16h1v1h-1zM27 16h1v1h-1zM28 16h1v1h-1zM31 16h1v1h-1zM33 16h1v1h-1zM34 16h1v1h-1zM35 16h1v1h-1zM36 16h1v1h-1zM38 16h1v1h-1zM41 16h1v1h-1zM42 16h1v1h-1zM43 16h1v1h-1zM45 16h1v1h-1zM48 16h1v1h-1zM1 17h1v1h-1zM2 17h1v1h-1zM5 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM19 17h1v1h-1zM23 17h1v1h-1zM28 17h1v1h-1zM30 17h1v1h-1zM31 17h1v1h-1zM32 17h1v1h-1zM34 17h1v1h-1zM36 17h1v1h-1zM37 17h1v1h-1zM38 17h1v1h-1zM39 17h1v1h-1zM42 17h1v1h-1zM43 17h1v1h-1zM44 17h1v1h-1zM45 17h1v1h-1zM46 17h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM9 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM25 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM41 18h1v1h-1zM42 18h1v1h-1zM43 18h1v1h-1zM45 18h1v1h-1zM47 18h1v1h-1zM48 18h1v1h-1zM0 19h1v1h-1zM1 19h1v1h-1zM2 19h1v1h-1zM3 19h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM14 19h1v1h-1zM16 19h1v1h-1zM18 19h1v1h-1zM21 19h1v1h-1zM22 19h1v1h-1zM26 19h1v1h-1zM27 19h1v1h-1zM31 19h1v1h-1zM33 19h1v1h-1zM35 19h1v1h-1zM37 19h1v1h-1zM38 19h1v1h-1zM39 19h1v1h-1zM42 19h1v1h-1zM43 19h1v1h-1zM44 19h1v1h-1zM47 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM11 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM18 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM28 20h1v1h-1zM30 20h1v1h-1zM32 20h1v1h-1zM35 20h1v1h-1zM36 20h1v1h-1zM37 20h1v1h-1zM38 20h1v1h-1zM40 20h1v1h-1zM42 20h1v1h-1zM43 20h1v1h-1zM46 20h1v1h-1zM47 20h1v1h-1zM48 20h1v1h-1zM0 21h1v1h-1zM1 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM5 21h1v1h-1zM7 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM17 21h1v1h-1zM19 21h1v1h-1zM31 21h1v1h-1zM35 21h1v1h-1zM36 21h1v1h-1zM41 21h1v1h-1zM42 21h1v1h-1zM46 21h1v1h-1zM0 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM14 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM28 22h1v1h-1zM29 22h1v1h-1zM32 22h1v1h-1zM34 22h1v1h-1zM35 22h1v1h-1zM36 22h1v1h-1zM38 22h1v1h-1zM39 22h1v1h-1zM40 22h1v1h-1zM41 22h1v1h-1zM42 22h1v1h-1zM43 22h1v1h-1zM44 22h1v1h-1zM46 22h1v1h-1zM47 22h1v1h-1zM48 22h1v1h-1zM0 23h1v1h-1zM4 23h1v1h-1zM8 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM28 23h1v1h-1zM29 23h1v1h-1zM31 23h1v1h-1zM33 23h1v1h-1zM40 23h1v1h-1zM44 23h1v1h-1zM47 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM13 24h1v1h-1zM16 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM30 24h1v1h-1zM34 24h1v1h-1zM36 24h1v1h-1zM37 24h1v1h-1zM38 24h1v1h-1zM40 24h1v1h-1zM42 24h1v1h-1zM44 24h1v1h-1zM45 24h1v1h-1zM46 24h1v1h-1zM47 24h1v1h-1zM48 24h1v1h-1zM0 25h1v1h-1zM1 25h1v1h-1zM4 25h1v1h-1zM8 25h1v1h-1zM9 25h1v1h-1zM10 25h1v1h-1zM11 25h1v1h-1zM12 25h1v1h-1zM13 25h1v1h-1zM14 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM31 25h1v1h-1zM35 25h1v1h-1zM36 25h1v1h-1zM37 25h1v1h-1zM40 25h1v1h-1zM44 25h1v1h-1zM0 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM5 26h1v1h-1zM6 26h1v1h-1zM7 26h1v1h-1zM8 26h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM15 26h1v1h-1zM16 26h1v1h-1zM19 26h1v1h-1zM20 26h1v1h-1zM28 26h1v1h-1zM30 26h1v1h-1zM34 26h1v1h-1zM35 26h1v1h-1zM38 26h1v1h-1zM39 26h1v1h-1zM40 26h1v1h-1zM41 26h1v1h-1zM42 26h1v1h-1zM43 26h1v1h-1zM44 26h1v1h-1zM47 26h1v1h-1zM48 26h1v1h-1zM1 27h1v1h-1zM4 27h1v1h-1zM7 27h1v1h-1zM8 27h1v1h-1zM9 27h1v1h-1zM10 27h1v1h-1zM11 27h1v1h-1zM18 27h1v1h-1zM28 27h1v1h-1zM29 27h1v1h-1zM32 27h1v1h-1zM33 27h1v1h-1zM37 27h1v1h-1zM38 27h1v1h-1zM40 27h1v1h-1zM41 27h1v1h-1zM43 27h1v1h-1zM45 27h1v1h-1zM47 27h1v1h-1zM48 27h1v1h-1zM0 28h1v1h-1zM3 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM7 28h1v1h-1zM13 28h1v1h-1zM15 28h1v1h-1zM20 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM24 28h1v1h-1zM26 28h1v1h-1zM27 28h1v1h-1zM31 28h1v1h-1zM35 28h1v1h-1zM36 28h1v1h-1zM37 28h1v1h-1zM38 28h1v1h-1zM39 28h1v1h-1zM40 28h1v1h-1zM41 28h1v1h-1zM45 28h1v1h-1zM46 28h1v1h-1zM48 28h1v1h-1zM0 29h1v1h-1zM2 29h1v1h-1zM3 29h1v1h-1zM5 29h1v1h-1zM11 29h1v1h-1zM12 29h1v1h-1zM14 29h1v1h-1zM18 29h1v1h-1zM19 29h1v1h-1zM24 29h1v1h-1zM28 29h1v1h-1zM29 29h1v1h-1zM30 29h1v1h-1zM36 29h1v1h-1zM37 29h1v1h-1zM42 29h1v1h-1zM43 29h1v1h-1zM44 29h1v1h-1zM46 29h1v1h-1zM47 29h1v1h-1zM0 30h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM8 30h1v1h-1zM11 30h1v1h-1zM12 30h1v1h-1zM14 30h1v1h-1zM17 30h1v1h-1zM20 30h1v1h-1zM22 30h1v1h-1zM23 30h1v1h-1zM25 30h1v1h-1zM26 30h1v1h-1zM30 30h1v1h-1zM31 30h1v1h-1zM33 30h1v1h-1zM34 30h1v1h-1zM36 30h1v1h-1zM38 30h1v1h-1zM39 30h1v1h-1zM40 30h1v1h-1zM41 30h1v1h-1zM42 30h1v1h-1zM44 30h1v1h-1zM46 30h1v1h-1zM47 30h1v1h-1zM48 30h1v1h-1zM0 31h1v1h-1zM1 31h1v1h-1zM3 31h1v1h-1zM11 31h1v1h-1zM17 31h1v1h-1zM18 31h1v1h-1zM19 31h1v1h-1zM20 31h1v1h-1zM21 31h1v1h-1zM23 31h1v1h-1zM24 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM29 31h1v1h-1zM30 31h1v1h-1zM33 31h1v1h-1zM36 31h1v1h-1zM37 31h1v1h-1zM38 31h1v1h-1zM40 31h1v1h-1zM43 31h1v1h-1zM44 31h1v1h-1zM1 32h1v1h-1zM6 32h1v1h-1zM9 32h1v1h-1zM11 32h1v1h-1zM13 32h1v1h-1zM16 32h1v1h-1zM19 32h1v1h-1zM20 32h1v1h-1zM21 32h1v1h-1zM22 32h1v1h-1zM24 32h1v1h-1zM26 32h1v1h-1zM27 32h1v1h-1zM29 32h1v1h-1zM30 32h1v1h-1zM31 32h1v1h-1zM32 32h1v1h-1zM33 32h1v1h-1zM34 32h1v1h-1zM35 32h1v1h-1zM37 32h1v1h-1zM39 32h1v1h-1zM42 32h1v1h-1zM44 32h1v1h-1zM45 32h1v1h-1zM46 32h1v1h-1zM47 32h1v1h-1zM2 33h1v1h-1zM3 33h1v1h-1zM8 33h1v1h-1zM9 33h1v1h-1zM11 33h1v1h-1zM12 33h1v1h-1zM15 33h1v1h-1zM16 33h1v1h-1zM18 33h1v1h-1zM20 33h1v1h-1zM22 33h1v1h-1zM24 33h1v1h-1zM26 33h1v1h-1zM32 33h1v1h-1zM39 33h1v1h-1zM42 33h1v1h-1zM43 33h1v1h-1zM47 33h1v1h-1zM2 34h1v1h-1zM4 34h1v1h-1zM6 34h1v1h-1zM7 34h1v1h-1zM10 34h1v1h-1zM13 34h1v1h-1zM18 34h1v1h-1zM24 34h1v1h-1zM27 34h1v1h-1zM28 34h1v1h-1zM29 34h1v1h-1zM31 34h1v1h-1zM32 34h1v1h-1zM34 34h1v1h-1zM35 34h1v1h-1zM38 34h1v1h-1zM39 34h1v1h-1zM41 34h1v1h-1zM42 34h1v1h-1zM44 34h1v1h-1zM47 34h1v1h-1zM48 34h1v1h-1zM0 35h1v1h-1zM1 35h1v1h-1zM4 35h1v1h-1zM5 35h1v1h-1zM8 35h1v1h-1zM10 35h1v1h-1zM14 35h1v1h-1zM16 35h1v1h-1zM17 35h1v1h-1zM19 35h1v1h-1zM20 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM24 35h1v1h-1zM25 35h1v1h-1zM30 35h1v1h-1zM32 35h1v1h-1zM34 35h1v1h-1zM38 35h1v1h-1zM41 35h1v1h-1zM44 35h1v1h-1zM48 35h1v1h-1zM1 36h1v1h-1zM2 36h1v1h-1zM3 36h1v1h-1zM6 36h1v1h-1zM11 36h1v1h-1zM14 36h1v1h-1zM17 36h1v1h-1zM19 36h1v1h-1zM20 36h1v1h-1zM22 36h1v1h-1zM24 36h1v1h-1zM29 36h1v1h-1zM31 36h1v1h-1zM34 36h1v1h-1zM35 36h1v1h-1zM36 36h1v1h-1zM37 36h1v1h-1zM39 36h1v1h-1zM40 36h1v1h-1zM41 36h1v1h-1zM44 36h1v1h-1zM46 36h1v1h-1zM47 36h1v1h-1zM2 37h1v1h-1zM4 37h1v1h-1zM9 37h1v1h-1zM13 37h1v1h-1zM14 37h1v1h-1zM15 37h1v1h-1zM16 37h1v1h-1zM18 37h1v1h-1zM20 37h1v1h-1zM21 37h1v1h-1zM22 37h1v1h-1zM25 37h1v1h-1zM27 37h1v1h-1zM31 37h1v1h-1zM32 37h1v1h-1zM37 37h1v1h-1zM39 37h1v1h-1zM40 37h1v1h-1zM41 37h1v1h-1zM42 37h1v1h-1zM43 37h1v1h-1zM45 37h1v1h-1zM47 37h1v1h-1zM1 38h1v1h-1zM5 38h1v1h-1zM6 38h1v1h-1zM8 38h1v1h-1zM10 38h1v1h-1zM13 38h1v1h-1zM14 38h1v1h-1zM16 38h1v1h-1zM21 38h1v1h-1zM22 38h1v1h-1zM25 38h1v1h-1zM27 38h1v1h-1zM28 38h1v1h-1zM31 38h1v1h-1zM32 38h1v1h-1zM33 38h1v1h-1zM34 38h1v1h-1zM35 38h1v1h-1zM38 38h1v1h-1zM39 38h1v1h-1zM40 38h1v1h-1zM41 38h1v1h-1zM42 38h1v1h-1zM43 38h1v1h-1zM45 38h1v1h-1zM47 38h1v1h-1zM48 38h1v1h-1zM1 39h1v1h-1zM2 39h1v1h-1zM3 39h1v1h-1zM9 39h1v1h-1zM10 39h1v1h-1zM11 39h1v1h-1zM14 39h1v1h-1zM16 39h1v1h-1zM18 39h1v1h-1zM21 39h1v1h-1zM22 39h1v1h-1zM25 39h1v1h-1zM27 39h1v1h-1zM32 39h1v1h-1zM33 39h1v1h-1zM44 39h1v1h-1zM45 39h1v1h-1zM47 39h1v1h-1zM0 40h1v1h-1zM1 40h1v1h-1zM2 40h1v1h-1zM6 40h1v1h-1zM10 40h1v1h-1zM12 40h1v1h-1zM15 40h1v1h-1zM16 40h1v1h-1zM19 40h1v1h-1zM22 40h1v1h-1zM23 40h1v1h-1zM24 40h1v1h-1zM25 40h1v1h-1zM26 40h1v1h-1zM27 40h1v1h-1zM28 40h1v1h-1zM29 40h1v1h-1zM31 40h1v1h-1zM35 40h1v1h-1zM36 40h1v1h-1zM37 40h1v1h-1zM39 40h1v1h-1zM40 40h1v1h-1zM41 40h1v1h-1zM42 40h1v1h-1zM43 40h1v1h-1zM44 40h1v1h-1zM45 40h1v1h-1zM47 40h1v1h-1zM8 41h1v1h-1zM9 41h1v1h-1zM10 41h1v1h-1zM11 41h1v1h-1zM12 41h1v1h-1zM14 41h1v1h-1zM16 41h1v1h-1zM18 41h1v1h-1zM22 41h1v1h-1zM26 41h1v1h-1zM27 41h1v1h-1zM30 41h1v1h-1zM31 41h1v1h-1zM33 41h1v1h-1zM40 41h1v1h-1zM44 41h1v1h-1zM0 42h1v1h-1zM1 42h1v1h-1zM2 42h1v1h-1zM3 42h1v1h-1zM4 42h1v1h-1zM5 42h1v1h-1zM6 42h1v1h-1zM9 42h1v1h-1zM10 42h1v1h-1zM14 42h1v1h-1zM19 42h1v1h-1zM22 42h1v1h-1zM24 42h1v1h-1zM26 42h1v1h-1zM31 42h1v1h-1zM35 42h1v1h-1zM37 42h1v1h-1zM40 42h1v1h-1zM42 42h1v1h-1zM44 42h1v1h-1zM45 42h1v1h-1zM47 42h1v1h-1zM48 42h1v1h-1zM0 43h1v1h-1zM6 43h1v1h-1zM9 43h1v1h-1zM11 43h1v1h-1zM12 43h1v1h-1zM14 43h1v1h-1zM17 43h1v1h-1zM18 43h1v1h-1zM20 43h1v1h-1zM22 43h1v1h-1zM26 43h1v1h-1zM27 43h1v1h-1zM28 43h1v1h-1zM29 43h1v1h-1zM30 43h1v1h-1zM32 43h1v1h-1zM33 43h1v1h-1zM34 43h1v1h-1zM37 43h1v1h-1zM38 43h1v1h-1zM39 43h1v1h-1zM40 43h1v1h-1zM44 43h1v1h-1zM0 44h1v1h-1zM2 44h1v1h-1zM3 44h1v1h-1zM4 44h1v1h-1zM6 44h1v1h-1zM8 44h1v1h-1zM9 44h1v1h-1zM10 44h1v1h-1zM12 44h1v1h-1zM15 44h1v1h-1zM20 44h1v1h-1zM22 44h1v1h-1zM23 44h1v1h-1zM24 44h1v1h-1zM25 44h1v1h-1zM26 44h1v1h-1zM27 44h1v1h-1zM28 44h1v1h-1zM31 44h1v1h-1zM35 44h1v1h-1zM36 44h1v1h-1zM37 44h1v1h-1zM38 44h1v1h-1zM39 44h1v1h-1zM40 44h1v1h-1zM41 44h1v1h-1zM42 44h1v1h-1zM43 44h1v1h-1zM44 44h1v1h-1zM46 44h1v1h-1zM47 44h1v1h-1zM0 45h1v1h-1zM2 45h1v1h-1zM3 45h1v1h-1zM4 45h1v1h-1zM6 45h1v1h-1zM8 45h1v1h-1zM9 45h1v1h-1zM14 45h1v1h-1zM16 45h1v1h-1zM17 45h1v1h-1zM23 45h1v1h-1zM25 45h1v1h-1zM26 45h1v1h-1zM28 45h1v1h-1zM29 45h1v1h-1zM30 45h1v1h-1zM31 45h1v1h-1zM33 45h1v1h-1zM36 45h1v1h-1zM37 45h1v1h-1zM39 45h1v1h-1zM41 45h1v1h-1zM44 45h1v1h-1zM46 45h1v1h-1zM48 45h1v1h-1zM0 46h1v1h-1zM2 46h1v1h-1zM3 46h1v1h-1zM4 46h1v1h-1zM6 46h1v1h-1zM8 46h1v1h-1zM10 46h1v1h-1zM12 46h1v1h-1zM13 46h1v1h-1zM14 46h1v1h-1zM16 46h1v1h-1zM17 46h1v1h-1zM19 46h1v1h-1zM22 46h1v1h-1zM27 46h1v1h-1zM30 46h1v1h-1zM32 46h1v1h-1zM33 46h1v1h-1zM34 46h1v1h-1zM35 46h1v1h-1zM36 46h1v1h-1zM37 46h1v1h-1zM38 46h1v1h-1zM40 46h1v1h-1zM43 46h1v1h-1zM46 46h1v1h-1zM47 46h1v1h-1zM48 46h1v1h-1zM0 47h1v1h-1zM6 47h1v1h-1zM9 47h1v1h-1zM15 47h1v1h-1zM17 47h1v1h-1zM19 47h1v1h-1zM21 47h1v1h-1zM25 47h1v1h-1zM26 47h1v1h-1zM32 47h1v1h-1zM37 47h1v1h-1zM38 47h1v1h-1zM39 47h1v1h-1zM40 47h1v1h-1zM42 47h1v1h-1zM43 47h1v1h-1zM44 47h1v1h-1zM48 47h1v1h-1zM0 48h1v1h-1zM1 48h1v1h-1zM2 48h1v1h-1zM3 48h1v1h-1zM4 48h1v1h-1zM5 48h1v1h-1zM6 48h1v1h-1zM10 48h1v1h-1zM12 48h1v1h-1zM15 48h1v1h-1zM19 48h1v1h-1zM21 48h1v1h-1zM23 48h1v1h-1zM25 48h1v1h-1zM31 48h1v1h-1zM33 48h1v1h-1zM35 48h1v1h-1zM36 48h1v1h-1zM37 48h1v1h-1zM38 48h1v1h-1zM40 48h1v1h-1zM43 48h1v1h-1zM44 48h1v1h-1zM45 48h1v1h-1zM46 48h1v1h-1zM47 48h1v1h-1zM48 48h1v1h-1z"/></svg>
+      <div class="qr-logo">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="43" y="6" width="14" height="14" rx="5" fill="#fff"/>
+          <circle cx="50" cy="58" r="33" fill="none" stroke="#fff"
+                  stroke-width="11"/>
+          <path d="M50 58 L66 42" stroke="#fff" stroke-width="11"
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="cta-text">
+      <h3>Kamerayı doğrult,<br>indir.</h3>
+      <p>Telefonun kamerasını QR koda tut — Google Play sayfası açılır.</p>
+      <div class="store">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M3 2.5v19c0 .6.6 1 1.1.7l12.1-7-3.3-3.2L3 2.5zm12.6 5.9
+                   L5.4 2.2l8.5 8.5 1.7-2.3zM19.9 11l-2.6-1.5-3.5 2.5
+                   3.5 3.4 2.6-1.5c.8-.5.8-2.4 0-2.9z"/>
+        </svg>
+        Google Play
+      </div>
+      <!-- QR okunmazsa (yıpranmış baskı, eski kamera) yazıyla yol. -->
+      <div class="url">
+        Ya da Google Play’de <strong>“Sınav Odak”</strong> ara.<br>
+        <code>com.harunsezen.sinav_odak</code>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <ul>
+      <li><span class="dot"></span>%100 ücretsiz</li>
+      <li><span class="dot"></span>Hesap yok</li>
+      <li><span class="dot"></span>Veriler telefonunda kalır</li>
+    </ul>
+    <span class="ver">sürüm 1.3</span>
+  </footer>
+
+</div>
+</body>
+</html>
