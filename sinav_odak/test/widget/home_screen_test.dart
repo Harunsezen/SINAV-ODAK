@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sinav_odak/core/di/ad_providers.dart';
 import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/router/routes.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/enums.dart';
+import 'package:sinav_odak/domain/entities/ad_placement.dart';
+import 'package:sinav_odak/domain/ports/ad_gateway.dart';
 import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
 import 'package:sinav_odak/domain/ports/session_notifier.dart';
 import 'package:sinav_odak/presentation/home/home_screen.dart';
@@ -16,6 +19,34 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../unit/usecase_helpers.dart';
 
 /// FAZ 5 — Ana panel.
+/// Banner DÖNDÜREN sahte kapı.
+///
+/// v1.3'ten önce yuva, reklam gelmese de çiziliyordu; bu yüzden testler
+/// varsayılan `NoopAdGateway` ile de yuvayı bulabiliyordu. Artık reklam
+/// yoksa yuva hiç çizilmiyor, dolayısıyla **politikanın izin verdiği hâli**
+/// sınamak için gerçekten yüklenen bir kapı gerekiyor.
+class _LoadingAdGateway implements AdGateway {
+  const _LoadingAdGateway();
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<Object?> loadBanner(AdPlacement placement) async => Object();
+
+  @override
+  Future<Object?> loadNative(AdPlacement placement) async => null;
+
+  @override
+  Future<bool> showInterstitial(AdPlacement placement) async => false;
+
+  @override
+  Future<bool> showRewarded(AdPlacement placement) async => false;
+
+  @override
+  Future<void> dispose() async {}
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -55,6 +86,7 @@ void main() {
         activityTrackerProvider
             .overrideWithValue(FakeTracker() as SessionActivityTracker),
         uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
+        adGatewayProvider.overrideWithValue(const _LoadingAdGateway()),
       ],
     );
     addTearDown(container.dispose);
@@ -207,9 +239,6 @@ void main() {
     await pumpHome(tester);
 
     expect(find.byKey(const Key('banner-slot-homeBanner')), findsOneWidget);
-    // FAZ 4.2: etiket reklamın yüklenip yüklenmediğine bağlı (Noop kapı
-    // hiç reklam döndürmüyor). Korunan değişmez yuvanın ayrılması;
-    // etiketin iki hâli `faz4_test.dart`'ta iddia ediliyor.
     expect(find.byKey(const Key('banner-label-homeBanner')), findsOneWidget);
   });
 

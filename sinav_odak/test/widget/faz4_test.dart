@@ -109,49 +109,54 @@ void main() {
   // 4.2 — offline Balto metni
   // =====================================================================
 
-  group('FAZ 4.2 — reklam yüklenemezse Balto konuşuyor', () {
-    testWidgets('reklam GELMEZSE offline metni görünüyor', (tester) async {
+  group('FAZ 4.2 — reklam yüklenemezse yuva HİÇ çizilmiyor', () {
+    // v1.3 yaması. Önceden burada "İnternet yok, reklam yok — Balto da
+    // tatilde" yazan gri bir çubuk kalıyordu ve bu metin BİLMEDİĞİ bir
+    // şeyi iddia ediyordu: `bannerLoadedProvider` yalnızca true/false
+    // döndürüyor, bağlantı hiç ölçülmüyor. Yeni bir reklam biriminde en
+    // sık sebep no-fill; kullanıcının interneti çalışırken ona "internetin
+    // yok" deniyordu. Geliştiricinin kendisi bile bu yüzden yanıldı.
+    testWidgets('reklam GELMEZSE hiçbir şey görünmüyor', (tester) async {
       await pumpSlot(tester, bannerLoads: false);
 
       expect(
-        // v1.3 yaması: metnin sonundaki 🌴 kaldırıldı — emoji fontu
-        // olmayan cihazda boş kutu çıkıyordu (bkz.
-        // `test/unit/emoji_scan_test.dart`).
-        find.text('İnternet yok, reklam yok — Balto da tatilde'),
-        findsOneWidget,
-        reason: 'boş gri kutu kullanıcıya "bozuldu" hissi verirdi',
+        find.byKey(const Key('banner-slot-homeBanner')),
+        findsNothing,
+        reason: 'reklam yoksa reklam yuvası da olmamalı',
       );
+      expect(find.text('Sponsorlu'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('reklam GELİRSE normal etiket görünüyor', (tester) async {
-      await pumpSlot(tester, bannerLoads: true);
-
-      expect(find.text('Sponsorlu'), findsOneWidget);
+    testWidgets('reklam GELMEZSE yer de KAPLAMIYOR', (tester) async {
+      // Sadece metni gizlemek yetmez; 50 piksellik boş şerit kalsaydı
+      // çalışma ekranında sayaç yine aşağıda dururdu.
+      await pumpSlot(tester, bannerLoads: false);
+      expect(find.byType(BannerAdSlot), findsOneWidget);
       expect(
-        // v1.3 yaması: metnin sonundaki 🌴 kaldırıldı — emoji fontu
-        // olmayan cihazda boş kutu çıkıyordu (bkz.
-        // `test/unit/emoji_scan_test.dart`).
-        find.text('İnternet yok, reklam yok — Balto da tatilde'),
-        findsNothing,
+        tester.getSize(find.byType(BannerAdSlot)).height,
+        0,
+        reason: 'yuva sıfır yükseklik kaplamalı',
       );
     });
 
-    testWidgets('yuva yüksekliği DEĞİŞMİYOR — sayaç kaymıyor', (tester) async {
-      // Offline metni daha uzun; yuva büyüseydi çalışma ekranında sayaç
-      // yukarı kayardı.
-      await pumpSlot(tester, bannerLoads: false);
-      final offline = tester.getSize(
-        find.byKey(const Key('banner-slot-homeBanner')),
-      );
-
+    testWidgets('reklam GELİRSE etiketiyle görünüyor', (tester) async {
+      // Etiket zorunlu: her reklam alanının üstünde "Sponsorlu" yazmalı.
       await pumpSlot(tester, bannerLoads: true);
-      final normal = tester.getSize(
-        find.byKey(const Key('banner-slot-homeBanner')),
-      );
 
-      expect(offline.height, normal.height);
-      expect(offline.height, BannerAdSlot.height);
+      expect(find.byKey(const Key('banner-slot-homeBanner')), findsOneWidget);
+      expect(find.text('Sponsorlu'), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(const Key('banner-slot-homeBanner'))).height,
+        BannerAdSlot.height,
+      );
+    });
+
+    testWidgets('ESKİ offline metni ARTIK HİÇBİR YERDE yok', (tester) async {
+      // Kalıcı bekçi: metin geri gelirse bu test düşer.
+      await pumpSlot(tester, bannerLoads: false);
+      expect(find.textContaining('İnternet yok'), findsNothing);
+      expect(find.textContaining('tatilde'), findsNothing);
     });
   });
 

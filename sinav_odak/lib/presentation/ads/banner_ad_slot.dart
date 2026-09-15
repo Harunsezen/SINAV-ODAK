@@ -28,10 +28,24 @@ class BannerAdSlot extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Reklam yüklenemediyse (çoğunlukla internet yok) yuva boş gri kutu
-    // olarak kalmıyor — Balto konuşuyor. Kullanıcı "burada bir şey
-    // bozuldu" diye düşünmesin (FAZ 4.2).
+    // Reklam YÜKLENEMEZSE yuva hiç çizilmiyor (v1.3 yaması).
+    //
+    // Önceden burada "İnternet yok, reklam yok — Balto da tatilde"
+    // yazan gri bir çubuk kalıyordu. İki sorunu vardı:
+    //
+    // 1. **Mesaj bilmediği bir şeyi iddia ediyordu.** `bannerLoadedProvider`
+    //    yalnızca `true/false` döndürüyor, sebebi taşımıyor — bağlantı
+    //    hiç ölçülmüyor. Yeni bir reklam biriminde en sık görülen sebep
+    //    internetin yokluğu değil, AdMob'un gösterecek reklamı olmaması
+    //    (no-fill). Yani çubuk, interneti tıkır tıkır çalışan kullanıcıya
+    //    "internetin yok" diyordu.
+    // 2. Reklamın gelmediği yerde reklam yuvası göstermek, boş çerçeveyi
+    //    önlemek için konmuştu ama tam da onu yapıyordu.
+    //
+    // Reklam yoksa en dürüst davranış hiç yer ayırmamak. Yükleme sürerken
+    // (`null`) yuva duruyor: reklam geldiğinde içerik aşağı kaymasın.
     final loaded = ref.watch(bannerLoadedProvider(placement)).valueOrNull;
+    if (loaded == false) return const SizedBox.shrink();
 
     return Container(
       key: Key('banner-slot-${placement.name}'),
@@ -40,9 +54,7 @@ class BannerAdSlot extends ConsumerWidget {
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Text(
         // Her reklam alanının üstünde etiket ZORUNLU.
-        loaded == false
-            ? L10n.of(context).adOffline
-            : L10n.of(context).adSponsored,
+        L10n.of(context).adSponsored,
         key: Key('banner-label-${placement.name}'),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
