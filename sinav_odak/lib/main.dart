@@ -133,7 +133,7 @@ Future<void> main() async {
 AdGateway _buildAdGateway(Ref ref) => AdMobGateway(
       eventDao: ref.watch(adEventDaoProvider),
       stateReader: () => ref.read(runStateProvider),
-      consentReader: () => ref.read(adConsentProvider),
+      adsEnabledReader: () => ref.read(adsEnabledProvider),
+      personalizedReader: () => ref.read(personalizedAdsProvider),
       clock: ref.read(clockProvider),
-      focusScreenAdsReader: () => ref.read(focusScreenAdsProvider),
     );

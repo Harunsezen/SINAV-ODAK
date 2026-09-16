@@ -90,7 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
-    final consent = ref.watch(adConsentProvider);
+    final adsEnabled = ref.watch(adsEnabledProvider);
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
 
     // Ayarlar henüz gelmediyse anahtarları VARSAYILAN değerle çizmek,
@@ -250,46 +250,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // bu uygulama içi bir kart, sistem bildirimi değil.
               // `notificationEnabled`a kapılsaydı, bildirimleri kapatan
               // kullanıcı rozetlerini de sessizce kaybederdi.
-              // FAZ 4.4 — banner konum denemesi.
-              //
-              // `ListTile(trailing: SegmentedButton)` DEĞİL: üç segment dar
-              // ekranda satırı doldurup "Trailing widget consumes entire
-              // tile width" ile çökertiyordu (bkz. QA_RAPORU A2).
-              Padding(
-                key: const Key('settings-banner-position'),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l.settingsBannerPosition),
-                    Text(
-                      l.settingsBannerPositionNote,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 8),
-                    SegmentedButton<BannerPosition>(
-                      segments: [
-                        ButtonSegment(
-                          value: BannerPosition.bottom,
-                          label: Text(l.bannerPositionBottom),
-                        ),
-                        ButtonSegment(
-                          value: BannerPosition.top,
-                          label: Text(l.bannerPositionTop),
-                        ),
-                        ButtonSegment(
-                          value: BannerPosition.sideLandscape,
-                          label: Text(l.bannerPositionSideLandscape),
-                        ),
-                      ],
-                      selected: {settings.bannerPosition},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (s) =>
-                          _settings.setBannerPosition(s.first),
-                    ),
-                  ],
-                ),
-              ),
               SwitchListTile(
                 key: const Key('settings-achievement-toast'),
                 contentPadding: EdgeInsets.zero,
@@ -381,13 +341,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     key: const Key('settings-support-button'),
-                    // Rıza yoksa hiçbir reklam gösterilmez; buton pasif ve
-                    // sebebi altında yazıyor.
-                    onPressed: consent && !_busy ? _support : null,
+                    // Reklam kapalıysa hiçbir reklam gösterilmez; buton
+                    // pasif ve sebebi altında yazıyor.
+                    onPressed: adsEnabled && !_busy ? _support : null,
                     icon: const Icon(Icons.play_circle_outline),
                     label: Text(l.supportWatch),
                   ),
-                  if (!consent) ...[
+                  if (!adsEnabled) ...[
                     const SizedBox(height: 8),
                     Text(
                       l.supportDisabledNote,

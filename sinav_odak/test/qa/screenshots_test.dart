@@ -463,12 +463,20 @@ void main() {
       );
     });
 
-    testWidgets('ayarlar: banner konumu + rozet anahtarı', (tester) async {
+    testWidgets('ayarlar: rozet anahtarı', (tester) async {
+      // v1.5: "banner konumu" ayarı kaldırıldı (çalışma ekranı banner'ı
+      // gittiği için hiçbir şey yapmıyordu). Görüntü turu kalıyor: ayarlar
+      // ekranının o bölgesi taşma/çakışma olmadan çizilmeli.
       await QaSeed.activeUser(db);
       await pumpQaSettings(tester, db, size: const Size(430, 2400));
-      await shoot(tester, '93_settings_banner_position');
+      await shoot(tester, '93_settings_toggles');
       expect(
         find.byKey(const Key('settings-banner-position')),
+        findsNothing,
+        reason: 'ölü ayar arayüzden kaldırıldı',
+      );
+      expect(
+        find.byKey(const Key('settings-achievement-toast')),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);

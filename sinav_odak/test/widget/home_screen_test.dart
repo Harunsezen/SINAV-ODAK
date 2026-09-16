@@ -223,15 +223,28 @@ void main() {
     expect(find.textContaining('2025-08-06 · 40 soru'), findsOneWidget);
   });
 
-  testWidgets('rıza yoksa banner yuvası BOŞ', (tester) async {
+  testWidgets('RIZA OLMASA DA banner görünüyor (v1.5)', (tester) async {
+    // v1.4'te rıza vermeyen kullanıcı hiç reklam görmüyordu ve bu, onboarding
+    // metninin ("kapalı bırakırsan yine reklam görürsün") tam tersiydi.
+    // Artık kod metne uyuyor: reklam çıkar, sadece kişiselleştirilmez.
+    await db.settingsDao.ensure();
     await pumpHome(tester);
 
-    // Varsayılan personalizedAdsConsent = false.
+    expect(find.byKey(const Key('banner-slot-homeBanner')), findsOneWidget);
+  });
+
+  testWidgets('reklam KAPALIYSA banner yuvası BOŞ', (tester) async {
+    await db.settingsDao.ensure();
+    await db.settingsDao.patchSettings(
+      const UserSettingsCompanion(adsEnabled: Value(false)),
+    );
+    await pumpHome(tester);
+
     expect(find.text('Sponsorlu'), findsNothing);
     expect(find.byKey(const Key('banner-slot-homeBanner')), findsNothing);
   });
 
-  testWidgets('rıza varsa banner yuvası görünüyor', (tester) async {
+  testWidgets('reklam açıkken banner yuvası görünüyor', (tester) async {
     await db.settingsDao.ensure();
     await db.settingsDao.patchSettings(
       const UserSettingsCompanion(personalizedAdsConsent: Value(true)),

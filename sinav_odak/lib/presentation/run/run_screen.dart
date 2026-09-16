@@ -10,13 +10,9 @@ import '../../core/di/app_providers.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
-import '../../domain/entities/ad_placement.dart';
-import '../../domain/entities/enums.dart';
 import '../../domain/entities/session_state.dart';
-import '../ads/banner_ad_slot.dart';
 import 'minimize_session.dart';
 import 'pending_finish_controller.dart';
-import '../../core/di/ad_providers.dart';
 
 /// "Bitir" diyaloğunun üç yolu (FAZ 1.3).
 ///
@@ -276,22 +272,9 @@ class _RunningBody extends ConsumerWidget {
 
     // --- YATAY: sayaç ortada, kontroller sağ sütunda ---
     if (landscape) {
-      final bannerPos = ref.watch(bannerPositionProvider);
-
       return Row(
         key: const Key('run-landscape'),
         children: [
-          // FAZ 4.4 — "Yatayda yan" seçiliyse banner SOL sütunda.
-          // Ayarın gerçekten bir etkisi olması şart: hiçbir yerde
-          // okunmayan bir ayar, bu projede defalarca sessiz hataya yol
-          // açtı (keepScreenOn, daily_stats, achievements...).
-          if (bannerPos == BannerPosition.sideLandscape)
-            const SizedBox(
-              width: 120,
-              child: Center(
-                child: BannerAdSlot(placement: AdPlacement.runBanner),
-              ),
-            ),
           Expanded(
             flex: 2,
             child: Column(
@@ -354,10 +337,6 @@ class _RunningBody extends ConsumerWidget {
     // --- DİKEY: v1.0 düzeni ---
     return Column(
       children: [
-        if (ref.watch(bannerPositionProvider) == BannerPosition.top) ...[
-          const BannerAdSlot(placement: AdPlacement.runBanner),
-          const SizedBox(height: 8),
-        ],
         const SizedBox(height: 16),
         // FAZ 2.4 — kademe çipleri.
         //
@@ -393,15 +372,12 @@ class _RunningBody extends ConsumerWidget {
         ),
         const Spacer(),
 
-        // Bu ekranda YALNIZCA ince banner olabilir. Tam ekran reklam burada
-        // ASLA gösterilmez; kontrol AdPolicyEngine ve AdGateway içinde
-        // `isInStudyBlock` ile zorlanıyor, çağıran katmanda değil.
-        // Konum "üst" ise banner yukarıda çizildi; burada tekrar yok.
-        if (ref.watch(bannerPositionProvider) != BannerPosition.top) ...[
-          const BannerAdSlot(placement: AdPlacement.runBanner),
-          const SizedBox(height: 16),
-        ],
-
+        // v1.5 — BU EKRANDA REKLAM YOK.
+        //
+        // v1.4'e kadar burada ince bir şerit vardı. Kaldırıldı: üç reklam
+        // yeri içinde en az kazandıran ama uygulamanın tek vaadine
+        // ("odaklanmanı kolaylaştırırım") en çok zarar veren yerdi.
+        // Kural artık `AdPolicyEngine.banner` içinde de zorlanıyor.
         _ControlBar(onFinish: () => _confirmAndStartSummary(context, ref)),
       ],
     );

@@ -37,10 +37,10 @@ void main() {
   });
   tearDown(() async => db.close());
 
-  Future<void> setConsent({required bool consent}) async {
+  Future<void> setAdsEnabled({required bool enabled}) async {
     await db.settingsDao.ensure();
     await db.settingsDao.patchSettings(
-      UserSettingsCompanion(personalizedAdsConsent: Value(consent)),
+      UserSettingsCompanion(adsEnabled: Value(enabled)),
     );
   }
 
@@ -108,7 +108,7 @@ void main() {
 
   testWidgets('rıza VARSA ara reklam gösteriliyor ve ana panele geçiliyor',
       (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await pumpDone(tester);
     await tapHome(tester);
 
@@ -116,13 +116,17 @@ void main() {
     expect(find.text('ANA PANEL'), findsOneWidget);
   });
 
-  testWidgets('rıza YOKSA reklam gösterilmiyor ama geçiş yine oluyor',
+  testWidgets('reklam KAPALIYSA gösterilmiyor ama geçiş yine oluyor',
       (tester) async {
-    await setConsent(consent: false);
+    await setAdsEnabled(enabled: false);
     await pumpDone(tester);
     await tapHome(tester);
 
-    expect(gateway.shownInterstitials, isEmpty, reason: 'rızasız reklam YOK');
+    expect(
+      gateway.shownInterstitials,
+      isEmpty,
+      reason: 'reklam kapalıyken gösterilmez',
+    );
     expect(
       find.text('ANA PANEL'),
       findsOneWidget,
@@ -131,7 +135,7 @@ void main() {
   });
 
   testWidgets('90 sn dolmadıysa reklam yok, geçiş yine oluyor', (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     // 30 sn önce bir ara reklam gösterilmiş.
     await db.adEventDao.logShown(
       id: 'onceki',
@@ -147,7 +151,7 @@ void main() {
   });
 
   testWidgets('90 sn dolduysa reklam yeniden gösteriliyor', (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await db.adEventDao.logShown(
       id: 'onceki',
       placement: AdPlacement.doneInterstitial,
@@ -161,7 +165,7 @@ void main() {
   });
 
   testWidgets('[Yeni oturum] ara reklam GÖSTERMİYOR', (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await pumpDone(tester);
 
     await tester.tap(find.byKey(const Key('done-new-session')));
@@ -176,7 +180,7 @@ void main() {
   });
 
   testWidgets('tebrik ekranının KENDİSİNDE reklam yok (G7)', (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await pumpDone(tester);
 
     expect(find.text('Sponsorlu'), findsNothing);

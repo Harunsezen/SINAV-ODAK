@@ -8,20 +8,9 @@ import 'package:sinav_odak/core/di/app_providers.dart';
 import 'package:sinav_odak/core/theme/app_theme.dart';
 import 'package:sinav_odak/data/local/database.dart';
 import 'package:sinav_odak/domain/entities/ad_placement.dart';
-import 'package:sinav_odak/domain/entities/enums.dart';
 import 'package:sinav_odak/domain/ports/ad_gateway.dart';
 import 'package:sinav_odak/domain/services/achievement_calculator.dart';
 import 'package:sinav_odak/presentation/ads/banner_ad_slot.dart';
-
-import 'package:go_router/go_router.dart';
-
-import 'package:sinav_odak/core/router/routes.dart';
-
-import 'package:sinav_odak/presentation/run/run_screen.dart';
-
-import 'package:sinav_odak/domain/ports/session_activity_tracker.dart';
-
-import 'package:sinav_odak/domain/ports/session_notifier.dart';
 
 import '../unit/usecase_helpers.dart';
 
@@ -191,136 +180,11 @@ void main() {
   });
 
   // =====================================================================
-  // 4.4 — banner konumu
+  // 4.4 — banner konumu: v1.5'te KALDIRILDI
+  //
+  // Ayar yalnızca çalışma ekranı banner'ını konumlandırıyordu; o banner
+  // kaldırılınca hiçbir şey yapmayan ölü bir düğmeye dönüştü ve arayüzden
+  // de çıkarıldı. Yerine, yuvanın gerçekten çizilmediğini iddia eden
+  // testler `ad_slots_test` ve `run_screen_test` içinde duruyor.
   // =====================================================================
-
-  group('FAZ 4.4 — banner konumu', () {
-    test('varsayılan ALT (v1.0 davranışı korunuyor)', () async {
-      final s = await db.settingsDao.ensure();
-      expect(s.bannerPosition, BannerPosition.bottom);
-    });
-
-    test('konum yazılıp okunuyor', () async {
-      await db.settingsDao.patchSettings(
-        const UserSettingsCompanion(
-          bannerPosition: Value(BannerPosition.sideLandscape),
-        ),
-      );
-      final s = await db.settingsDao.ensure();
-      expect(s.bannerPosition, BannerPosition.sideLandscape);
-    });
-  });
-
-  // =====================================================================
-  // 4.4 — konum GERÇEKTEN uygulanıyor mu (ayar ölü olmasın)
-  // =====================================================================
-
-  group('FAZ 4.4 — konum ayarının ETKİSİ var', () {
-    Future<ProviderContainer> pumpRun(
-      WidgetTester tester, {
-      required BannerPosition position,
-      required Size size,
-    }) async {
-      await db.settingsDao.patchSettings(
-        UserSettingsCompanion(bannerPosition: Value(position)),
-      );
-      await seedRunningSession(db, id: 'r1', sch: schedule());
-
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-
-      final container = ProviderContainer(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-          clockProvider.overrideWithValue(() => t0),
-          adGatewayProvider.overrideWithValue(FakeAdGateway()),
-          sessionNotifierProvider
-              .overrideWithValue(FakeNotifier() as SessionNotifier),
-          activityTrackerProvider
-              .overrideWithValue(FakeTracker() as SessionActivityTracker),
-          uiTickerProvider.overrideWith((ref) => const Stream<int>.empty()),
-        ],
-      );
-      addTearDown(container.dispose);
-      await container.read(settingsStreamProvider.future);
-      await container.read(activeSessionProvider.future);
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp.router(
-            theme: AppTheme.light(),
-            locale: const Locale('tr'),
-            localizationsDelegates: L10n.localizationsDelegates,
-            supportedLocales: L10n.supportedLocales,
-            routerConfig: GoRouter(
-              initialLocation: Routes.run,
-              routes: [
-                GoRoute(
-                  path: Routes.run,
-                  builder: (_, __) => const RunScreen(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      return container;
-    }
-
-    testWidgets('YATAY + "yanda": banner sol sütunda, sayacın SOLUNDA',
-        (tester) async {
-      await pumpRun(
-        tester,
-        position: BannerPosition.sideLandscape,
-        size: const Size(915, 412),
-      );
-
-      final banner = find.byKey(const Key('banner-slot-runBanner'));
-      expect(banner, findsOneWidget);
-
-      final bannerX = tester.getCenter(banner).dx;
-      final counterX = tester.getCenter(find.text('24:00')).dx;
-      expect(
-        bannerX,
-        lessThan(counterX),
-        reason: 'yanda seçiliyken banner sayacın solunda olmalı',
-      );
-    });
-
-    testWidgets('DİKEY + "üst": banner sayacın ÜSTÜNDE', (tester) async {
-      await pumpRun(
-        tester,
-        position: BannerPosition.top,
-        size: const Size(412, 915),
-      );
-
-      final bannerY = tester
-          .getCenter(
-            find.byKey(const Key('banner-slot-runBanner')),
-          )
-          .dy;
-      final counterY = tester.getCenter(find.text('24:00')).dy;
-      expect(bannerY, lessThan(counterY));
-    });
-
-    testWidgets('DİKEY + "alt": banner sayacın ALTINDA (varsayılan)',
-        (tester) async {
-      await pumpRun(
-        tester,
-        position: BannerPosition.bottom,
-        size: const Size(412, 915),
-      );
-
-      final bannerY = tester
-          .getCenter(
-            find.byKey(const Key('banner-slot-runBanner')),
-          )
-          .dy;
-      final counterY = tester.getCenter(find.text('24:00')).dy;
-      expect(bannerY, greaterThan(counterY));
-    });
-  });
 }

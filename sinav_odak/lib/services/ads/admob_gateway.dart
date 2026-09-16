@@ -27,20 +27,22 @@ class AdMobGateway implements AdGateway {
   AdMobGateway({
     required AdEventDao eventDao,
     required SessionState Function() stateReader,
-    required bool Function() consentReader,
+    required bool Function() adsEnabledReader,
+    required bool Function() personalizedReader,
     required int Function() clock,
-    bool Function()? focusScreenAdsReader,
   })  : _events = eventDao,
         _state = stateReader,
-        _consent = consentReader,
-        _clock = clock,
-        _focusScreenAds = focusScreenAdsReader ?? (() => true);
+        _adsEnabled = adsEnabledReader,
+        _personalized = personalizedReader,
+        _clock = clock;
 
   final AdEventDao _events;
   final SessionState Function() _state;
-  final bool Function() _consent;
+  final bool Function() _adsEnabled;
+
+  /// Rıza yoksa reklam yine istenir, sadece kişiselleştirilmeden.
+  final bool Function() _personalized;
   final int Function() _clock;
-  final bool Function() _focusScreenAds;
 
   bool _initialized = false;
 
@@ -50,6 +52,13 @@ class AdMobGateway implements AdGateway {
 
   /// Native kartın görünme gecikmesi: kart aniden belirip göz yormasın.
   static const Duration nativeRevealDelay = Duration(milliseconds: 1200);
+
+  /// Reklam isteği. Rıza yoksa `nonPersonalizedAds: true`.
+  ///
+  /// `const AdRequest()` DEĞİL: kişiselleştirme kararı çalışma anında
+  /// okunuyor. Sabit bir istek, rızasız kullanıcıya kişiselleştirilmiş
+  /// reklam isterdi.
+  AdRequest _request() => AdRequest(nonPersonalizedAds: !_personalized());
 
   String _unitFor(AdPlacement p) => switch (p.kind) {
         AdKind.banner => AdConfig.bannerUnit,
@@ -80,8 +89,7 @@ class AdMobGateway implements AdGateway {
     return AdPolicyEngine.allows(
       placement: placement,
       state: state,
-      consent: _consent(),
-      showAdsInFocusScreen: _focusScreenAds(),
+      adsEnabled: _adsEnabled(),
       breakRemainingS: state.remainingSeconds,
       nowMs: _clock(),
       lastShownAtMs: await _events.lastShownAt(placement),
@@ -103,7 +111,7 @@ class AdMobGateway implements AdGateway {
       final ad = BannerAd(
         adUnitId: _unitFor(placement),
         size: AdSize.banner,
-        request: const AdRequest(),
+        request: _request(),
         listener: BannerAdListener(
           onAdImpression: (_) => _log(placement, id: eventId),
           onAdClicked: (_) => _events.markClicked(eventId),
@@ -129,7 +137,7 @@ class AdMobGateway implements AdGateway {
       final eventId = const Uuid().v4();
       final ad = NativeAd(
         adUnitId: _unitFor(placement),
-        request: const AdRequest(),
+        request: _request(),
         nativeTemplateStyle: NativeTemplateStyle(
           templateType: TemplateType.medium,
         ),
@@ -161,7 +169,7 @@ class AdMobGateway implements AdGateway {
       InterstitialAd? loaded;
       await InterstitialAd.load(
         adUnitId: _unitFor(placement),
-        request: const AdRequest(),
+        request: _request(),
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (ad) => loaded = ad,
           onAdFailedToLoad: (err) =>
@@ -201,7 +209,7 @@ class AdMobGateway implements AdGateway {
       RewardedAd? loaded;
       await RewardedAd.load(
         adUnitId: _unitFor(placement),
-        request: const AdRequest(),
+        request: _request(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (ad) => loaded = ad,
           onAdFailedToLoad: (err) => debugPrint('Rewarded yüklenemedi: $err'),

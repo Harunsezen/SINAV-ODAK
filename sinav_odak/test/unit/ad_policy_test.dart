@@ -8,9 +8,12 @@ import 'usecase_helpers.dart';
 
 /// FAZ 4 — Reklam politikası (saf Dart).
 ///
-/// Bu dosya ürünün en kolay sessizce bozulan kuralını kilitler: çalışma
-/// bloğunda tam ekran reklam ve rızasız reklam. Bir ekran kestirme yaparsa
-/// burada yakalanır.
+/// Bu dosya ürünün en kolay sessizce bozulan kuralını kilitler. v1.5'te
+/// kurallar değişti:
+/// - Gösterim kapısı artık RIZA değil [adsEnabled]. Rıza yalnızca reklamın
+///   kişiselleştirilip kişiselleştirilmeyeceğini belirliyor ve bu karar
+///   politika motorunda değil, istek kurulurken veriliyor.
+/// - Çalışma ekranı banner'ı (`runBanner`) KALDIRILDI; her koşulda reddedilir.
 void main() {
   final sch = schedule();
 
@@ -37,14 +40,14 @@ void main() {
   const idle = SessionState.idle();
 
   // ---------------------------------------------------------------------
-  group('RIZA KAPISI — rıza yoksa HİÇBİR reklam yok', () {
-    test('rıza kapalıyken YEDİ yerin hepsi reddediliyor', () {
+  group('GÖSTERİM KAPISI — adsEnabled kapalıysa HİÇBİR reklam yok', () {
+    test('kapalıyken YEDİ yerin hepsi reddediliyor', () {
       for (final p in AdPlacement.values) {
         expect(
           AdPolicyEngine.allows(
             placement: p,
             state: idle,
-            consent: false,
+            adsEnabled: false,
             breakRemainingS: 600,
             nowMs: t0,
           ),
@@ -54,33 +57,32 @@ void main() {
       }
     });
 
-    test('banner: rıza kapalı → false', () {
+    test('banner: kapalı → false', () {
       expect(
         AdPolicyEngine.banner(
           placement: AdPlacement.homeBanner,
-          consent: false,
-          showAdsInFocusScreen: true,
+          adsEnabled: false,
         ),
         isFalse,
       );
     });
 
-    test('native: rıza kapalı → false (mola uzun olsa bile)', () {
+    test('native: kapalı → false (mola uzun olsa bile)', () {
       expect(
         AdPolicyEngine.nativeBreak(
           state: inBreak(),
-          consent: false,
+          adsEnabled: false,
           breakRemainingS: 600,
         ),
         isFalse,
       );
     });
 
-    test('interstitial: rıza kapalı → false (kapı açık olsa bile)', () {
+    test('interstitial: kapalı → false (kapı açık olsa bile)', () {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: false,
+          adsEnabled: false,
           nowMs: t0,
           lastShownAtMs: null,
         ),
@@ -88,9 +90,9 @@ void main() {
       );
     });
 
-    test('rewarded: rıza kapalı → false', () {
+    test('rewarded: kapalı → false', () {
       expect(
-        AdPolicyEngine.rewarded(state: idle, consent: false),
+        AdPolicyEngine.rewarded(state: idle, adsEnabled: false),
         isFalse,
       );
     });
@@ -108,7 +110,7 @@ void main() {
           AdPolicyEngine.allows(
             placement: p,
             state: inBlock(),
-            consent: true,
+            adsEnabled: true,
             nowMs: t0,
             breakRemainingS: 600,
           ),
@@ -122,7 +124,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: inBlock(),
-          consent: true,
+          adsEnabled: true,
           nowMs: t0,
           lastShownAtMs: null,
         ),
@@ -132,7 +134,7 @@ void main() {
 
     test('inBlock: rewarded false', () {
       expect(
-        AdPolicyEngine.rewarded(state: inBlock(), consent: true),
+        AdPolicyEngine.rewarded(state: inBlock(), adsEnabled: true),
         isFalse,
       );
     });
@@ -141,51 +143,48 @@ void main() {
       expect(
         AdPolicyEngine.nativeBreak(
           state: inBlock(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 600,
         ),
         isFalse,
       );
     });
 
-    test('inBlock: İNCE BANNER serbest — ayar açıksa', () {
+    test('inBlock: BANNER de yok (v1.5)', () {
+      // v1.4'te burada ince bir şerit serbestti. Artık değil: sayaç
+      // işlerken ekranda hiçbir reklam durmuyor.
       expect(
         AdPolicyEngine.allows(
           placement: AdPlacement.runBanner,
           state: inBlock(),
-          consent: true,
+          adsEnabled: true,
         ),
-        isTrue,
-        reason: 'banner ekranı kaplamaz; yasak TAM EKRAN için',
+        isFalse,
+        reason: 'çalışma ekranında reklam YOK',
       );
     });
   });
 
   // ---------------------------------------------------------------------
   group('BANNER', () {
-    test('run banner: ayar KAPALI → false', () {
-      expect(
-        AdPolicyEngine.banner(
-          placement: AdPlacement.runBanner,
-          consent: true,
-          showAdsInFocusScreen: false,
-        ),
-        isFalse,
-      );
+    test('run banner: HER koşulda false (kalıcı kural)', () {
+      // Kalıcı bekçi: bu yuva geri gelirse test düşer.
+      for (final s in [idle, inBlock(), inBreak(), summarizing()]) {
+        expect(
+          AdPolicyEngine.allows(
+            placement: AdPlacement.runBanner,
+            state: s,
+            adsEnabled: true,
+            breakRemainingS: 600,
+            nowMs: t0,
+          ),
+          isFalse,
+          reason: '\$s — çalışma ekranında reklam YOK',
+        );
+      }
     });
 
-    test('run banner: ayar AÇIK → true', () {
-      expect(
-        AdPolicyEngine.banner(
-          placement: AdPlacement.runBanner,
-          consent: true,
-          showAdsInFocusScreen: true,
-        ),
-        isTrue,
-      );
-    });
-
-    test('run DIŞI bannerlar odak ayarından ETKİLENMEZ', () {
+    test('diğer üç banner serbest', () {
       for (final p in [
         AdPlacement.homeBanner,
         AdPlacement.statsBanner,
@@ -194,8 +193,7 @@ void main() {
         expect(
           AdPolicyEngine.banner(
             placement: p,
-            consent: true,
-            showAdsInFocusScreen: false,
+            adsEnabled: true,
           ),
           isTrue,
           reason: '$p ayara bağlı değil',
@@ -212,8 +210,7 @@ void main() {
         expect(
           AdPolicyEngine.banner(
             placement: p,
-            consent: true,
-            showAdsInFocusScreen: true,
+            adsEnabled: true,
           ),
           isFalse,
           reason: '$p banner değil',
@@ -228,7 +225,7 @@ void main() {
       expect(
         AdPolicyEngine.nativeBreak(
           state: inBreak(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 181,
         ),
         isTrue,
@@ -239,7 +236,7 @@ void main() {
       expect(
         AdPolicyEngine.nativeBreak(
           state: inBreak(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 180,
         ),
         isFalse,
@@ -250,7 +247,7 @@ void main() {
       expect(
         AdPolicyEngine.nativeBreak(
           state: inBreak(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 179,
         ),
         isFalse,
@@ -262,7 +259,7 @@ void main() {
         expect(
           AdPolicyEngine.nativeBreak(
             state: s,
-            consent: true,
+            adsEnabled: true,
             breakRemainingS: 600,
           ),
           isFalse,
@@ -278,7 +275,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0,
           lastShownAtMs: null,
         ),
@@ -290,7 +287,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0 + 89000,
           lastShownAtMs: t0,
         ),
@@ -302,7 +299,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0 + 90000,
           lastShownAtMs: t0,
         ),
@@ -314,7 +311,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0 + 91000,
           lastShownAtMs: t0,
         ),
@@ -328,7 +325,7 @@ void main() {
       expect(
         AdPolicyEngine.interstitial(
           state: idle,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0 - 600000,
           lastShownAtMs: t0,
         ),
@@ -341,7 +338,7 @@ void main() {
         expect(
           AdPolicyEngine.interstitial(
             state: s,
-            consent: true,
+            adsEnabled: true,
             nowMs: t0,
             lastShownAtMs: null,
           ),
@@ -354,9 +351,9 @@ void main() {
   // ---------------------------------------------------------------------
   group('REWARDED', () {
     test('rıza varsa ve çalışma bloğunda değilse izinli', () {
-      expect(AdPolicyEngine.rewarded(state: idle, consent: true), isTrue);
+      expect(AdPolicyEngine.rewarded(state: idle, adsEnabled: true), isTrue);
       expect(
-        AdPolicyEngine.rewarded(state: inBreak(), consent: true),
+        AdPolicyEngine.rewarded(state: inBreak(), adsEnabled: true),
         isTrue,
       );
     });
@@ -366,7 +363,7 @@ void main() {
         AdPolicyEngine.allows(
           placement: AdPlacement.supportRewarded,
           state: idle,
-          consent: true,
+          adsEnabled: true,
           lastShownAtMs: t0,
           nowMs: t0 + 1000,
         ),
@@ -414,7 +411,7 @@ void main() {
         AdPolicyEngine.allows(
           placement: AdPlacement.breakNative,
           state: inBreak(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 600,
         ),
         isTrue,
@@ -424,7 +421,7 @@ void main() {
         AdPolicyEngine.allows(
           placement: AdPlacement.breakNative,
           state: inBreak(),
-          consent: true,
+          adsEnabled: true,
           breakRemainingS: 60,
         ),
         isFalse,
@@ -437,7 +434,7 @@ void main() {
             (p) => AdPolicyEngine.allows(
               placement: p,
               state: inBlock(),
-              consent: true,
+              adsEnabled: true,
               nowMs: t0,
               breakRemainingS: 600,
             ),
@@ -456,8 +453,8 @@ void main() {
       );
       expect(
         allowed,
-        contains(AdPlacement.runBanner),
-        reason: 'ince banner serbest',
+        isNot(contains(AdPlacement.runBanner)),
+        reason: 'v1.5: çalışma ekranında reklam YOK',
       );
       // Diğer ekranların bannerları politika olarak serbest ama pratikte
       // erişilemez: aktif oturum varken router zaten /run'a yönlendirir.

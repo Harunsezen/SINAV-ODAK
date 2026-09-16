@@ -222,7 +222,8 @@ void main() {
     // **Metin araması DEĞİL, yapısal kontrol.** İlk denemede
     // `isNot(contains('acik'))` yazılmıştı ve düştü: müfredattaki bir
     // konu adı o harf dizisini içeriyor. Düz arama yanlış yerde eşleşir.
-    final env = BackupCodec.decode(json, currentSchemaVersion: 7);
+    final env =
+        BackupCodec.decode(json, currentSchemaVersion: db.schemaVersion);
     expect(
       env.tables['study_sessions']!.map((r) => r['id']),
       isNot(contains('acik')),

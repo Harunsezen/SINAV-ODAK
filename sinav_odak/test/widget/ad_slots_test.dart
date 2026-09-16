@@ -61,16 +61,16 @@ void main() {
   });
   tearDown(() async => db.close());
 
-  /// Rıza ve odak ekranı ayarını yazar.
+  /// v1.5: gösterim kapısı `adsEnabled`, rıza yalnızca kişiselleştirme.
   Future<void> setAds({
-    required bool consent,
-    bool showInFocusScreen = true,
+    bool adsEnabled = true,
+    bool personalized = false,
   }) async {
     await db.settingsDao.ensure();
     await db.settingsDao.patchSettings(
       UserSettingsCompanion(
-        personalizedAdsConsent: Value(consent),
-        showAdsInFocusScreen: Value(showInFocusScreen),
+        adsEnabled: Value(adsEnabled),
+        personalizedAdsConsent: Value(personalized),
       ),
     );
   }
@@ -117,8 +117,8 @@ void main() {
 
   // --- BANNER ---
 
-  testWidgets('banner: RIZA YOKSA hiç yer ayrılmıyor', (tester) async {
-    await setAds(consent: false);
+  testWidgets('banner: reklam KAPALIYSA hiç yer ayrılmıyor', (tester) async {
+    await setAds(adsEnabled: false);
     await pumpSlot(
       tester,
       const BannerAdSlot(placement: AdPlacement.homeBanner),
@@ -138,7 +138,7 @@ void main() {
   // çizilmiyor) `faz4_test.dart`'ta iddia ediliyor.
   testWidgets('banner: rıza varsa ve reklam geldiyse yuva ayrılıyor',
       (tester) async {
-    await setAds(consent: true);
+    await setAds();
     await pumpSlot(
       tester,
       const BannerAdSlot(placement: AdPlacement.homeBanner),
@@ -152,20 +152,9 @@ void main() {
     );
   });
 
-  testWidgets('run banner: odak ekranı ayarı KAPALIYSA gösterilmiyor',
+  testWidgets('run banner: reklam AÇIK olsa bile gösterilmiyor (v1.5)',
       (tester) async {
-    await setAds(consent: true, showInFocusScreen: false);
-    await pumpSlot(
-      tester,
-      const BannerAdSlot(placement: AdPlacement.runBanner),
-    );
-
-    expect(find.byKey(const Key('banner-slot-runBanner')), findsNothing);
-  });
-
-  testWidgets('run banner: ayar açıksa ÇALIŞMA BLOĞUNDA da gösteriliyor',
-      (tester) async {
-    await setAds(consent: true);
+    await setAds(adsEnabled: true, personalized: true);
     await seedRunningSession(db, id: 's1', sch: schedule());
     await pumpSlot(
       tester,
@@ -174,15 +163,16 @@ void main() {
 
     expect(
       find.byKey(const Key('banner-slot-runBanner')),
-      findsOneWidget,
-      reason: 'yasak TAM EKRAN için; ince banner serbest',
+      findsNothing,
+      reason: 'sayaç işlerken ekranda reklam YOK',
     );
+    expect(tester.getSize(find.byType(BannerAdSlot)).height, 0);
   });
 
   // --- NATIVE ---
 
-  testWidgets('native: RIZA YOKSA hiç yer ayrılmıyor', (tester) async {
-    await setAds(consent: false);
+  testWidgets('native: reklam KAPALIYSA hiç yer ayrılmıyor', (tester) async {
+    await setAds(adsEnabled: false);
     await seedRunningSession(db, id: 's1', sch: schedule());
     fakeNow = breakStart + 1000;
     await pumpSlot(
@@ -195,7 +185,7 @@ void main() {
   });
 
   testWidgets('native: 1200 ms GECİKMEYLE beliriyor', (tester) async {
-    await setAds(consent: true);
+    await setAds();
     await seedRunningSession(db, id: 's1', sch: schedule());
     // Molanın başı: 300 sn kaldı, eşiğin (180) üstünde.
     fakeNow = breakStart + 1000;
@@ -219,7 +209,7 @@ void main() {
   });
 
   testWidgets('native: butonlardan en az 48dp uzakta', (tester) async {
-    await setAds(consent: true);
+    await setAds();
     await seedRunningSession(db, id: 's1', sch: schedule());
     fakeNow = breakStart + 1000;
     await pumpSlot(
@@ -244,7 +234,7 @@ void main() {
   });
 
   testWidgets('native: mola KISAYSA (<= 3 dk) gösterilmiyor', (tester) async {
-    await setAds(consent: true);
+    await setAds();
     await seedRunningSession(db, id: 's1', sch: schedule());
     // Molanın son 2 dakikası: 5 dk molanın 3. dakikası dolmuş.
     fakeNow = breakEnd - 120000;
@@ -258,7 +248,7 @@ void main() {
   });
 
   testWidgets('native: ÇALIŞMA BLOĞUNDA gösterilmiyor', (tester) async {
-    await setAds(consent: true);
+    await setAds();
     await seedRunningSession(db, id: 's1', sch: schedule());
     fakeNow = t0 + 60000; // çalışma bloğu
     await pumpSlot(

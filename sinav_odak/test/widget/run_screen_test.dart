@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -341,7 +342,7 @@ void main() {
         AdPolicyEngine.allows(
           placement: p,
           state: state,
-          consent: true,
+          adsEnabled: true,
           nowMs: t0,
         ),
         isFalse,
@@ -350,11 +351,18 @@ void main() {
     }
   });
 
-  testWidgets('çalışma ekranında rıza yoksa banner yuvası boş', (tester) async {
+  testWidgets('çalışma ekranında REKLAM YOK (v1.5)', (tester) async {
+    // v1.4'te burada rızaya bağlı ince bir şerit vardı. Artık koşulsuz yok:
+    // reklam açık olsun kapalı olsun, sayaç işlerken ekranda reklam durmaz.
     await seedRunningSession(db, id: 's1', sch: schedule());
+    await db.settingsDao.patchSettings(
+      const UserSettingsCompanion(
+        adsEnabled: Value(true),
+        personalizedAdsConsent: Value(true),
+      ),
+    );
     await pumpRun(tester);
 
-    // Varsayılan ayar: personalizedAdsConsent = false.
     expect(find.text('Sponsorlu'), findsNothing);
     expect(find.byKey(const Key('banner-slot-runBanner')), findsNothing);
   });

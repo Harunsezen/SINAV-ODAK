@@ -72,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// v2 (FAZ 2.1): `user_settings.achievement_toast_enabled` eklendi.
   /// v3 (FAZ 4.4): `user_settings.banner_position` eklendi.
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -174,6 +174,21 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(
               'CREATE UNIQUE INDEX IF NOT EXISTS idx_one_running_book '
               "ON book_sessions(status) WHERE status = 'running'",
+            );
+          }
+          if (from < 8) {
+            // v1.5 — reklam gösterimi rızadan AYRILDI.
+            //
+            // Yeni kolonun varsayılanı AÇIK ama mevcut cihazlarda değeri
+            // eski rıza alanından kopyalanıyor: v1.4'e kadar rıza vermeyen
+            // kullanıcı hiç reklam görmüyordu ve bunu bilerek seçmişti.
+            // Varsayılanı olduğu gibi bıraksaydık o kullanıcılar
+            // güncellemeden sonra kendilerine söz verilmemiş reklamlarla
+            // karşılaşırdı. Yeni kurulumlar `onCreate`'ten geldiği için
+            // bu satırdan etkilenmez, varsayılanı (açık) alır.
+            await m.addColumn(userSettings, userSettings.adsEnabled);
+            await customStatement(
+              'UPDATE user_settings SET ads_enabled = personalized_ads_consent',
             );
           }
         },

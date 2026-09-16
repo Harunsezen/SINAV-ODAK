@@ -25,7 +25,7 @@ class RewardedController {
     final allowed = AdPolicyEngine.allows(
       placement: AdPlacement.supportRewarded,
       state: _ref.read(runStateProvider),
-      consent: _ref.read(adConsentProvider),
+      adsEnabled: _ref.read(adsEnabledProvider),
     );
     if (!allowed) return false;
 
@@ -36,12 +36,12 @@ class RewardedController {
 
   /// Butonun aktif olup olmayacağı — ekranın önceden sorabilmesi için.
   ///
-  /// Pasif buton, rıza vermemiş kullanıcıya "burada bir şey vardı ama
-  /// sana kapalı" demekten daha dürüst: sebebi ekranda yazıyor.
+  /// Pasif buton, reklamı kapalı olan kullanıcıya "burada bir şey vardı
+  /// ama sana kapalı" demekten daha dürüst: sebebi ekranda yazıyor.
   bool get canShow => AdPolicyEngine.allows(
         placement: AdPlacement.supportRewarded,
         state: _ref.read(runStateProvider),
-        consent: _ref.read(adConsentProvider),
+        adsEnabled: _ref.read(adsEnabledProvider),
       );
 }
 

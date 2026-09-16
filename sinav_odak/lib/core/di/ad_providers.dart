@@ -9,7 +9,6 @@ import '../../domain/ports/consent_gateway.dart';
 import '../../services/ads/noop_ad_gateway.dart';
 import '../../services/ads/noop_consent_gateway.dart';
 import 'app_providers.dart';
-import '../../domain/entities/enums.dart';
 
 /// Reklam katmanının DI'ı.
 ///
@@ -52,28 +51,40 @@ final consentResultProvider = Provider<ConsentResult>((ref) {
       ref.watch(consentBootResultProvider);
 });
 
-/// Reklam rızası (KVKK/GDPR) — **iki kapının İKİSİ de açık olmalı**.
+/// Reklam GÖSTERİLEBİLİR mi? (v1.5 — gösterim kapısı)
 ///
-/// 1. `personalizedAdsConsent`: kullanıcının onboarding'de verdiği tercih
-/// 2. UMP `canRequestAds`: Google'ın resmi rıza akışının kararı
+/// İki kapı da açık olmalı:
+/// 1. `adsEnabled`: varsayılanı AÇIK. Arayüzden kapatılamıyor; yalnızca
+///    v1.4 ve öncesinde rıza vermemiş kullanıcılarda kapalı geliyor
+///    (bkz. `UserSettings.adsEnabled` ve şema 8 migration'ı).
+/// 2. UMP `canRequestAds`: Google'ın resmî rıza akışının kararı. Bu
+///    **kişiselleştirme değil, reklam isteyebilme** kararıdır — AB'de
+///    reddeden kullanıcıya hiç reklam istenemez. O yüzden burada duruyor.
 ///
-/// UMP yalnızca KISITLAYABİLİR: "hayır" derse kullanıcı tercihi ne olursa
-/// olsun reklam yok. Tersi geçerli değil — UMP "evet" dese bile kullanıcı
-/// toggle'ı kapalıysa reklam gösterilmez.
+/// **Ayar okunamazsa varsayılan AÇIK.** v1.4'te burası `false`'tu çünkü
+/// alan rızayı temsil ediyordu ve rızasız reklam göstermek ihlaldi. Artık
+/// alan rızayı değil ürün kararını temsil ediyor; kişiselleştirme kapısı
+/// ayrı ([personalizedAdsProvider]) ve o hâlâ varsayılan kapalı.
+final adsEnabledProvider = Provider<bool>((ref) {
+  final stored =
+      ref.watch(settingsStreamProvider).valueOrNull?.adsEnabled ?? true;
+  return stored && ref.watch(consentResultProvider).canRequestAds;
+});
+
+/// Reklam KİŞİSELLEŞTİRİLSİN mi? (v1.5)
 ///
-/// **Ayar okunamazsa `false`.** Varsayılanın "izin var" olması, ayar akışı
-/// bir an gecikince rızasız reklam göstermek demekti.
-final adConsentProvider = Provider<bool>((ref) {
+/// Gösterimi değil, yalnızca isteğin türünü belirler: `false` ise reklam
+/// `nonPersonalizedAds: true` ile istenir. KVKK/GDPR kişiselleştirilmemiş
+/// reklamı rıza olmadan serbest bırakıyor.
+///
+/// **Okunamazsa `false`** — yani kişiselleştirilmemiş. Varsayılanın
+/// "kişiselleştir" olması, ayar bir an gecikince rızasız kişisel veri
+/// işlemek demekti.
+final personalizedAdsProvider = Provider<bool>((ref) {
   final stored =
       ref.watch(settingsStreamProvider).valueOrNull?.personalizedAdsConsent ??
           false;
   return stored && ref.watch(consentResultProvider).canRequestAds;
-});
-
-/// Aktif çalışma ekranında ince banner gösterilsin mi (kullanıcı ayarı).
-final focusScreenAdsProvider = Provider<bool>((ref) {
-  return ref.watch(settingsStreamProvider).valueOrNull?.showAdsInFocusScreen ??
-      true;
 });
 
 /// **Varsayılan: REKLAMSIZ.** `main()` gerçek cihazda `AdMobGateway` ile
@@ -86,12 +97,6 @@ final adGatewayProvider = Provider<AdGateway>((ref) => const NoopAdGateway());
 /// Ara reklam (interstitial) bu ailede DEĞİL: frekans kapısı için veritabanı
 /// okuması gerekiyor, o yüzden `InterstitialController` üzerinden asenkron
 /// sorulur.
-/// Kullanıcının seçtiği banner konumu (FAZ 4.4).
-final bannerPositionProvider = Provider<BannerPosition>((ref) {
-  return ref.watch(settingsStreamProvider).valueOrNull?.bannerPosition ??
-      BannerPosition.bottom;
-});
-
 /// Banner gerçekten yüklendi mi? (FAZ 4.2)
 ///
 /// `null` dönen bir yükleme "reklam yok" demek — en yaygın sebebi
@@ -112,8 +117,7 @@ final adAllowedProvider = Provider.family<bool, AdPlacement>((ref, placement) {
   return AdPolicyEngine.allows(
     placement: placement,
     state: state,
-    consent: ref.watch(adConsentProvider),
-    showAdsInFocusScreen: ref.watch(focusScreenAdsProvider),
+    adsEnabled: ref.watch(adsEnabledProvider),
     breakRemainingS: state.remainingSeconds,
   );
 });

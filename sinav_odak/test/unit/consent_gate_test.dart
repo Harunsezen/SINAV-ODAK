@@ -83,51 +83,84 @@ void main() {
   );
 
   // ---------------------------------------------------------------------
-  // İKİ KAPI: kullanıcı tercihi VE UMP. İkisi de açık olmalı.
+  // v1.5 — İKİ AYRI KAPI
+  //
+  // `adsEnabled`      : reklam GÖSTERİLİR mi (varsayılan AÇIK)
+  // `personalizedAds` : reklam KİŞİSELLEŞTİRİLİR mi (varsayılan KAPALI)
+  //
+  // UMP `canRequestAds` İKİSİNİ DE kısıtlar: AB'de reddeden kullanıcıya
+  // hiç reklam istenemez, kişiselleştirilmemiş bile.
   // ---------------------------------------------------------------------
 
-  group('adConsentProvider — iki kapı', () {
-    test('kullanıcı EVET + UMP EVET => reklam VAR', () async {
-      await setStoredConsent(true);
+  group('adsEnabledProvider — gösterim kapısı', () {
+    test('rıza YOKKEN de reklam gösterilir (v1.5 kuralı)', () async {
+      await setStoredConsent(false);
       final c = await containerWith(umpYes);
-      expect(c.read(adConsentProvider), isTrue);
+      expect(
+        c.read(adsEnabledProvider),
+        isTrue,
+        reason: 'rıza yoksa reklam kişiselleştirilmez, GİZLENMEZ',
+      );
+      expect(
+        c.read(personalizedAdsProvider),
+        isFalse,
+        reason: 'ama kişiselleştirme kapalı kalmalı',
+      );
     });
 
-    test('kullanıcı EVET + UMP HAYIR => reklam YOK', () async {
+    test('UMP HAYIR derse gösterim de durur', () async {
+      await setStoredConsent(false);
+      final c = await containerWith(umpNo);
+      expect(
+        c.read(adsEnabledProvider),
+        isFalse,
+        reason: 'UMP reddi kişiselleştirmeyi değil, reklam İSTEMEYİ kapatır',
+      );
+    });
+  });
+
+  group('personalizedAdsProvider — iki kapı', () {
+    test('kullanıcı EVET + UMP EVET => kişiselleştirme AÇIK', () async {
+      await setStoredConsent(true);
+      final c = await containerWith(umpYes);
+      expect(c.read(personalizedAdsProvider), isTrue);
+    });
+
+    test('kullanıcı EVET + UMP HAYIR => kişiselleştirme KAPALI', () async {
       await setStoredConsent(true);
       final c = await containerWith(umpNo);
       expect(
-        c.read(adConsentProvider),
+        c.read(personalizedAdsProvider),
         isFalse,
         reason: 'UMP kısıtlaması kullanıcı tercihini EZER',
       );
     });
 
-    test('kullanıcı HAYIR + UMP EVET => reklam YOK', () async {
+    test('kullanıcı HAYIR + UMP EVET => kişiselleştirme KAPALI', () async {
       await setStoredConsent(false);
       final c = await containerWith(umpYes);
       expect(
-        c.read(adConsentProvider),
+        c.read(personalizedAdsProvider),
         isFalse,
         reason: 'UMP "evet" demek kullanıcı adına rıza vermek DEĞİL',
       );
     });
 
-    test('kullanıcı HAYIR + UMP HAYIR => reklam YOK', () async {
+    test('kullanıcı HAYIR + UMP HAYIR => kişiselleştirme KAPALI', () async {
       await setStoredConsent(false);
       final c = await containerWith(umpNo);
-      expect(c.read(adConsentProvider), isFalse);
+      expect(c.read(personalizedAdsProvider), isFalse);
     });
   });
 
   group('UMP erişilemediğinde', () {
-    test('ConsentResult.unavailable rızayı KAPATIR', () async {
+    test('ConsentResult.unavailable kişiselleştirmeyi KAPATIR', () async {
       await setStoredConsent(true);
       final c = await containerWith(ConsentResult.unavailable);
       expect(
-        c.read(adConsentProvider),
+        c.read(personalizedAdsProvider),
         isFalse,
-        reason: 'hata hâlinde "izin var" saymak rızasız reklam olurdu',
+        reason: 'hata hâlinde "izin var" saymak rızasız kişisel veri olurdu',
       );
     });
 
@@ -150,7 +183,7 @@ void main() {
       await c.read(settingsStreamProvider.future);
 
       expect(
-        c.read(adConsentProvider),
+        c.read(personalizedAdsProvider),
         isTrue,
         reason: 'UMP yokluğu "rıza yok" demek değil; toggle hâlâ kapı',
       );
@@ -165,12 +198,12 @@ void main() {
     test('override açılış kararını EZER', () async {
       await setStoredConsent(true);
       final c = await containerWith(umpYes);
-      expect(c.read(adConsentProvider), isTrue);
+      expect(c.read(personalizedAdsProvider), isTrue);
 
       c.read(consentResultOverrideProvider.notifier).state = umpNo;
 
       expect(
-        c.read(adConsentProvider),
+        c.read(personalizedAdsProvider),
         isFalse,
         reason: 'kullanıcı formu açıp reddettiyse reklam ANINDA durmalı',
       );
@@ -267,7 +300,7 @@ void main() {
       c.read(consentResultOverrideProvider.notifier).state = gathered;
 
       expect(fake.gatherCount, 1);
-      expect(c.read(adConsentProvider), isFalse);
+      expect(c.read(personalizedAdsProvider), isFalse);
     });
 
     test('showPrivacyOptions çağrısı sonucu tazeliyor', () async {
@@ -290,7 +323,7 @@ void main() {
       c.read(consentResultOverrideProvider.notifier).state = r;
 
       expect(fake.privacyCount, 1);
-      expect(c.read(adConsentProvider), isFalse);
+      expect(c.read(personalizedAdsProvider), isFalse);
     });
   });
 }

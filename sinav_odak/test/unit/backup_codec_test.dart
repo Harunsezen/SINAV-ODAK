@@ -8,6 +8,13 @@ import 'package:sinav_odak/domain/services/backup_codec.dart';
 /// Buradaki testlerin koruduğu asıl şey **sürüm kuralı**: eski bir
 /// uygulamanın yeni bir yedeği yüklemesi sessiz veri kaybıdır — tanımadığı
 /// kolonları düşürür ve kullanıcı kaybettiğini fark etmez.
+/// Fikstür şema sürümü — gerçek `AppDatabase.schemaVersion`'dan BAĞIMSIZ.
+///
+/// Bu dosya kodeği test ediyor, uygulamanın o anki şemasını değil. Gerçek
+/// sürüme bağlansaydı her şema yükseltmesinde "aynı sürüm" ve "eski sürüm"
+/// testlerinin anlamı sessizce kayardı.
+const int fixtureSchema = 7;
+
 void main() {
   Map<String, List<Map<String, Object?>>> sample() => {
         'subjects': [
@@ -50,7 +57,8 @@ void main() {
     });
 
     test('gidiş-dönüş: veri aynen geliyor', () {
-      final env = BackupCodec.decode(encoded(), currentSchemaVersion: 7);
+      final env =
+          BackupCodec.decode(encoded(), currentSchemaVersion: fixtureSchema);
 
       expect(env.schemaVersion, 7);
       expect(env.appVersion, '1.3.0+6');
@@ -78,15 +86,20 @@ void main() {
   group('SÜRÜM KURALI', () {
     test('AYNI şema sürümü kabul', () {
       expect(
-        BackupCodec.decode(encoded(schema: 7), currentSchemaVersion: 7),
+        BackupCodec.decode(
+          encoded(schema: 7),
+          currentSchemaVersion: fixtureSchema,
+        ),
         isA<BackupEnvelope>(),
       );
     });
 
     test('ESKİ yedek yeni uygulamaya yüklenebiliyor', () {
       // Eksik kolonlar şemadaki varsayılanını alacak.
-      final env =
-          BackupCodec.decode(encoded(schema: 5), currentSchemaVersion: 7);
+      final env = BackupCodec.decode(
+        encoded(schema: 5),
+        currentSchemaVersion: fixtureSchema,
+      );
       expect(env.schemaVersion, 5);
     });
 
@@ -94,7 +107,10 @@ void main() {
       // Kırmızı çizgi: kabul edilseydi tanınmayan kolonlar sessizce
       // düşer ve kullanıcı veri kaybettiğini fark etmezdi.
       expect(
-        () => BackupCodec.decode(encoded(schema: 9), currentSchemaVersion: 7),
+        () => BackupCodec.decode(
+          encoded(schema: 9),
+          currentSchemaVersion: fixtureSchema,
+        ),
         throwsA(
           isA<BackupFormatException>().having(
             (e) => e.reason,
@@ -110,7 +126,10 @@ void main() {
       raw['formatVersion'] = BackupCodec.formatVersion + 1;
 
       expect(
-        () => BackupCodec.decode(jsonEncode(raw), currentSchemaVersion: 7),
+        () => BackupCodec.decode(
+          jsonEncode(raw),
+          currentSchemaVersion: fixtureSchema,
+        ),
         throwsA(
           isA<BackupFormatException>().having(
             (e) => e.reason,
@@ -125,7 +144,10 @@ void main() {
   group('bozuk girdi', () {
     void expectReason(String src, BackupFailureReason reason) {
       expect(
-        () => BackupCodec.decode(src, currentSchemaVersion: 7),
+        () => BackupCodec.decode(
+          src,
+          currentSchemaVersion: fixtureSchema,
+        ),
         throwsA(
           isA<BackupFormatException>()
               .having((e) => e.reason, 'reason', reason),
@@ -171,7 +193,10 @@ void main() {
       {'id': 'x'},
     ];
 
-    final env = BackupCodec.decode(jsonEncode(raw), currentSchemaVersion: 7);
+    final env = BackupCodec.decode(
+      jsonEncode(raw),
+      currentSchemaVersion: fixtureSchema,
+    );
     expect(env.tables.containsKey('eski_tablo'), isFalse);
     expect(env.rowCount('study_sessions'), 2, reason: 'gerisi bozulmadı');
   });

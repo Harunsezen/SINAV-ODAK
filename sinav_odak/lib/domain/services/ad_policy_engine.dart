@@ -12,14 +12,23 @@ import '../entities/session_state.dart';
 /// tek bir yerde toplamak, kuralı 24+ birim testle kilitlenebilir hale
 /// getiriyor.
 ///
-/// **Değişmez kurallar:**
-/// 1. Rıza yoksa **HİÇBİR reklam yok** (ürün kararı — kişiselleştirilmiş
-///    olsun olmasın). KVKK/GDPR'ın gerektirdiğinden daha katı, bilinçli.
-/// 2. Aktif çalışma bloğunda (`SessionInBlock`) **tam ekran ASLA**. Ürünün
-///    tek vaadi "odaklanmanı kolaylaştırırım"; onu en yüksek niyetli anda
-///    bozmak ürünü yalanlar.
-/// 3. Çalışma ekranında yalnızca **ince banner** olabilir, o da kullanıcı
-///    ayarı açıksa.
+/// **Değişmez kurallar (v1.5):**
+/// 1. [adsEnabled] kapalıysa **HİÇBİR reklam yok**. Bu alan arayüzden
+///    kapatılamıyor; yalnızca v1.4 ve öncesinde rıza vermemiş kullanıcılar
+///    için kapalı geliyor (bkz. `UserSettings.adsEnabled`).
+/// 2. **Çalışma ekranında (S08) HİÇBİR reklam yok** — ne tam ekran, ne
+///    banner. v1.4'e kadar orada ince bir şerit vardı ve kullanıcı ayarıyla
+///    kapatılabiliyordu. Kaldırıldı: uygulamanın tek vaadi "odaklanmanı
+///    kolaylaştırırım" ve sayaç işlerken ekranda reklam durması o vaadi
+///    yalanlıyordu. Üstelik üç reklam yeri içinde en az kazandıran,
+///    vaade en çok zarar veren yerdi.
+/// 3. Aktif çalışma bloğunda (`SessionInBlock`) **tam ekran ASLA**.
+///
+/// **Rıza ([consent]) artık gösterimi değil, yalnızca kişiselleştirmeyi
+/// belirliyor.** Rıza yoksa reklam yine çıkar ama
+/// `nonPersonalizedAds: true` ile istenir — KVKK/GDPR bunu serbest
+/// bırakıyor. Rızayı gösterim kapısı olarak kullanmak, yasanın
+/// istemediği bir geliri kendi elimizle silmekti.
 abstract final class AdPolicyEngine {
   /// Ara reklamlar arası en az bekleme (ms).
   static const int interstitialCooldownMs = 90000;
@@ -32,17 +41,16 @@ abstract final class AdPolicyEngine {
 
   /// Banner gösterilebilir mi?
   ///
-  /// Banner, ekranı kaplamadığı için çalışma bloğunda da mümkündür — ancak
-  /// yalnızca [AdPlacement.runBanner] yerinde ve **kullanıcı ayarı açıksa**
-  /// (`showAdsInFocusScreen`). Diğer ekranlarda ayara bakılmaz.
+  /// Ana panel, istatistik ve takvimde serbest: kullanıcı orada geziniyor,
+  /// alt şerit kimseyi bölmüyor. [AdPlacement.runBanner] **her koşulda
+  /// reddedilir** — sayaç işlerken ekranda reklam olmaz (Kural 2).
   static bool banner({
     required AdPlacement placement,
-    required bool consent,
-    required bool showAdsInFocusScreen,
+    required bool adsEnabled,
   }) {
-    if (!consent) return false;
+    if (!adsEnabled) return false;
     if (placement.kind != AdKind.banner) return false;
-    if (placement == AdPlacement.runBanner) return showAdsInFocusScreen;
+    if (placement == AdPlacement.runBanner) return false;
     return true;
   }
 
@@ -52,10 +60,10 @@ abstract final class AdPolicyEngine {
   /// [minBreakRemainingS] saniyeden fazlası kalmış olmalı.
   static bool nativeBreak({
     required SessionState state,
-    required bool consent,
+    required bool adsEnabled,
     required int breakRemainingS,
   }) {
-    if (!consent) return false;
+    if (!adsEnabled) return false;
     if (state.isInStudyBlock) return false;
     if (state is! SessionInBreak) return false;
     return breakRemainingS > minBreakRemainingS;
@@ -67,11 +75,11 @@ abstract final class AdPolicyEngine {
   /// `null` ise hiç gösterilmemiş demektir ve kapı açıktır.
   static bool interstitial({
     required SessionState state,
-    required bool consent,
+    required bool adsEnabled,
     required int nowMs,
     required int? lastShownAtMs,
   }) {
-    if (!consent) return false;
+    if (!adsEnabled) return false;
     // Kural 2: çalışma bloğunda tam ekran ASLA.
     if (state.isInStudyBlock) return false;
     if (lastShownAtMs == null) return true;
@@ -84,9 +92,9 @@ abstract final class AdPolicyEngine {
   /// yine de rıza ve çalışma bloğu kuralları geçerli.
   static bool rewarded({
     required SessionState state,
-    required bool consent,
+    required bool adsEnabled,
   }) {
-    if (!consent) return false;
+    if (!adsEnabled) return false;
     return !state.isInStudyBlock;
   }
 
@@ -97,8 +105,7 @@ abstract final class AdPolicyEngine {
   static bool allows({
     required AdPlacement placement,
     required SessionState state,
-    required bool consent,
-    bool showAdsInFocusScreen = true,
+    required bool adsEnabled,
     int breakRemainingS = 0,
     int nowMs = 0,
     int? lastShownAtMs,
@@ -108,23 +115,20 @@ abstract final class AdPolicyEngine {
       AdPlacement.statsBanner ||
       AdPlacement.calendarBanner ||
       AdPlacement.runBanner =>
-        banner(
-          placement: placement,
-          consent: consent,
-          showAdsInFocusScreen: showAdsInFocusScreen,
-        ),
+        banner(placement: placement, adsEnabled: adsEnabled),
       AdPlacement.breakNative => nativeBreak(
           state: state,
-          consent: consent,
+          adsEnabled: adsEnabled,
           breakRemainingS: breakRemainingS,
         ),
       AdPlacement.doneInterstitial => interstitial(
           state: state,
-          consent: consent,
+          adsEnabled: adsEnabled,
           nowMs: nowMs,
           lastShownAtMs: lastShownAtMs,
         ),
-      AdPlacement.supportRewarded => rewarded(state: state, consent: consent),
+      AdPlacement.supportRewarded =>
+        rewarded(state: state, adsEnabled: adsEnabled),
     };
   }
 }

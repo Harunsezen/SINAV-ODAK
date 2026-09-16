@@ -24,14 +24,14 @@ class InterstitialController {
   /// olursa `false` döner ve çağıran hemen yönlendirmesini yapar.
   Future<bool> maybeShow(AdPlacement placement) async {
     final state = _ref.read(runStateProvider);
-    final consent = _ref.read(adConsentProvider);
+    final adsEnabled = _ref.read(adsEnabledProvider);
     final nowMs = _ref.read(clockProvider)();
     final lastAt = await _ref.read(adEventDaoProvider).lastShownAt(placement);
 
     final allowed = AdPolicyEngine.allows(
       placement: placement,
       state: state,
-      consent: consent,
+      adsEnabled: adsEnabled,
       nowMs: nowMs,
       lastShownAtMs: lastAt,
     );

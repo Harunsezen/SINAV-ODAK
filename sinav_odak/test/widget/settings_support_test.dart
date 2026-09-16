@@ -34,10 +34,11 @@ void main() {
   });
   tearDown(() async => db.close());
 
-  Future<void> setConsent({required bool consent}) async {
+  /// v1.5: "Destek ol" düğmesi RIZAYA değil, reklamın açık olmasına bağlı.
+  Future<void> setAdsEnabled({required bool enabled}) async {
     await db.settingsDao.ensure();
     await db.settingsDao.patchSettings(
-      UserSettingsCompanion(personalizedAdsConsent: Value(consent)),
+      UserSettingsCompanion(adsEnabled: Value(enabled)),
     );
   }
 
@@ -87,8 +88,8 @@ void main() {
 
   // ---------------------------------------------------------------------
 
-  testWidgets('rıza YOKSA buton pasif ve sebebi yazıyor', (tester) async {
-    await setConsent(consent: false);
+  testWidgets('reklam KAPALIYSA buton pasif ve sebebi yazıyor', (tester) async {
+    await setAdsEnabled(enabled: false);
     await pumpSettings(tester);
 
     final btn = tester.widget<FilledButton>(
@@ -101,8 +102,8 @@ void main() {
     );
   });
 
-  testWidgets('rıza VARSA buton aktif', (tester) async {
-    await setConsent(consent: true);
+  testWidgets('reklam AÇIKSA buton aktif', (tester) async {
+    await setAdsEnabled(enabled: true);
     await pumpSettings(tester);
 
     final btn = tester.widget<FilledButton>(
@@ -117,7 +118,7 @@ void main() {
 
   testWidgets('tıklayınca ödüllü reklam gösteriliyor ve teşekkür çıkıyor',
       (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await pumpSettings(tester);
     await tapSupport(tester);
 
@@ -127,7 +128,7 @@ void main() {
 
   testWidgets('FREKANS KAPISI YOK: ardışık iki gösterim de geçiyor (S13)',
       (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     // Az önce gösterilmiş bir kayıt: ara reklamda kapıyı kapatırdı.
     await db.adEventDao.logShown(
       id: 'r1',
@@ -147,7 +148,7 @@ void main() {
   });
 
   testWidgets('ÇALIŞMA BLOĞUNDA gösterilmiyor (G7)', (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     await seedRunningSession(db, id: 's1', sch: schedule());
     fakeNow = t0 + 60000; // çalışma bloğu
     await pumpSettings(tester);
@@ -162,7 +163,7 @@ void main() {
 
   testWidgets('reklam yoksa akış çökmüyor, bilgilendirme çıkıyor',
       (tester) async {
-    await setConsent(consent: true);
+    await setAdsEnabled(enabled: true);
     gateway = RecordingAdGateway();
     await pumpSettings(tester);
 

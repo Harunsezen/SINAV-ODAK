@@ -56,9 +56,26 @@ class UserSettings extends Table {
   BoolColumn get showAdsInFocusScreen =>
       boolean().withDefault(const Constant(true))();
 
-  /// UMP rıza sonucu. Varsayılan KAPALI (KVKK/GDPR).
+  /// UMP rıza sonucu — **yalnızca kişiselleştirme**. Varsayılan KAPALI
+  /// (KVKK/GDPR). v1.5'e kadar bu alan reklamın GÖSTERİLİP
+  /// gösterilmeyeceğini de belirliyordu; artık belirlemiyor. Rıza yoksa
+  /// reklam yine görünür, sadece **kişiselleştirilmemiş** olarak
+  /// (`nonPersonalizedAds: true`) — bu yasal olarak serbest.
   BoolColumn get personalizedAdsConsent =>
       boolean().withDefault(const Constant(false))();
+
+  /// Reklam gösterilsin mi? (v1.5)
+  ///
+  /// **Varsayılan AÇIK.** Uygulama ücretsiz, hiçbir özelliği kilitli değil;
+  /// reklam ücretsiz kalmanın karşılığı. Arayüzde bunu kapatan bir anahtar
+  /// YOK — bilinçli.
+  ///
+  /// Neden ayrı bir kolon: v1.4'e kadar rıza vermeyen kullanıcı HİÇ reklam
+  /// görmüyordu ve o kullanıcılar bunu bilerek seçmişti. Onlara verilen söz
+  /// bozulmasın diye yükseltme sırasında bu alan eski rıza değerinden
+  /// dolduruluyor — yani eskiden reklamsız olan reklamsız KALIYOR. Yeni
+  /// kurulumlar varsayılanı (açık) alır.
+  BoolColumn get adsEnabled => boolean().withDefault(const Constant(true))();
 
   BoolColumn get onboardingCompleted =>
       boolean().withDefault(const Constant(false))();
