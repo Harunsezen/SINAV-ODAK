@@ -44,6 +44,8 @@ class _LoadingAdGateway implements AdGateway {
 
   @override
   Future<bool> showRewarded(AdPlacement placement) async => false;
+  @override
+  Future<void> releaseAd(Object? handle) async {}
 
   @override
   Future<void> dispose() async {}

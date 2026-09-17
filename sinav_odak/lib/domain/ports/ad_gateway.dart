@@ -37,6 +37,13 @@ abstract interface class AdGateway {
   /// Yalnızca kullanıcının kendi başlattığı akıştan çağrılır.
   Future<bool> showRewarded(AdPlacement placement);
 
+  /// TEK bir yüklü reklamı serbest bırakır.
+  ///
+  /// Ekran kapanınca çağrılır. [dispose] ile karıştırılmamalı: o tüm
+  /// altyapıyı kapatır, bu yalnızca verilen nesneyi bırakır. `null` veya
+  /// tanınmayan bir nesne verilirse sessizce hiçbir şey yapar.
+  Future<void> releaseAd(Object? handle);
+
   /// Yüklü reklamları serbest bırakır.
   Future<void> dispose();
 }

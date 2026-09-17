@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:uuid/uuid.dart';
@@ -44,7 +46,18 @@ class AdMobGateway implements AdGateway {
   final bool Function() _personalized;
   final int Function() _clock;
 
-  bool _initialized = false;
+  /// Kurulum SÖZÜ — bir kez başlar, herkes onu bekler.
+  ///
+  /// v1.5.1'e kadar burada `bool _initialized` vardı ve `initialize()`
+  /// **hiçbir yerden çağrılmıyordu**: bayrak sonsuza kadar `false` kalıyor,
+  /// her yükleme ilk satırda `return null` yapıyordu. Uygulama AdMob'a tek
+  /// bir istek bile göndermedi — panelde "İstekler: 0" tam olarak buydu.
+  ///
+  /// Bayrak yerine Future tutmanın sebebi: artık çağırmayı unutmak MÜMKÜN
+  /// DEĞİL. Her yükleme yolu `_ensureReady()`den geçiyor, ilk çağrı kurulumu
+  /// başlatıyor, sonrakiler aynı sözü bekliyor. Yarış da yok: iki ekran aynı
+  /// anda banner isterse ikisi de aynı kurulumu bekler.
+  Future<bool>? _ready;
 
   // Birim kimlikleri `AdConfig`'ten gelir: varsayılan TEST, production
   // --dart-define ile. Sabitleri burada tutmak, birinin yanlışlıkla
@@ -52,6 +65,9 @@ class AdMobGateway implements AdGateway {
 
   /// Native kartın görünme gecikmesi: kart aniden belirip göz yormasın.
   static const Duration nativeRevealDelay = Duration(milliseconds: 1200);
+
+  /// Bir reklamın yüklenmesi için beklenecek en uzun süre.
+  static const Duration loadTimeout = Duration(seconds: 10);
 
   /// Reklam isteği. Rıza yoksa `nonPersonalizedAds: true`.
   ///
@@ -68,18 +84,26 @@ class AdMobGateway implements AdGateway {
       };
 
   @override
-  Future<void> initialize() async {
-    if (_initialized) return;
+  Future<void> initialize() => _ensureReady();
+
+  /// SDK hazır mı? Değilse kurar. Çağırmayı unutmak imkânsız — her
+  /// yükleme/gösterim yolu buradan geçiyor.
+  Future<bool> _ensureReady() => _ready ??= _boot();
+
+  Future<bool> _boot() async {
     try {
       await MobileAds.instance.initialize();
       // TÜM video reklamlar SESSİZ başlar (ürün kuralı): çalışan öğrencinin
       // kulağına habersiz ses gitmez.
       await MobileAds.instance.setAppMuted(true);
       await MobileAds.instance.setAppVolume(0);
-      _initialized = true;
+      return true;
     } on Object catch (e) {
       // Reklam altyapısı kurulamadıysa uygulama yine çalışır.
       debugPrint('AdMobGateway.initialize başarısız: $e');
+      // Sonraki denemede yeniden kurulabilsin: kalıcı olarak ölü kalmasın.
+      _ready = null;
+      return false;
     }
   }
 
@@ -104,25 +128,44 @@ class AdMobGateway implements AdGateway {
 
   @override
   Future<Object?> loadBanner(AdPlacement placement) async {
-    if (!_initialized) return null;
+    if (!await _ensureReady()) return null;
     if (!await _allowed(placement)) return null;
     try {
       final eventId = const Uuid().v4();
+      // **`ad.load()`i beklemek YETMİYOR.** O Future istek gönderilince
+      // tamamlanıyor, reklam gelince değil. v1.5.1'e kadar öyleydi ve
+      // yuvaya doldurulamamış bir reklam veriliyordu. Gerçek sonuç
+      // `onAdLoaded`/`onAdFailedToLoad` ile geliyor.
+      final done = Completer<Object?>();
+      void finish(Object? value) {
+        if (!done.isCompleted) done.complete(value);
+      }
+
       final ad = BannerAd(
         adUnitId: _unitFor(placement),
         size: AdSize.banner,
         request: _request(),
         listener: BannerAdListener(
+          onAdLoaded: finish,
           onAdImpression: (_) => _log(placement, id: eventId),
           onAdClicked: (_) => _events.markClicked(eventId),
           onAdFailedToLoad: (ad, err) {
             debugPrint('Banner yüklenemedi ($placement): $err');
             ad.dispose();
+            finish(null);
           },
         ),
       );
-      await ad.load();
-      return ad;
+      unawaited(ad.load());
+      // Zaman aşımı şart: iki geri çağrı da hiç gelmezse yuva sonsuza
+      // kadar "yükleniyor" kalırdı.
+      return done.future.timeout(
+        loadTimeout,
+        onTimeout: () {
+          ad.dispose();
+          return null;
+        },
+      );
     } on Object catch (e) {
       debugPrint('loadBanner hatası ($placement): $e');
       return null;
@@ -131,10 +174,15 @@ class AdMobGateway implements AdGateway {
 
   @override
   Future<Object?> loadNative(AdPlacement placement) async {
-    if (!_initialized) return null;
+    if (!await _ensureReady()) return null;
     if (!await _allowed(placement)) return null;
     try {
       final eventId = const Uuid().v4();
+      final done = Completer<Object?>();
+      void finish(Object? value) {
+        if (!done.isCompleted) done.complete(value);
+      }
+
       final ad = NativeAd(
         adUnitId: _unitFor(placement),
         request: _request(),
@@ -142,16 +190,24 @@ class AdMobGateway implements AdGateway {
           templateType: TemplateType.medium,
         ),
         listener: NativeAdListener(
+          onAdLoaded: finish,
           onAdImpression: (_) => _log(placement, id: eventId),
           onAdClicked: (_) => _events.markClicked(eventId),
           onAdFailedToLoad: (ad, err) {
             debugPrint('Native yüklenemedi ($placement): $err');
             ad.dispose();
+            finish(null);
           },
         ),
       );
-      await ad.load();
-      return ad;
+      unawaited(ad.load());
+      return done.future.timeout(
+        loadTimeout,
+        onTimeout: () {
+          ad.dispose();
+          return null;
+        },
+      );
     } on Object catch (e) {
       debugPrint('loadNative hatası ($placement): $e');
       return null;
@@ -160,7 +216,7 @@ class AdMobGateway implements AdGateway {
 
   @override
   Future<bool> showInterstitial(AdPlacement placement) async {
-    if (!_initialized) return false;
+    if (!await _ensureReady()) return false;
     // G7: çalışma bloğunda tam ekran ASLA — kontrol BURADA.
     if (!await _allowed(placement)) return false;
 
@@ -201,7 +257,7 @@ class AdMobGateway implements AdGateway {
 
   @override
   Future<bool> showRewarded(AdPlacement placement) async {
-    if (!_initialized) return false;
+    if (!await _ensureReady()) return false;
     if (!await _allowed(placement)) return false;
 
     try {
@@ -238,7 +294,18 @@ class AdMobGateway implements AdGateway {
   }
 
   @override
+  Future<void> releaseAd(Object? handle) async {
+    if (handle is Ad) {
+      try {
+        await handle.dispose();
+      } on Object catch (e) {
+        debugPrint('releaseAd hatası: $e');
+      }
+    }
+  }
+
+  @override
   Future<void> dispose() async {
-    _initialized = false;
+    _ready = null;
   }
 }

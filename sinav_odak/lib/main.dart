@@ -14,6 +14,7 @@ import 'core/di/app_providers.dart';
 import 'core/utils/time.dart';
 import 'data/repositories/session_repository.dart';
 import 'domain/ports/ad_gateway.dart';
+import 'services/ads/admob_ad_view.dart';
 import 'services/ads/admob_gateway.dart';
 import 'services/ads/ump_consent_gateway.dart';
 import 'services/background/system_haptic_gateway.dart';
@@ -105,6 +106,9 @@ Future<void> main() async {
         // Gerçek reklam adaptörü YALNIZCA burada devreye giriyor; varsayılan
         // hâlâ `NoopAdGateway`, yani testler ve reklamsız derleme etkilenmez.
         adGatewayProvider.overrideWith(_buildAdGateway),
+        // Yüklenen reklamı EKRANA KOYAN köprü. Bu override olmadan
+        // reklam yüklenir ama hiç çizilmez — gösterim de kazanç da olmaz.
+        adViewBuilderProvider.overrideWithValue(admobAdView),
         // CSV dışa aktarma: varsayılan Noop, gerçek cihazda dosya + paylaşım.
         shareGatewayProvider.overrideWithValue(const FileShareGateway()),
         // v1.3 — yedekten geri yükleme için dosya seçici. Varsayılan

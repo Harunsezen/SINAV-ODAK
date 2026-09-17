@@ -8,19 +8,38 @@ import '../../domain/entities/ad_placement.dart';
 /// İnce banner yuvası.
 ///
 /// **Politika izin vermiyorsa hiç yer AYIRMAZ** (`SizedBox.shrink`). Boş bir
-/// çerçeve bırakmak, rıza vermemiş kullanıcıya "burada reklam olacaktı"
-/// demekti; ayrıca çalışma ekranında sayaç yukarı kayardı.
+/// çerçeve bırakmak, reklamı olmayan kullanıcıya "burada reklam olacaktı"
+/// demekti.
 ///
-/// Aktif çalışma ekranında **yalnızca bu format** kullanılabilir; tam ekran
-/// reklam orada ASLA gösterilmez (G7). Kural `AdPolicyEngine`'de ve
-/// `AdGateway` implementasyonunda ayrıca zorlanıyor.
+/// Çalışma ekranında (`AdPlacement.runBanner`) bu yuva **her koşulda**
+/// reddediliyor — kural `AdPolicyEngine` içinde (v1.5).
+///
+/// ## v1.5.1 — reklam artık GERÇEKTEN çiziliyor
+///
+/// Önceki hâlinde bu widget yalnızca gri bir kutu ile "Sponsorlu" yazısı
+/// çiziyordu: projede `AdWidget` hiç kullanılmamıştı, yüklenen reklam
+/// nesnesi `handle != null` diye bool'a çevrilip atılıyordu. Reklam ekrana
+/// hiç konmadığı için **gösterim de hiç oluşmadı, kazanç da**. Kullanıcı
+/// yarım saniye "Sponsorlu" yazan boş bir şerit görüp kayboluşunu
+/// izliyordu.
+///
+/// Artık `bannerAdProvider` nesnenin kendisini taşıyor ve
+/// `adViewBuilderProvider` onu widget'a çeviriyor. Bu dolaylılık şart:
+/// `google_mobile_ads` platform kanalı kullanıyor, ekranlar onu tanırsa
+/// host testlerinde çalışamaz hale gelir.
 class BannerAdSlot extends ConsumerWidget {
   const BannerAdSlot({required this.placement, super.key});
 
   final AdPlacement placement;
 
   /// Standart AdMob banner yüksekliği.
-  static const double height = 50;
+  static const double adHeight = 50;
+
+  /// "Sponsorlu" etiketi için ayrılan şerit.
+  static const double labelHeight = 16;
+
+  /// Yuvanın toplam yüksekliği.
+  static const double height = adHeight + labelHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,37 +47,43 @@ class BannerAdSlot extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Reklam YÜKLENEMEZSE yuva hiç çizilmiyor (v1.3 yaması).
+    // Reklam GELMEDİYSE (ya da henüz yüklenmediyse) hiç yer ayrılmıyor.
     //
-    // Önceden burada "İnternet yok, reklam yok — Balto da tatilde"
-    // yazan gri bir çubuk kalıyordu. İki sorunu vardı:
-    //
-    // 1. **Mesaj bilmediği bir şeyi iddia ediyordu.** `bannerLoadedProvider`
-    //    yalnızca `true/false` döndürüyor, sebebi taşımıyor — bağlantı
-    //    hiç ölçülmüyor. Yeni bir reklam biriminde en sık görülen sebep
-    //    internetin yokluğu değil, AdMob'un gösterecek reklamı olmaması
-    //    (no-fill). Yani çubuk, interneti tıkır tıkır çalışan kullanıcıya
-    //    "internetin yok" diyordu.
-    // 2. Reklamın gelmediği yerde reklam yuvası göstermek, boş çerçeveyi
-    //    önlemek için konmuştu ama tam da onu yapıyordu.
-    //
-    // Reklam yoksa en dürüst davranış hiç yer ayırmamak. Yükleme sürerken
-    // (`null`) yuva duruyor: reklam geldiğinde içerik aşağı kaymasın.
-    final loaded = ref.watch(bannerLoadedProvider(placement)).valueOrNull;
-    if (loaded == false) return const SizedBox.shrink();
+    // v1.4'te burada "İnternet yok, reklam yok — Balto da tatilde" yazan
+    // gri bir çubuk kalıyordu ve bu metin bilmediği bir şeyi iddia
+    // ediyordu: yükleyici sebebi taşımıyor, bağlantı hiç ölçülmüyor. Yeni
+    // bir reklam biriminde en sık sebep internetin yokluğu değil, AdMob'un
+    // gösterecek reklamı olmaması.
+    final ad = ref.watch(bannerAdProvider(placement)).valueOrNull;
+    if (ad == null) return const SizedBox.shrink();
 
-    return Container(
+    final view = ref.watch(adViewBuilderProvider)(ad);
+
+    return SizedBox(
       key: Key('banner-slot-${placement.name}'),
       height: height,
-      alignment: Alignment.center,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Text(
-        // Her reklam alanının üstünde etiket ZORUNLU.
-        L10n.of(context).adSponsored,
-        key: Key('banner-label-${placement.name}'),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 11),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Her reklam alanının üstünde etiket ZORUNLU.
+          SizedBox(
+            height: labelHeight,
+            child: Text(
+              L10n.of(context).adSponsored,
+              key: Key('banner-label-${placement.name}'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11),
+            ),
+          ),
+          SizedBox(
+            height: adHeight,
+            width: double.infinity,
+            // `view` yalnızca testlerde ve Noop kurulumda null olur; o
+            // durumda etiketli boş şerit kalır, hiçbir şey çökmez.
+            child: view ?? const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/daos/ad_event_dao.dart';
@@ -91,25 +92,51 @@ final personalizedAdsProvider = Provider<bool>((ref) {
 /// override eder; testler ve reklamsız çalıştırma bu haliyle kalır.
 final adGatewayProvider = Provider<AdGateway>((ref) => const NoopAdGateway());
 
+/// Yüklenmiş bir reklam nesnesini WIDGET'A çeviren yapıcı.
+typedef AdViewBuilder = Widget? Function(Object? handle);
+
+/// **Varsayılan: hiçbir şey çizme.** `main()` gerçek cihazda
+/// `admobAdView` ile override eder.
+///
+/// Ekranların `google_mobile_ads` paketini tanımaması için bu dolaylılık
+/// şart: paket platform kanalı kullanıyor ve host testinde çağrılamıyor.
+final adViewBuilderProvider = Provider<AdViewBuilder>((ref) => (_) => null);
+
 /// Bir yerin ŞU AN gösterilebilir olup olmadığı.
 ///
 /// Banner ve native yuvaları bunu izler; izin yoksa hiç yer ayırmazlar.
 /// Ara reklam (interstitial) bu ailede DEĞİL: frekans kapısı için veritabanı
 /// okuması gerekiyor, o yüzden `InterstitialController` üzerinden asenkron
 /// sorulur.
-/// Banner gerçekten yüklendi mi? (FAZ 4.2)
+/// Yüklenmiş banner NESNESİ — yoksa `null`.
 ///
-/// `null` dönen bir yükleme "reklam yok" demek — en yaygın sebebi
-/// **internet olmaması**, ikincisi doluluk oranı. Ayırt etmek için
-/// bağlantı paketi eklemedim: kullanıcı için sonuç aynı ve ek bir
-/// bağımlılık + izin getirmeye değmez.
+/// v1.5.1'e kadar burası `bool` döndürüyordu (`handle != null`) ve yüklenen
+/// reklam nesnesi ATILIYORDU. Ekrana konacak bir şey kalmadığı için
+/// gösterim hiç oluşmadı. Artık nesnenin kendisi taşınıyor; `BannerAdSlot`
+/// onu `adViewBuilderProvider` ile widget'a çeviriyor.
 ///
-/// Yüklenmezse yuva boş gri kutu olarak kalmıyor; Balto konuşuyor.
-final bannerLoadedProvider =
-    FutureProvider.family<bool, AdPlacement>((ref, placement) async {
-  if (!ref.watch(adAllowedProvider(placement))) return false;
-  final handle = await ref.watch(adGatewayProvider).loadBanner(placement);
-  return handle != null;
+/// `null` dönmesi "reklam yok" demek ve **hata değildir**: politika izin
+/// vermiyor olabilir, envanter boş olabilir, ağ olmayabilir.
+/// **`autoDispose` ŞART.** `AdWidget` bir reklam nesnesini ağaca yalnızca
+/// BİR KEZ alabiliyor; ekrandan çıkıp dönünce aynı nesneyi yeniden
+/// takmaya çalışmak hata veriyor. Yuva kapanınca reklam bırakılıyor,
+/// dönüşte yenisi yükleniyor.
+final bannerAdProvider = FutureProvider.autoDispose
+    .family<Object?, AdPlacement>((ref, placement) async {
+  if (!ref.watch(adAllowedProvider(placement))) return null;
+
+  // Ağ geçidi ŞİMDİ yakalanıyor, `onDispose` içinde DEĞİL: kapsayıcı
+  // kapanırken provider okumak "already disposed" ile patlıyor (testlerde
+  // yakalandı). Yakalanan referans kapanıştan sonra da geçerli.
+  final gateway = ref.watch(adGatewayProvider);
+  final handle = await gateway.loadBanner(placement);
+
+  // Ekran kapanınca reklam serbest bırakılmalı; yoksa her açılışta yeni
+  // bir `BannerAd` sızar.
+  ref.onDispose(() {
+    if (handle != null) gateway.releaseAd(handle);
+  });
+  return handle;
 });
 
 final adAllowedProvider = Provider.family<bool, AdPlacement>((ref, placement) {

@@ -48,4 +48,10 @@ class RecordingAdGateway implements AdGateway {
 
   @override
   Future<void> dispose() async => disposeCount++;
+
+  /// Serbest bırakılan tek tek reklamlar — yuva kapanınca sızmamalı.
+  final released = <Object?>[];
+
+  @override
+  Future<void> releaseAd(Object? handle) async => released.add(handle);
 }
