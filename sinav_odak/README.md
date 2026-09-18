@@ -154,32 +154,71 @@ Index `onCreate` içinde oluşturuluyor ve **`schemaVersion` 1'de KALDI**
 
 ### 1. Reklam kimlikleri
 
-Production AdMob kimlikleri **koda girmez**. İki yerden geçilir ve **ikisi
-de** gerekir: Dart tarafı `--dart-define`, Android manifest tarafı Gradle
-özelliği.
+Kimlikler iki ayrı yerden geliyor ve **ikisi aynı şey değil**:
+
+| Ne | Nerede | Yanlışsa ne olur |
+|---|---|---|
+| **Uygulama kimliği** (`~` ayraçlı) | `android/gradle.properties` → `admob_app_id` | Uygulama **AÇILIŞTA ÇÖKER** |
+| **Reklam birimleri** (`/` ayraçlı) | `--dart-define` | Reklam gelmez (çökme yok) |
+
+#### Uygulama kimliği neden dosyada, komut satırında değil
+
+1.5.2'nin ilk derlemesinde komut satırındaki `-Padmob_app_id=$APP_ID`
+PowerShell tarafından açılmadı. Gradle'a `$APP_ID` **metni** ulaştı,
+manifest'e `android:value="$APP_ID"` yazıldı, uygulama açılışta çöktü ve
+Play "Bozuk İşlevsellik Politikası" ile reddetti. Derleme bu sırada
+sorunsuz bitmiş, AAB imzalanmış, yüklenmişti — hiçbir adımda değerin
+**biçimine** bakılmıyordu.
+
+İki değişiklik yapıldı:
+
+1. Uygulama kimliği artık `android/gradle.properties` içinde duruyor.
+   Kabuğun değişken açmasına bağlı zincir kalktı. (Gizli bir değer değil:
+   yayınlanan her APK'nin manifest'inde açıkça yazıyor. Gizli olan
+   keystore'dur ve o `key.properties`te, depoya girmiyor.)
+2. `android/app/build.gradle` değeri **doğruluyor**; biçim tutmuyorsa
+   `GradleException` ile derleme durur. Bozuk kimlikle AAB üretilemez.
+
+Geçici olarak ezmek gerekirse `-Padmob_app_id=...` hâlâ çalışıyor.
+
+#### Derleme
 
 ```bash
-flutter build apk --release \
-  --dart-define=ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY \
+flutter build appbundle --release \
   --dart-define=ADMOB_BANNER_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
   --dart-define=ADMOB_NATIVE_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
   --dart-define=ADMOB_INTERSTITIAL_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
-  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
-  -Padmob_app_id=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY
 ```
 
-- `--dart-define=ADMOB_APP_ID=...` → `AdConfig` (Dart; birim kimlikleri ve
-  `usingTestIds` kontrolü)
-- `-Padmob_app_id=...` → `manifestPlaceholders["admobAppId"]` →
-  `AndroidManifest.xml`'deki `com.google.android.gms.ads.APPLICATION_ID`
+**Kimlikleri komuta DOĞRUDAN yaz, kabuk değişkeni kullanma.** Gizli
+olmadıkları için saklamaya gerek yok; `$DEGISKEN` kullanmak 1.5.2'yi
+düşüren hatanın ta kendisi.
 
 **Hiçbiri verilmezse Google'ın resmî TEST kimlikleri kullanılır.**
 Varsayılanın test olması bilinçli: unutulursa gelir kaybedilir, tersi
 (production kimliğiyle geliştirme + kendi reklamına tıklama) AdMob hesabını
 kapattırır.
 
-`-Padmob_app_id` yerine kalıcı olarak `android/gradle.properties` içine
-`admob_app_id=...` yazılabilir — **bu dosya depoya commit'lenmemelidir.**
+Bozuk biçimli bir birim kimliği (`$BANNER` gibi) `AdConfig` tarafından
+yakalanıp TEST birimine düşürülür ve Ayarlar → Hakkında'daki test uyarısı
+görünür kalır — sessizce ölü reklam birimi ile yayına çıkılmaz.
+
+### 1.1 Yüklemeden ÖNCE: bir kere kur ve AÇ
+
+Bu adım atlanabilir değil. 1.5.2 tam olarak bu yüzden reddedildi: üretilen
+dosyayı Play'e yükleyene kadar **kimse bir kez bile çalıştırmamıştı.**
+
+```bash
+flutter build apk --release   # ...AAB ile AYNI define'lar
+# build/app/outputs/flutter-apk/app-release.apk -> telefona kur, AÇ
+```
+
+Uygulama açılıyorsa AAB'yi yükle. Açılmıyorsa yükleme.
+
+Uygulama kimliği zaten `android/gradle.properties` içinde ve **depoya
+commit'li** (bkz. §1). Gizli bir değer değil; komut satırına bırakıldığı
+sürüm reddedildiği için oraya taşındı.
 
 ### 2. Release imzalama (ZORUNLU)
 
@@ -242,20 +281,21 @@ elden dağıtım / cihaza kurulum içindir.
 
 ```bash
 flutter build appbundle --release \
-  --dart-define=ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY \
   --dart-define=ADMOB_BANNER_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
   --dart-define=ADMOB_NATIVE_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
   --dart-define=ADMOB_INTERSTITIAL_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
-  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY \
-  -Padmob_app_id=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+  --dart-define=ADMOB_REWARDED_UNIT=ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY
 ```
+
+Uygulama kimliği komutta YOK: `android/gradle.properties`ten geliyor ve
+biçimi Gradle'da doğrulanıyor (§1).
 
 Çıktı: `build/app/outputs/bundle/release/app-release.aab`
 
-Cihazda denemek için APK (aynı define'larla):
+**Yüklemeden önce APK'yı kurup AÇ** (§1.1). Aynı define'larla:
 
 ```bash
-flutter build apk --release  # ...aynı --dart-define ve -Padmob_app_id
+flutter build apk --release  # ...aynı --dart-define'lar
 # çıktı: build/app/outputs/flutter-apk/app-release.apk
 ```
 

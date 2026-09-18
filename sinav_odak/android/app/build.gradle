@@ -73,13 +73,32 @@ android {
         targetSdk = 36
 
         // AdMob uygulama kimliği manifest'e BURADAN enjekte edilir.
-        // Varsayılan Google TEST kimliği; production kimliği
-        //   flutter build apk --release -Padmob_app_id=ca-app-pub-XXXX~YYYY
-        // veya android/gradle.properties içindeki `admob_app_id` ile geçilir.
-        // Kimlik koda ASLA girmez.
-        manifestPlaceholders["admobAppId"] =
-            (project.findProperty("admob_app_id")
-                ?: "ca-app-pub-3940256099942544~3347511713")
+        // Değer `android/gradle.properties` içindeki `admob_app_id`den
+        // gelir; `-Padmob_app_id=...` ile geçici olarak ezilebilir.
+        // Hiçbiri yoksa Google TEST kimliği kullanılır.
+        def admobAppId = (project.findProperty("admob_app_id")
+                ?: "ca-app-pub-3940256099942544~3347511713").toString().trim()
+
+        // **DERLEME BURADA DURUR.**
+        //
+        // Geçersiz kimlik uygulamayı AÇILIŞTA çökertiyor: google_mobile_ads
+        // SDK'si kimliği bir ContentProvider içinde, Dart kodu hiç
+        // çalışmadan önce kontrol ediyor.
+        //
+        // 1.5.2 tam olarak böyle gitti: komut satırındaki `-Padmob_app_id=$APP_ID`
+        // kabuk tarafından açılmadı, Gradle'a `$APP_ID` METNİ ulaştı,
+        // manifest'e `android:value="$APP_ID"` yazıldı. Derleme sorunsuz
+        // bitti, AAB imzalandı, Play'e yüklendi ve orada reddedildi —
+        // çünkü hiçbir aşamada kimse değerin biçimine bakmadı.
+        //
+        // Artık bakılıyor. Bozuk kimlikle AAB üretilemiyor.
+        if (!admobAppId.matches('^ca-app-pub-\\d+~\\d+$')) {
+            throw new org.gradle.api.GradleException(
+                "Gecersiz AdMob uygulama kimligi: '" + admobAppId + "'\n" +
+                "Beklenen bicim: ca-app-pub-<rakam>~<rakam>\n" +
+                "android/gradle.properties icindeki admob_app_id degerini duzelt.")
+        }
+        manifestPlaceholders["admobAppId"] = admobAppId
     }
 
     signingConfigs {
