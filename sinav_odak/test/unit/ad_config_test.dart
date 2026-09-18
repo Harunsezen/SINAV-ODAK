@@ -95,4 +95,67 @@ void main() {
     expect(AdConfig.usingTestIds, isTrue);
     expect(AdConfig.hasMalformedIds, isFalse);
   });
+
+  group('TEST uyarisi DOGRU soyluyor', () {
+    // 1.5.2+11 cihazda gercek reklam gosterirken Hakkinda ekraninda
+    // "TEST reklam kimlikleri kullaniliyor" yaziyordu. Uyari uygulama
+    // kimligine bakiyordu; o ise artik Dart tarafina hic gecmiyor
+    // (manifest'e gradle.properties'ten giriyor), yani hep TEST kaliyor.
+    //
+    // Yalan soyleyen bir uyari tehlikeli: "test reklami" sanip kendi
+    // reklamina tiklayan gelistirici AdMob hesabini kaybeder.
+    const gercekBanner = 'ca-app-pub-6172662947666489/8951963727';
+    const gercekNative = 'ca-app-pub-6172662947666489/2140123303';
+    const gercekInter = 'ca-app-pub-6172662947666489/9498758630';
+    const gercekOdullu = 'ca-app-pub-6172662947666489/3868137944';
+
+    test('dort birim de GERCEKSE uyari YOK', () {
+      expect(
+        AdConfig.isTestConfig(
+          banner: gercekBanner,
+          native: gercekNative,
+          interstitial: gercekInter,
+          rewarded: gercekOdullu,
+        ),
+        isFalse,
+        reason: 'gercek reklam gelirken test uyarisi gosterilmemeli',
+      );
+    });
+
+    test('TEK birim bile TESTSE uyari VAR', () {
+      expect(
+        AdConfig.isTestConfig(
+          banner: AdConfig.testBannerUnit,
+          native: gercekNative,
+          interstitial: gercekInter,
+          rewarded: gercekOdullu,
+        ),
+        isTrue,
+      );
+      expect(
+        AdConfig.isTestConfig(
+          banner: gercekBanner,
+          native: gercekNative,
+          interstitial: gercekInter,
+          rewarded: AdConfig.testRewardedUnit,
+        ),
+        isTrue,
+        reason: 'unutulan tek birim bile gelir kaybi',
+      );
+    });
+
+    test('BOZUK kimlik varsa uyari VAR', () {
+      expect(
+        AdConfig.isTestConfig(
+          banner: gercekBanner,
+          native: gercekNative,
+          interstitial: gercekInter,
+          rewarded: gercekOdullu,
+          malformed: true,
+        ),
+        isTrue,
+        reason: 'bozuk deger test birimine dusuyor, gorunur olmali',
+      );
+    });
+  });
 }

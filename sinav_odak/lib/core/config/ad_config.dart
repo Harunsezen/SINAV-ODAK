@@ -109,12 +109,46 @@ abstract final class AdConfig {
       !unitPattern.hasMatch(_rawInterstitialUnit) ||
       !unitPattern.hasMatch(_rawRewardedUnit);
 
-  /// Şu an TEST kimlikleri mi kullanılıyor?
+  /// Şu an TEST reklamları mı geliyor?
   ///
-  /// Ayarlar/hakkında ekranında gösterilebilir; yanlışlıkla test
-  /// kimlikleriyle yayına çıkmak gelir kaybı, tersi hesap kaybıdır.
+  /// Ayarlar → Hakkında'da gösteriliyor; yanlışlıkla test kimlikleriyle
+  /// yayına çıkmak gelir kaybı, tersi hesap kaybıdır. Bozuk bir kimlik de
+  /// buraya düşüyor: süzgeç onu test birimine çevirdiği için uyarı görünür
+  /// kalıyor.
   ///
-  /// Bozuk bir kimlik de buraya düşüyor: süzgeç onu test kimliğine
-  /// çevirdiği için uyarı yine görünüyor.
-  static bool get usingTestIds => appId == testAppId || hasMalformedIds;
+  /// ## Karar neden BİRİMLERE bakıyor, uygulama kimliğine değil
+  ///
+  /// Hangi reklamın geleceğini reklam BİRİMİ kimlikleri belirliyor.
+  /// Uygulama kimliği 1.5.2+11'den beri Dart tarafına hiç geçilmiyor —
+  /// manifest'e `android/gradle.properties`ten giriyor. Dolayısıyla
+  /// buradaki `appId` her zaman varsayılanda, yani TEST değerinde kalıyor.
+  ///
+  /// Ona bakmak yanlış uyarı veriyordu ve verdi: 1.5.2+11 derlemesinde
+  /// cihazda **gerçek** reklamlar gelirken Hakkında ekranında "TEST reklam
+  /// kimlikleri kullanılıyor" yazıyordu. Bu uyarının yalan söylemesi
+  /// tehlikeli: "test reklamı" sanıp kendi reklamına tıklayan geliştirici
+  /// AdMob hesabını kaybeder.
+  static bool get usingTestIds => isTestConfig(
+        banner: bannerUnit,
+        native: nativeUnit,
+        interstitial: interstitialUnit,
+        rewarded: rewardedUnit,
+        malformed: hasMalformedIds,
+      );
+
+  /// [usingTestIds]'in saf hâli — dışarıdan değer verilebildiği için
+  /// sınanabiliyor. `--dart-define` testlerde ayarlanamıyor; karar mantığı
+  /// buraya alınmasa hiç sınanamazdı.
+  static bool isTestConfig({
+    required String banner,
+    required String native,
+    required String interstitial,
+    required String rewarded,
+    bool malformed = false,
+  }) =>
+      malformed ||
+      banner == testBannerUnit ||
+      native == testNativeUnit ||
+      interstitial == testInterstitialUnit ||
+      rewarded == testRewardedUnit;
 }
