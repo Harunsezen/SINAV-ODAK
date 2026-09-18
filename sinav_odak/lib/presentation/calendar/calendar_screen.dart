@@ -36,11 +36,23 @@ class CalendarScreen extends ConsumerWidget {
               data: (rows) {
                 // dateKey -> (süre, oturum). Izgara her hücrede sözlükten
                 // okuyor; listeyi 42 kez taramak gereksiz.
+                // **Okuma süresi de sayılıyor (v1.5.2).**
+                //
+                // Seri hesabı (`recomputeStreak`) yalnızca tarihe bakıyor,
+                // yani kitap okunan gün seriyi sürdürüyor. Takvim ise
+                // sadece `totalStudyS`e bakıyordu: pazar günü bir saat
+                // kitap okuyan öğrencinin serisi devam ediyor ama takvimde
+                // pazar BOMBOŞ görünüyordu. İki ekran aynı veri için
+                // birbirine zıt şey söylüyordu.
+                //
+                // `readingS` günlük ÇALIŞMA hedefine hâlâ eklenmiyor
+                // (bkz. `DailyStats.readingS`); burada eklenmesinin sebebi
+                // hedef değil, "o gün bir şey yapıldı mı" sorusu.
                 final byDay = {
                   for (final r in rows)
                     r.dateKey: (
-                      studyS: r.totalStudyS,
-                      sessions: r.sessionCount
+                      studyS: r.totalStudyS + r.readingS,
+                      sessions: r.sessionCount,
                     ),
                 };
                 return ListView(

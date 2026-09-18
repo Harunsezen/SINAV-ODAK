@@ -139,6 +139,28 @@ final bannerAdProvider = FutureProvider.autoDispose
   return handle;
 });
 
+/// Yüklenmiş NATIVE kart nesnesi — yoksa `null`.
+///
+/// v1.5.2'ye kadar böyle bir sağlayıcı YOKTU: `AdGateway.loadNative`
+/// hiçbir yerden çağrılmıyordu ve mola ekranındaki kart tamamen
+/// dekoratifti — gri bir kutu ile "Sponsorlu" yazısı. Banner'daki hatanın
+/// aynısı, mola ekranında.
+///
+/// [bannerAdProvider] ile aynı gerekçelerle `autoDispose`.
+final nativeAdProvider =
+    FutureProvider.autoDispose.family<Object?, AdPlacement>((
+  ref,
+  placement,
+) async {
+  if (!ref.watch(adAllowedProvider(placement))) return null;
+  final gateway = ref.watch(adGatewayProvider);
+  final handle = await gateway.loadNative(placement);
+  ref.onDispose(() {
+    if (handle != null) gateway.releaseAd(handle);
+  });
+  return handle;
+});
+
 final adAllowedProvider = Provider.family<bool, AdPlacement>((ref, placement) {
   final state = ref.watch(runStateProvider);
   return AdPolicyEngine.allows(

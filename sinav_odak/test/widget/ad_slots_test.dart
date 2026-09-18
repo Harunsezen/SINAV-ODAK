@@ -21,12 +21,17 @@ import '../unit/usecase_helpers.dart';
 /// Yuvalar `NoopAdGateway` ile çalışıyor: gerçek AdMob platform kanalı
 /// gerektirir ve host testinde çağrılamaz. Doğrulanan şey **politika
 /// davranışı**: izin yoksa hiç yer ayrılmaması.
-/// Banner DÖNDÜREN sahte kapı.
+/// Reklam DÖNDÜREN sahte kapı.
 ///
 /// v1.3'ten önce yuva, reklam gelmese de çiziliyordu; bu yüzden testler
 /// varsayılan `NoopAdGateway` ile de yuvayı bulabiliyordu. Artık reklam
 /// yoksa yuva hiç çizilmiyor, dolayısıyla **politikanın izin verdiği hâli**
 /// sınamak için gerçekten yüklenen bir kapı gerekiyor.
+///
+/// v1.5.2: `loadNative` de artık nesne döndürüyor. Öncesinde `null`du ve
+/// kimsenin gözüne batmamıştı, çünkü mola kartı yüklenen reklamı hiç
+/// SORMUYORDU — gri kutuyu koşulsuz çiziyordu. Kart gerçek reklamı
+/// çizmeye başlayınca bu `null` ortaya çıktı.
 class _LoadingAdGateway implements AdGateway {
   const _LoadingAdGateway();
 
@@ -37,7 +42,7 @@ class _LoadingAdGateway implements AdGateway {
   Future<Object?> loadBanner(AdPlacement placement) async => Object();
 
   @override
-  Future<Object?> loadNative(AdPlacement placement) async => null;
+  Future<Object?> loadNative(AdPlacement placement) async => Object();
 
   @override
   Future<bool> showInterstitial(AdPlacement placement) async => false;

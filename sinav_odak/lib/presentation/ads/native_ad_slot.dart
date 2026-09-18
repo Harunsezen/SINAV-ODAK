@@ -54,11 +54,26 @@ class _NativeAdSlotState extends ConsumerState<NativeAdSlot> {
     if (!ref.watch(adAllowedProvider(widget.placement))) {
       return const SizedBox.shrink();
     }
+
+    // Reklam GELMEDİYSE hiç yer ayrılmıyor (v1.5.2).
+    //
+    // Bu satırlar öncesinde YOKTU: `loadNative` hiçbir yerden
+    // çağrılmıyordu ve bu kart gri bir kutudan ibaretti. Yüklenen nesne
+    // olmadığı için `AdWidget` de kurulamıyordu; gösterim de kazanç da
+    // hiç oluşmadı.
+    //
+    // İstek [revealDelay] BEKLENMEDEN başlatılıyor: politika zaten izin
+    // verdi, 1.2 sn boyunca elleri bağlı beklemenin tek sonucu kartın
+    // geç gelmesi olurdu.
+    final ad = ref.watch(nativeAdProvider(widget.placement)).valueOrNull;
+
     if (!_revealed) {
       // Gecikme boyunca da yer AYRILMAZ: kart belirince düzen kaysın,
       // öncesinde boş kutu durmasın.
       return const SizedBox.shrink();
     }
+    if (ad == null) return const SizedBox.shrink();
+    final view = ref.watch(adViewBuilderProvider)(ad);
 
     return Padding(
       // Butonlardan güvenli mesafe.
@@ -84,7 +99,9 @@ class _NativeAdSlotState extends ConsumerState<NativeAdSlot> {
                 ),
               ),
             ),
-            const Spacer(),
+            // Kartın gövdesi: gerçek reklam. `view` yalnızca testlerde ve
+            // Noop kurulumda null olur.
+            Expanded(child: view ?? const SizedBox.shrink()),
           ],
         ),
       ),

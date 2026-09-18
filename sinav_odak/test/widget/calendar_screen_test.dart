@@ -187,4 +187,78 @@ void main() {
       expect(find.byKey(const Key('calendar-summary')), findsOneWidget);
     });
   });
+
+  // =====================================================================
+  // v1.5.2 — KİTAP OKUNAN GÜN TAKVİMDE GÖRÜNÜYOR
+  //
+  // Seri hesabı (`recomputeStreak`) yalnızca tarihe bakıyor: kitap okunan
+  // gün seriyi sürdürüyor. Takvim ise yalnızca `totalStudyS`e bakıyordu.
+  // Sonuç: pazar günü bir saat kitap okuyan öğrencinin serisi devam
+  // ediyor ama takvimde pazar BOMBOŞ görünüyordu — iki ekran aynı veri
+  // için birbirine zıt şey söylüyordu.
+  // =====================================================================
+  testWidgets('SADECE kitap okunan gün takvimde DOLU görünüyor',
+      (tester) async {
+    const day = '2025-08-04';
+    await db.into(db.bookSessions).insert(
+          BookSessionsCompanion.insert(
+            id: 'bk1',
+            dateKey: day,
+            mode: BookMode.duration,
+            startedAt: t0,
+            status: SessionStatus.completed,
+            actualDurationS: const Value(3600),
+            pagesRead: const Value(40),
+            endedAt: const Value(t0 + 3600000),
+          ),
+        );
+    await db.statsDao.recomputeDay(day);
+
+    // Önce veri katmanını doğrula: o gün için satır var ve okuma yazılmış.
+    final row = await (db.select(db.dailyStats)
+          ..where((t) => t.dateKey.equals(day)))
+        .getSingleOrNull();
+    expect(row, isNotNull, reason: 'kitap günü daily_stats satırı üretmeli');
+    expect(row!.readingS, 3600);
+    expect(row.totalStudyS, 0, reason: 'okuma ÇALIŞMA süresine eklenmiyor');
+
+    await pumpCalendar(tester);
+
+    // Boş durum çıkmamalı: o ayda bir şey yapılmış.
+    expect(find.byKey(const Key('calendar-empty')), findsNothing);
+    expect(find.byKey(const Key('calendar-summary')), findsOneWidget);
+
+    // Hücrede GÖRÜNEN tek metin gün numarası; süre ipucunda ve
+    // erişilebilirlik etiketinde taşınıyor, ekranda dolgu rengiyle
+    // anlatılıyor. Bu yüzden metin değil, ipucu ve renk sorgulanıyor.
+    final tip = tester.widget<Tooltip>(
+      find.descendant(
+        of: find.byKey(const Key('calendar-day-4')),
+        matching: find.byType(Tooltip),
+      ),
+    );
+    expect(
+      tip.message,
+      contains('1sa'),
+      reason: 'kitap okunan gün BOŞ değil, bir saatlik gün',
+    );
+
+    Color cellColor(int day) {
+      final box = tester.widget<Container>(
+        find
+            .descendant(
+              of: find.byKey(Key('calendar-day-$day')),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      return (box.decoration! as BoxDecoration).color!;
+    }
+
+    expect(
+      cellColor(4),
+      isNot(cellColor(5)),
+      reason: 'okunan gün, hiçbir şey yapılmayan günden AYRI görünmeli',
+    );
+  });
 }

@@ -222,33 +222,67 @@ class AdMobGateway implements AdGateway {
 
     try {
       final eventId = const Uuid().v4();
-      InterstitialAd? loaded;
-      await InterstitialAd.load(
-        adUnitId: _unitFor(placement),
-        request: _request(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (ad) => loaded = ad,
-          onAdFailedToLoad: (err) =>
-              debugPrint('Interstitial yüklenemedi: $err'),
+
+      // **`InterstitialAd.load()`i beklemek YETMİYOR** — banner ve native
+      // ile birebir aynı tuzak. Dönen Future istek gönderilince tamamlanıyor,
+      // reklam gelince değil; `loaded` bir sonraki satırda HER ZAMAN null
+      // kalıyordu ve fonksiyon daima `false` dönüyordu. Ara reklam bu yüzden
+      // hiç gösterilmedi.
+      final loaded = Completer<InterstitialAd?>();
+      void gotAd(InterstitialAd? ad) {
+        if (!loaded.isCompleted) loaded.complete(ad);
+      }
+
+      unawaited(
+        InterstitialAd.load(
+          adUnitId: _unitFor(placement),
+          request: _request(),
+          adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: gotAd,
+            onAdFailedToLoad: (err) {
+              debugPrint('Interstitial yüklenemedi: $err');
+              gotAd(null);
+            },
+          ),
         ),
       );
-      final ad = loaded;
+
+      final ad = await loaded.future.timeout(
+        loadTimeout,
+        onTimeout: () => null,
+      );
       if (ad == null) return false;
+
+      // Gösterim KAPANANA kadar bekleniyor: çağıran (`DoneScreen`) bu
+      // Future bitince ana panele geçiyor. `show()`u beklemek yetmez —
+      // o da reklam EKRANA GELİNCE tamamlanıyor, kapanınca değil.
+      final closed = Completer<bool>();
+      void finish(bool shown) {
+        if (!closed.isCompleted) closed.complete(shown);
+      }
 
       ad.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (_) => _log(placement, id: eventId),
         onAdDismissedFullScreenContent: (ad) {
           _events.markCompleted(eventId);
           ad.dispose();
+          finish(true);
         },
         onAdClicked: (_) => _events.markClicked(eventId),
         onAdFailedToShowFullScreenContent: (ad, err) {
           debugPrint('Interstitial gösterilemedi: $err');
           ad.dispose();
+          finish(false);
         },
       );
-      await ad.show();
-      return true;
+      unawaited(
+        ad.show().onError((e, _) {
+          debugPrint('Interstitial show hatası: $e');
+          ad.dispose();
+          finish(false);
+        }),
+      );
+      return closed.future;
     } on Object catch (e) {
       debugPrint('showInterstitial hatası: $e');
       return false;
@@ -262,31 +296,78 @@ class AdMobGateway implements AdGateway {
 
     try {
       final eventId = const Uuid().v4();
-      RewardedAd? loaded;
-      await RewardedAd.load(
-        adUnitId: _unitFor(placement),
-        request: _request(),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(
-          onAdLoaded: (ad) => loaded = ad,
-          onAdFailedToLoad: (err) => debugPrint('Rewarded yüklenemedi: $err'),
+
+      // Ayarlar'daki "İzle ve destekle" düğmesi buraya geliyordu ve
+      // **her seferinde** "Reklam gelmedi" diyordu. İki ayrı sebepten:
+      //
+      // 1. `RewardedAd.load()`in Future'ı istek gönderilince tamamlanıyor,
+      //    reklam gelince değil → `loaded` hep null → erken `false`.
+      // 2. `show()`un Future'ı reklam EKRANA GELİNCE tamamlanıyor; ödül
+      //    geri çağrısı daha sonra geliyor. `earned` okunduğunda henüz
+      //    false'tu → kullanıcı reklamı sonuna kadar izlese bile rozet
+      //    verilmezdi.
+      //
+      // İkisi de Completer ile düzeltildi: yükleme gerçekten bekleniyor,
+      // sonuç reklam KAPANINCA dönüyor.
+      final loaded = Completer<RewardedAd?>();
+      void gotAd(RewardedAd? ad) {
+        if (!loaded.isCompleted) loaded.complete(ad);
+      }
+
+      unawaited(
+        RewardedAd.load(
+          adUnitId: _unitFor(placement),
+          request: _request(),
+          rewardedAdLoadCallback: RewardedAdLoadCallback(
+            onAdLoaded: gotAd,
+            onAdFailedToLoad: (err) {
+              debugPrint('Rewarded yüklenemedi: $err');
+              gotAd(null);
+            },
+          ),
         ),
       );
-      final ad = loaded;
+
+      final ad = await loaded.future.timeout(
+        loadTimeout,
+        onTimeout: () => null,
+      );
       if (ad == null) return false;
+
+      final closed = Completer<bool>();
+      void finish(bool value) {
+        if (!closed.isCompleted) closed.complete(value);
+      }
 
       var earned = false;
       ad.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (_) => _log(placement, id: eventId),
-        onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          finish(earned);
+        },
         onAdClicked: (_) => _events.markClicked(eventId),
-      );
-      await ad.show(
-        onUserEarnedReward: (_, __) {
-          earned = true;
-          _events.markCompleted(eventId);
+        // Öncesinde YOKTU: gösterim başarısız olursa reklam sızıyor ve
+        // çağıran sonsuza kadar bekliyordu.
+        onAdFailedToShowFullScreenContent: (ad, err) {
+          debugPrint('Rewarded gösterilemedi: $err');
+          ad.dispose();
+          finish(false);
         },
       );
-      return earned;
+      unawaited(
+        ad.show(
+          onUserEarnedReward: (_, __) {
+            earned = true;
+            _events.markCompleted(eventId);
+          },
+        ).onError((e, _) {
+          debugPrint('Rewarded show hatası: $e');
+          ad.dispose();
+          finish(false);
+        }),
+      );
+      return closed.future;
     } on Object catch (e) {
       debugPrint('showRewarded hatası: $e');
       return false;

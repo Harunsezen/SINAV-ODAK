@@ -37,6 +37,12 @@ class UserSettings extends Table {
       boolean().withDefault(const Constant(true))();
 
   /// Banner konumu (FAZ 4.4). **schemaVersion 3 ile eklendi.**
+  ///
+  /// **KULLANILMIYOR (v1.5.2 denetimi).** Banner her yerde altta; bu değeri
+  /// okuyan tek bir satır yok, `SettingsController.setBannerPosition` da
+  /// hiçbir yerden çağrılmıyor. Kolon duruyor çünkü SQLite'ta kolon
+  /// düşürmek migrasyon maliyeti demek ve hiçbir zarar vermiyor; yeni kod
+  /// buna BAKMASIN.
   TextColumn get bannerPosition =>
       textEnum<BannerPosition>().withDefault(const Constant('bottom'))();
 
@@ -52,7 +58,13 @@ class UserSettings extends Table {
   TextColumn get language =>
       textEnum<AppLanguage>().withDefault(const Constant('tr'))();
 
-  /// Aktif çalışma ekranındaki ince banner kullanıcı tarafından kapatılabilir.
+  /// **ÖLÜ KOLON (v1.5.2 denetimi).**
+  ///
+  /// Açıklaması "aktif çalışma ekranındaki banner kullanıcı tarafından
+  /// kapatılabilir" diyordu; doğru değildi. Böyle bir anahtar arayüzde hiç
+  /// olmadı ve v1.5'ten beri çalışma ekranında **hiç** banner yok
+  /// (`AdPolicyEngine.banner`, `runBanner` → her zaman false). Bu değeri
+  /// okuyan/yazan tek satır yok.
   BoolColumn get showAdsInFocusScreen =>
       boolean().withDefault(const Constant(true))();
 

@@ -10,4 +10,4 @@ library;
 /// Kullanıcıya gösterilen ve yedek zarfına yazılan sürüm.
 ///
 /// `pubspec.yaml`daki `version:` alanının `+` öncesi kısmı.
-const String kAppVersion = '1.5.1';
+const String kAppVersion = '1.5.2';
